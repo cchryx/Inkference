@@ -47,6 +47,7 @@ export async function signinEmailAction(formData: FormData) {
                     };
             }
         } else {
+            console.log(error);
             return { error: "Internal server error." };
         }
     }
