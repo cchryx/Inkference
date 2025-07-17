@@ -42,5 +42,7 @@ next-env.d.ts
 
 # prisma
 # /app/generated/prisma
+!node_modules/.prisma/client/
+!node_modules/@prisma/client/
 
 .vercel
