@@ -4,10 +4,10 @@
     "private": true,
     "scripts": {
         "dev": "prisma generate && next dev",
-        "build": "npx prisma generate && next build",
+        "build": "prisma generate && next build",
         "start": "next start",
         "lint": "next lint",
-        "postinstall": "npx prisma generate"
+        "postinstall": "prisma generate"
     },
     "dependencies": {
         "@node-rs/argon2": "^2.0.2",
