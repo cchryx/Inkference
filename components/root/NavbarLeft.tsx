@@ -3,6 +3,8 @@
 import { Menu, User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+
 import { SignoutButton } from "../auth/SignoutButton";
 import { NAVBARLEFT_LINKS } from "@/constants/index";
 
@@ -12,6 +14,7 @@ type NavbarLeftProps = {
 
 const NavbarLeft = ({ session }: NavbarLeftProps) => {
     const user = session?.user;
+    const pathname = usePathname();
 
     const [isOpen, setIsOpen] = useState(true);
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -66,13 +69,16 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
             <div className="flex-1 p-2">
                 {NAVBARLEFT_LINKS.map((link: any) => {
                     const Icon = link.icon;
+                    const isActive = pathname === link.route;
+
                     return (
                         <Link
                             key={link.route}
                             href={link.route}
-                            className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-300 ${
-                                isOpen ? "" : "justify-center"
-                            }`}
+                            className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors bg-gray-200
+                ${isOpen ? "" : "justify-center"}
+                ${isActive ? "brightness-80" : "hover:brightness-90"}
+            `}
                         >
                             <Icon className="w-5 h-5 text-black" />
                             {isOpen && (

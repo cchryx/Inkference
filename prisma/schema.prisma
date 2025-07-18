@@ -28,6 +28,7 @@ model User {
   sessions Session[]
   accounts Account[]
   posts    Post[]
+  Profile  Profile[]
 
   @@map("users")
 }
@@ -79,6 +80,20 @@ model Verification {
   expiresAt  DateTime
 
   @@map("verifications")
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  createdAt DateTime
+  updatedAt DateTime
+
+  bio         String?
+  phoneNumber BigInt?
+  birthdate   Int?
+  address     String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // model Project {

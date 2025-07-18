@@ -13,14 +13,18 @@ export default async function Layout({ children }: LayoutProps) {
         headers: await headers(),
     });
 
-    if (!session) return redirect("/auth/signin");
-
     return (
         <div className="flex h-screen">
-            <div className="max-w-[250px] hidden md:flex">
-                <NavbarLeft session={session} />
-            </div>
-            <section className="flex-1">{children}</section>
+            {session ? (
+                <>
+                    <div className="max-w-[250px] hidden md:flex">
+                        <NavbarLeft session={session} />
+                    </div>
+                    <section className="flex-1">{children}</section>
+                </>
+            ) : (
+                children
+            )}
         </div>
     );
 }
