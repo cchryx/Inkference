@@ -69,6 +69,7 @@ export const auth = betterAuth({
     },
     hooks: {
         before: createAuthMiddleware(async (ctx) => {
+            // This is ONLY for the before hook logic
             if (ctx.path === "/sign-up/email") {
                 const email = ctx.body.email;
                 const domain = email.split("@")[1];

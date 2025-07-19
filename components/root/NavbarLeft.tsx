@@ -112,16 +112,12 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                     )}
 
                     {isOpen && (
-                        <div className="flex flex-col">
-                            <span className="font-semibold">
+                        <div className="flex flex-col max-w-full overflow-hidden">
+                            <span className="font-semibold text-sm truncate max-w-full">
                                 {user?.name || "Name"}
                             </span>
-                            <span className="text-sm text-muted-foreground">
-                                {user?.username
-                                    ? `@${user.username}`
-                                    : user?.email
-                                    ? `@${user.email.split("@")[0]}`
-                                    : "@username"}
+                            <span className="text-xs text-muted-foreground truncate max-w-full">
+                                {user?.username ? `@${user.username}` : ""}
                             </span>
                         </div>
                     )}
@@ -136,7 +132,11 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                         <ul className="flex flex-col">
                             <li>
                                 <Link
-                                    href="/profile"
+                                    href={`${
+                                        user.username
+                                            ? `/profile/${user.username}`
+                                            : "/"
+                                    }`}
                                     className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer"
                                 >
                                     <User className="w-4 h-4" />

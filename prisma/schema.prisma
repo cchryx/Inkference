@@ -25,10 +25,11 @@ model User {
   displayUsername String? @unique
   image           String?
 
-  sessions Session[]
-  accounts Account[]
-  posts    Post[]
-  Profile  Profile[]
+  sessions     Session[]
+  accounts     Account[]
+  posts        Post[]
+  Profile      Profile[]
+  Relationship Relationship[]
 
   @@map("users")
 }
@@ -87,6 +88,7 @@ model Profile {
   createdAt DateTime
   updatedAt DateTime
 
+  bannerImage String?
   bio         String?
   phoneNumber BigInt?
   birthdate   Int?
@@ -94,6 +96,19 @@ model Profile {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profile")
+}
+
+model Relationship {
+  id        String   @id @default(uuid())
+  createdAt DateTime
+  updatedAt DateTime
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("relationship")
 }
 
 // model Project {

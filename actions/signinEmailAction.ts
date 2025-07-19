@@ -41,9 +41,16 @@ export async function signinEmailAction(formData: FormData) {
                 case "EMAIL_NOT_VERIFIED":
                     redirect("/auth/verify?error=email_not_verified");
                 default:
+                    let message =
+                        error.message?.trim() || "An unknown error occurred";
+                    message = message
+                        .split(/(?<=[.!?])\s+/)
+                        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                        .join(" ");
+                    if (!/[.!?]$/.test(message)) message += ".";
+
                     return {
-                        error:
-                            `${error.message}.` || "An unknown error occurred.",
+                        error: `${message}` || "An unknown error occurred.",
                     };
             }
         } else {

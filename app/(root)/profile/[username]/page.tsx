@@ -1,4 +1,6 @@
+import { ReturnButton } from "@/components/auth/ReturnButton";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import {
     Github,
     Globe,
@@ -9,11 +11,12 @@ import {
     Youtube,
 } from "lucide-react";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-// 🔁 SocialLinks component reused in both views
 function SocialLinks() {
     return (
         <div className="bg-gray-200 p-4 font-medium shadow-md rounded-md">
+            {/* Social Links */}
             <div className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-3 py-1 rounded-sm cursor-pointer">
                 <MapPin className="w-4 h-4" />
                 <span>Location</span>
@@ -42,10 +45,35 @@ function SocialLinks() {
     );
 }
 
-export default async function page() {
+export default async function Page({
+    params,
+}: {
+    params: { username?: string };
+}) {
+    const p = await params;
+    const username = p.username;
+
     const session = await auth.api.getSession({
         headers: await headers(),
     });
+
+    const tUser = await prisma.user.findFirst({
+        where: {
+            username,
+        },
+    });
+
+    if (!tUser) {
+        return (
+            <div className="flex justify-center items-center h-full w-full">
+                <div className="bg-gray-100 p-8 rounded shadow-md space-y-2">
+                    <ReturnButton href="/" label="Home" />
+                    <h1 className="text-xl font-semibold">User Not Found</h1>
+                    <p>The user you are looking for does not exist.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col lg:flex-row w-full py-10 px-[2%] lg:space-x-4">
@@ -59,7 +87,14 @@ export default async function page() {
                             className="w-full h-[200px] md:h-[300px] object-cover object-center"
                         />
                         <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
-                            <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
+                            {tUser?.image ? (
+                                <img
+                                    src={tUser.image}
+                                    className="w-full h-full rounded-full object-cover"
+                                />
+                            ) : (
+                                <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
+                            )}
                         </div>
                     </div>
 
@@ -67,10 +102,10 @@ export default async function page() {
                         <div className="flex-1 space-y-2">
                             <div>
                                 <div className="text-[25px] font-bold">
-                                    Name
+                                    {tUser?.name}
                                 </div>
                                 <div className="text-muted-foreground">
-                                    @username
+                                    @{tUser?.username}
                                 </div>
                             </div>
                             <div className="flex space-x-4">
@@ -98,17 +133,16 @@ export default async function page() {
                 </div>
 
                 <div className="rounded-md overflow-hidden shadow-md w-full bg-gray-200 p-4">
-                    Here will be a mennu for projects, posts, reposts,
+                    Here will be a menu for projects, posts, reposts,
                     experiences
                 </div>
 
-                {/* Recommended accounts for small/medium screens */}
                 <div className="block lg:hidden bg-gray-200 p-4 font-medium shadow-md rounded-md">
                     Recommended accounts here.
                 </div>
             </div>
 
-            {/* Right sidebar: visible only on large screens */}
+            {/* Right sidebar */}
             <div className="hidden lg:block lg:w-[20%] space-y-4">
                 <SocialLinks />
                 <div className="bg-gray-200 p-4 font-medium shadow-md rounded-md">
