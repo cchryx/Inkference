@@ -48,10 +48,9 @@ function SocialLinks() {
 export default async function Page({
     params,
 }: {
-    params: { username?: string };
+    params: Promise<{ username: string }>;
 }) {
-    const p = await params;
-    const username = p.username;
+    const { username } = await params;
 
     const session = await auth.api.getSession({
         headers: await headers(),
