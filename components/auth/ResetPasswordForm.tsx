@@ -22,7 +22,7 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         const formData = new FormData(evt.currentTarget);
 
         const password = String(formData.get("password"));
-        if (!password) return toast.error("Please enter your email.");
+        if (!password) return toast.error("Please enter your new password.");
 
         const confirmPassword = String(formData.get("confirmPassword"));
 

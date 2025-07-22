@@ -20,7 +20,7 @@ export default async function Layout({ children }: LayoutProps) {
                     <div className="max-w-[250px] hidden md:flex">
                         <NavbarLeft session={session} />
                     </div>
-                    <section className="flex-1">
+                    <section className="flex-1 overflow-x-scroll no-scrollbar">
                         {session.user.username ? (
                             children
                         ) : (

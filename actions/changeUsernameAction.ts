@@ -30,7 +30,6 @@ export async function changeUsernameAction(formData: FormData) {
 
             return { error: message };
         } else {
-            console.error(error);
             return { error: "Internal server error." };
         }
     }
