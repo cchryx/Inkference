@@ -15,14 +15,14 @@ export default async function Layout({ children }: LayoutProps) {
     });
 
     return (
-        <div className="flex flex-col md:flex-row h-screen">
+        <div className="flex flex-col md:flex-row h-full">
             {session && (
                 <div className="hidden md:flex max-w-[250px]">
                     <NavbarLeft session={session} />
                 </div>
             )}
 
-            <div className="flex-1 flex flex-col max-h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <section className="flex-1 overflow-x-scroll no-scrollbar">
                     {session ? (
                         session.user.username ? (
