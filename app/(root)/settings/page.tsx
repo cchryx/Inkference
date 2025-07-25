@@ -10,7 +10,7 @@ export default function Page() {
     const [activeSection, setActiveSection] = useState("profile");
 
     return (
-        <div className="flex items-center justify-center h-dvh no-drag select-none">
+        <div className="flex items-center justify-center h-full no-drag select-none">
             <div className="bg-gray-100 w-[95%] md:w-[90%] h-[95%] rounded-md flex shadow-md">
                 {/* Sidebar */}
                 <aside

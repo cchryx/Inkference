@@ -10,7 +10,7 @@ export default async function Page() {
     if (!session) return redirect("/auth/signin");
 
     return (
-        <div className="flex items-center justify-center h-dvh">
+        <div className="flex items-center justify-center h-full">
             Other stuff
         </div>
     );

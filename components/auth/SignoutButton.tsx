@@ -10,13 +10,20 @@ import { toast } from "sonner";
 type SignoutButtonProps = {
     className?: string;
     children?: React.ReactNode;
+    onClick?: () => void;
 };
 
-export const SignoutButton = ({ className, children }: SignoutButtonProps) => {
+export const SignoutButton = ({
+    className,
+    children,
+    onClick,
+}: SignoutButtonProps) => {
     const [isPending, setIsPending] = useState(false);
     const router = useRouter();
 
     async function handleClick() {
+        onClick && onClick();
+
         await signOut({
             fetchOptions: {
                 onRequest: () => {

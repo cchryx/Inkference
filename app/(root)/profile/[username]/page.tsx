@@ -76,7 +76,7 @@ export default async function Page({
     }
 
     return (
-        <div className="flex flex-col lg:flex-row w-full py-10 px-[2%] lg:space-x-4">
+        <div className="flex flex-col overflow-x-scroll no-scrollbar lg:flex-row w-full py-10 px-[2%] lg:space-x-4 h-full">
             {/* Left/Main section */}
             <div className="w-full lg:w-[80%] space-y-4">
                 <ProfileCard tUser={tUser} />
