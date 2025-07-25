@@ -1,5 +1,6 @@
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { ProfileCard } from "@/components/profile/ProfileCard";
+import Profile from "@/components/settings/Profile";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {

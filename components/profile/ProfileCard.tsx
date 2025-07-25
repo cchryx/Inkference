@@ -87,8 +87,12 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                     </div>
                 </div>
                 <div className="flex space-x-3 md:space-x-0 md:space-y-2 justify-center md:justify-start md:flex-col md:items-end">
-                    <div className="px-3 py-1 rounded-sm">Follow</div>
-                    <div className="px-3 py-1 rounded-sm">Add Friend</div>
+                    <div className="px-3 py-1 rounded-sm bg-gray-300">
+                        Follow
+                    </div>
+                    <div className="px-3 py-1 rounded-sm bg-gray-300">
+                        Add Friend
+                    </div>
                 </div>
             </div>
         </div>
