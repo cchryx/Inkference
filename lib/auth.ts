@@ -83,6 +83,12 @@ export const auth = betterAuth({
 
                 const name = normalizeName(ctx.body.name);
 
+                if (!name.trim() || !/[a-zA-Z]/.test(name)) {
+                    throw new APIError("BAD_REQUEST", {
+                        message: "Name must contain at least one letter.",
+                    });
+                }
+
                 return {
                     context: {
                         ...ctx,

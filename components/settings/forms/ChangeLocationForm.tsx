@@ -1,13 +1,24 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/general/Loader";
+import { Skeleton } from "@/components/general/Skeleton";
 
 const ChangeLocationForm = () => {
     const [location, setLocation] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isPending, setIsPending] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // ← For skeleton
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false); // Simulate loading
+        }, 800);
+        return () => clearTimeout(timer);
+    }, []);
 
     const fetchSuggestions = async (query: string) => {
         if (!query) return;
@@ -42,6 +53,19 @@ const ChangeLocationForm = () => {
         alert(`Selected location: ${location}`);
         setIsPending(false);
     };
+
+    if (isLoading) {
+        return (
+            <div className="w-full space-y-4 border-2 border-gray-200 p-6 rounded-md">
+                <Skeleton className="h-6 w-1/4 rounded-md" />
+                <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-20 rounded-md" />
+                    <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+                <Skeleton className="h-10 w-[160px] rounded-md" />
+            </div>
+        );
+    }
 
     return (
         <form

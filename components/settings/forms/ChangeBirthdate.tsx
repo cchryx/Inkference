@@ -1,10 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Loader from "@/components/general/Loader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { Skeleton } from "@/components/general/Skeleton";
 
 const ChangeBirthdate = () => {
     const [isPending, setIsPending] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
     const [year, setYear] = useState("");
     const [month, setMonth] = useState("");
     const [day, setDay] = useState("");
@@ -15,6 +20,13 @@ const ChangeBirthdate = () => {
     );
     const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
     const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false); // simulate loading
+        }, 800);
+        return () => clearTimeout(timer);
+    }, []);
 
     async function handleSubmit(evt: React.FormEvent<HTMLFormElement>) {
         evt.preventDefault();
@@ -33,6 +45,29 @@ const ChangeBirthdate = () => {
 
         alert(`Unix timestamp: ${unixTimestamp}`);
         setIsPending(false);
+    }
+
+    if (isLoading) {
+        return (
+            <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
+                <Skeleton className="h-6 w-1/4 rounded-md" />
+                <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-10 rounded-md" />
+                        <Skeleton className="h-10 w-[100px] rounded-md" />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-14 rounded-md" />
+                        <Skeleton className="h-10 w-[100px] rounded-md" />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-8 rounded-md" />
+                        <Skeleton className="h-10 w-[100px] rounded-md" />
+                    </div>
+                </div>
+                <Skeleton className="h-10 w-[160px] rounded-md" />
+            </div>
+        );
     }
 
     return (

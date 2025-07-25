@@ -1,14 +1,25 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Loader from "@/components/general/Loader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea"; // using ShadCN textarea
-import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/general/Skeleton";
 
 const MAX_LINES = 8;
 
 const ChangeBioForm = () => {
     const [isPending, setIsPending] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [bio, setBio] = useState("");
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 800); // simulate loading delay
+        return () => clearTimeout(timer);
+    }, []);
 
     async function handleSubmit(evt: React.FormEvent<HTMLFormElement>) {
         evt.preventDefault();
@@ -41,9 +52,22 @@ const ChangeBioForm = () => {
         const lineCount = bio.split("\n").length;
 
         if (e.key === "Enter" && lineCount >= MAX_LINES) {
-            e.preventDefault(); // prevent adding a new line
+            e.preventDefault();
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="w-full space-y-4 border-2 border-gray-200 p-6 rounded-md">
+                <Skeleton className="h-6 w-1/4 rounded-md" />
+                <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-20 rounded-md" />
+                    <Skeleton className="h-[8lh] w-full rounded-md" />
+                </div>
+                <Skeleton className="h-9 w-32 rounded-md" />
+            </div>
+        );
+    }
 
     return (
         <form

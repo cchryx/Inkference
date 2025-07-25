@@ -18,6 +18,9 @@ model User {
   createdAt DateTime
   updatedAt DateTime
 
+  usernameUpdatedAt DateTime?
+  nameUpdatedAt     DateTime?
+
   name            String
   email           String  @unique
   emailVerified   Boolean

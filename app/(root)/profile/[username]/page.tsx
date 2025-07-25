@@ -1,4 +1,5 @@
 import { ReturnButton } from "@/components/auth/ReturnButton";
+import { ProfileCard } from "@/components/profile/ProfileCard";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -77,53 +78,7 @@ export default async function Page({
         <div className="flex flex-col lg:flex-row w-full py-10 px-[2%] lg:space-x-4">
             {/* Left/Main section */}
             <div className="w-full lg:w-[80%] space-y-4">
-                <div className="rounded-md overflow-hidden shadow-md w-full">
-                    <div className="relative">
-                        <img
-                            src="https://wallup.net/wp-content/uploads/2018/03/19/546507-forest-environment-lake-mountains-digital_art-water-landscape-waterfall-clouds.jpg"
-                            alt="Scenic landscape"
-                            className="w-full h-[200px] md:h-[300px] object-cover object-center"
-                        />
-                        <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
-                            {tUser?.image ? (
-                                <img
-                                    src={tUser.image}
-                                    className="w-full h-full rounded-full object-cover"
-                                />
-                            ) : (
-                                <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10">
-                        <div className="flex-1 space-y-2">
-                            <div>
-                                <div className="text-[25px] font-bold">
-                                    {tUser?.name}
-                                </div>
-                                <div className="text-muted-foreground">
-                                    @{tUser?.username}
-                                </div>
-                            </div>
-                            <div className="flex space-x-4">
-                                <div>{0} Followers</div>
-                                <div>{0} Following</div>
-                            </div>
-                            <div className="text-sm">
-                                This will be where the bio is.
-                            </div>
-                        </div>
-                        <div className="flex space-x-3 md:space-x-0 md:space-y-2 justify-center md:justify-start md:flex-col md:items-end">
-                            <div className="px-3 py-1 rounded-sm bg-gray-300">
-                                Follow
-                            </div>
-                            <div className="px-3 py-1 rounded-sm bg-gray-300">
-                                Add Friend
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ProfileCard tUser={tUser} />
 
                 {/* Social links for small/medium screens */}
                 <div className="block lg:hidden">
