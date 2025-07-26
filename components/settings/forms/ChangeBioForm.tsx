@@ -12,7 +12,7 @@ import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
 
 const MAX_LINES = 8;
-const MAX_CHARS = 300;
+const MAX_CHARS = 800;
 
 type ChangeBioFormProps = {
     biography: string;

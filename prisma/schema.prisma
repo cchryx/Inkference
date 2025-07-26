@@ -94,7 +94,7 @@ model Profile {
   bannerImage          String?
   bannerImageUpdatedAt DateTime?
 
-  bio          String?   @db.VarChar(300)
+  bio          String?   @db.VarChar(800)
   bioUpdatedAt DateTime?
 
   phoneNumber          BigInt?
