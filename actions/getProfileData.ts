@@ -10,8 +10,6 @@ export async function getProfileData(username?: string) {
         headers: await headers(),
     });
 
-    if (!session) redirect("/auth/signin");
-
     let targetUserId: string;
     let userInfo: { name: string; username: string };
 
@@ -40,6 +38,8 @@ export async function getProfileData(username?: string) {
             username: user.username ?? "",
         };
     } else {
+        if (!session) redirect("/auth/signin");
+
         targetUserId = session.user.id;
         userInfo = {
             name: session.user.name ?? "",
