@@ -1,6 +1,7 @@
+import { getProfileData } from "@/actions/getProfileData";
 import { ReturnButton } from "@/components/auth/ReturnButton";
+import { SocialsCard } from "@/components/profile/SocialsCard";
 import { ProfileCard } from "@/components/profile/ProfileCard";
-import Profile from "@/components/settings/Profile";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -9,42 +10,9 @@ import {
     Instagram,
     Linkedin,
     MapPin,
-    User,
     Youtube,
 } from "lucide-react";
 import { headers } from "next/headers";
-
-function SocialLinks() {
-    return (
-        <div className="bg-gray-200 p-4 font-medium shadow-md rounded-md">
-            {/* Social Links */}
-            <div className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-3 py-1 rounded-sm cursor-pointer">
-                <MapPin className="w-4 h-4" />
-                <span>Location</span>
-            </div>
-            <div className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-3 py-1 rounded-sm cursor-pointer">
-                <Instagram className="w-4 h-4" />
-                <span>Instagram</span>
-            </div>
-            <div className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-3 py-1 rounded-sm cursor-pointer">
-                <Linkedin className="w-4 h-4" />
-                <span>LinkedIn</span>
-            </div>
-            <div className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-3 py-1 rounded-sm cursor-pointer">
-                <Youtube className="w-4 h-4" />
-                <span>YouTube</span>
-            </div>
-            <div className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-3 py-1 rounded-sm cursor-pointer">
-                <Github className="w-4 h-4" />
-                <span>GitHub</span>
-            </div>
-            <div className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-3 py-1 rounded-sm cursor-pointer">
-                <Globe className="w-4 h-4" />
-                <span>Personal Website</span>
-            </div>
-        </div>
-    );
-}
 
 export default async function Page({
     params,
@@ -57,7 +25,7 @@ export default async function Page({
         headers: await headers(),
     });
 
-    const tUser = await prisma.user.findFirst({
+    let tUser = await prisma.user.findFirst({
         where: {
             username,
         },
@@ -75,6 +43,11 @@ export default async function Page({
         );
     }
 
+    tUser = {
+        ...tUser,
+        ...(await getProfileData(username)).profile,
+    };
+
     return (
         <div className="flex flex-col overflow-x-scroll no-scrollbar lg:flex-row w-full py-10 px-[2%] lg:space-x-4 h-full">
             {/* Left/Main section */}
@@ -83,23 +56,23 @@ export default async function Page({
 
                 {/* Social links for small/medium screens */}
                 <div className="block lg:hidden">
-                    <SocialLinks />
+                    <SocialsCard tUser={tUser} />
                 </div>
 
-                <div className="rounded-md overflow-hidden shadow-md w-full bg-gray-200 p-4">
+                <div className="rounded-md overflow-hidden shadow-md w-full bg-gray-200 p-2">
                     Here will be a menu for projects, posts, reposts,
                     experiences
                 </div>
 
-                <div className="block lg:hidden bg-gray-200 p-4 font-medium shadow-md rounded-md">
+                <div className="block lg:hidden bg-gray-200 p-2 font-medium shadow-md rounded-md">
                     Recommended accounts here.
                 </div>
             </div>
 
             {/* Right sidebar */}
             <div className="hidden lg:block lg:w-[20%] space-y-4">
-                <SocialLinks />
-                <div className="bg-gray-200 p-4 font-medium shadow-md rounded-md">
+                <SocialsCard tUser={tUser} />
+                <div className="bg-gray-200 p-2 font-medium shadow-md rounded-md">
                     Recommended accounts here.
                 </div>
             </div>

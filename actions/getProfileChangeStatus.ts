@@ -5,11 +5,26 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 
-type ChangeType = "name" | "username";
+type UserChangeType = "name" | "username";
+type ProfileChangeType =
+    | "bio"
+    | "birthdate"
+    | "address"
+    | "bannerImage"
+    | "phoneNumber"
+    | "socialLinks";
+type ChangeType = UserChangeType | ProfileChangeType;
 
+// Limit in minutes
 const LIMITS: Record<ChangeType, number> = {
-    name: 30,
-    username: 90,
+    name: 30 * 24 * 60,
+    username: 90 * 24 * 60,
+    bio: 5,
+    birthdate: 120 * 24 * 60,
+    address: 7 * 24 * 60,
+    bannerImage: 1 * 24 * 60,
+    phoneNumber: 1 * 24 * 60,
+    socialLinks: 5,
 };
 
 export async function getProfileChangeStatus(type: ChangeType) {
@@ -20,25 +35,45 @@ export async function getProfileChangeStatus(type: ChangeType) {
     const userId = session?.user?.id;
     if (!userId) return { canChange: false, timeLeft: null };
 
-    const field =
-        type === "name" ? "nameUpdatedAt" : ("usernameUpdatedAt" as const);
+    const updatedAtField = `${type}UpdatedAt` as string;
+    const limitMinutes = LIMITS[type] ?? 60; // default 1 hour
+    const limitMs = limitMinutes * 60 * 1000;
 
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { [field]: true },
-    });
+    let lastUpdated: Date | null = null;
 
-    const lastUpdated: any = user?.[field];
-    if (!lastUpdated) return { canChange: true, timeLeft: null };
+    if (type === "name" || type === "username") {
+        const user = (await prisma.user.findUnique({
+            where: { id: userId },
+            select: { [updatedAtField]: true },
+        })) as Record<string, Date | null> | null;
+
+        lastUpdated = user?.[updatedAtField] ?? null;
+    } else {
+        const profile = (await prisma.profile.findUnique({
+            where: { userId },
+            select: { [updatedAtField]: true },
+        })) as Record<string, Date | null> | null;
+
+        lastUpdated = profile?.[updatedAtField] ?? null;
+    }
+
+    if (!lastUpdated) {
+        return { canChange: true, timeLeft: null };
+    }
 
     const now = new Date();
-    const then = new Date(lastUpdated);
-    const elapsedMs = differenceInMilliseconds(now, then);
-    const limitMs = LIMITS[type] * 24 * 60 * 60 * 1000;
-
+    const elapsedMs = now.getTime() - new Date(lastUpdated).getTime();
     const remainingMs = limitMs - elapsedMs;
 
-    if (remainingMs <= 0) return { canChange: true, timeLeft: null };
+    if (remainingMs <= 0) {
+        return { canChange: true, timeLeft: null };
+    }
+
+    let unit: "second" | "minute" | "hour" | "day" = "minute";
+    if (remainingMs < 60 * 1000) unit = "second";
+    else if (remainingMs < 60 * 60 * 1000) unit = "minute";
+    else if (remainingMs < 24 * 60 * 60 * 1000) unit = "hour";
+    else unit = "day";
 
     return {
         canChange: false,
@@ -46,7 +81,7 @@ export async function getProfileChangeStatus(type: ChangeType) {
             now,
             new Date(now.getTime() + remainingMs),
             {
-                unit: remainingMs < 1000 * 60 * 60 * 24 ? "hour" : "day",
+                unit,
                 roundingMethod: "ceil",
             }
         ),

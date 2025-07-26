@@ -78,12 +78,12 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                             @{tUser?.username}
                         </div>
                     </div>
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-4 py-1 px-2 bg-gray-300 rounded-md w-fit">
                         <div>{0} Followers</div>
                         <div>{0} Following</div>
                     </div>
-                    <div className="text-sm">
-                        This will be where the bio is.
+                    <div className="text-sm whitespace-pre-line">
+                        {tUser.bio}
                     </div>
                 </div>
                 <div className="flex space-x-3 md:space-x-0 md:space-y-2 justify-center md:justify-start md:flex-col md:items-end">

@@ -49,6 +49,7 @@ export async function signupEmailAction(formData: FormData) {
                     };
             }
         } else {
+            console.error("Unexpected error:", error);
             return { error: "Internal server error." };
         }
     }

@@ -15,8 +15,8 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  createdAt DateTime
-  updatedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   usernameUpdatedAt DateTime?
   nameUpdatedAt     DateTime?
@@ -88,16 +88,28 @@ model Verification {
 
 model Profile {
   id        String   @id @default(uuid())
-  createdAt DateTime
-  updatedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  bannerImage String?
-  bio         String?
-  phoneNumber BigInt?
-  birthdate   Int?
-  address     String?
+  bannerImage          String?
+  bannerImageUpdatedAt DateTime?
 
-  userId String
+  bio          String?   @db.VarChar(300)
+  bioUpdatedAt DateTime?
+
+  phoneNumber          BigInt?
+  phoneNumberUpdatedAt DateTime?
+
+  birthdate          Int?
+  birthdateUpdatedAt DateTime?
+
+  address          String?
+  addressUpdatedAt DateTime?
+
+  socialLinks          String[]  @db.VarChar(255)
+  socialLinksUpdatedAt DateTime?
+
+  userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profile")

@@ -9,6 +9,16 @@ import { getValidDomains, normalizeName } from "@/lib/utils";
 import { sendEmailAction } from "@/actions/sendEmailAction";
 import { username } from "better-auth/plugins";
 
+type AuthUser = {
+    id: string;
+    name: string;
+    email: string;
+    emailVerified?: boolean;
+    username?: string;
+    displayUsername?: string;
+    image?: string;
+};
+
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
@@ -101,6 +111,7 @@ export const auth = betterAuth({
             }
         }),
     },
+
     session: {
         expiresIn: 30 * 24 * 60 * 60, // 30 days
     },

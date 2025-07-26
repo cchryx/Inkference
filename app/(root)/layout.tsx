@@ -2,6 +2,7 @@ import { ChooseUsernameForm } from "@/components/auth/ChooseUsernameForm";
 import NavbarLeft from "@/components/root/NavbarLeft";
 import NavbarMobile from "@/components/root/NavbarMobile";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma"; // Make sure this import is correct
 import { headers } from "next/headers";
 import { ReactNode } from "react";
 
@@ -13,6 +14,18 @@ export default async function Layout({ children }: LayoutProps) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
+
+    if (session?.user.id) {
+        const existingProfile = await prisma.profile.findUnique({
+            where: { userId: session.user.id },
+        });
+
+        if (!existingProfile) {
+            await prisma.profile.create({
+                data: { userId: session.user.id },
+            });
+        }
+    }
 
     return (
         <div className="flex flex-col md:flex-row h-full">

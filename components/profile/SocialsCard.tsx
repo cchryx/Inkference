@@ -1,0 +1,179 @@
+"use client";
+
+import {
+    Github,
+    Instagram,
+    Linkedin,
+    Youtube,
+    Link2,
+    Mail,
+    Twitch,
+    MapPin,
+} from "lucide-react";
+
+import {
+    FaSnapchatGhost,
+    FaDiscord,
+    FaSpotify,
+    FaWeixin,
+    FaRedditAlien,
+    FaTwitter,
+    FaPinterestP,
+} from "react-icons/fa";
+
+function getSocialIcon(link: string) {
+    const lower = link.toLowerCase();
+
+    if (lower.includes("linkedin.com"))
+        return <Linkedin className="w-4 h-4 text-blue-700 shrink-0" />;
+    if (lower.includes("instagram.com"))
+        return <Instagram className="w-4 h-4 text-pink-500 shrink-0" />;
+    if (lower.includes("github.com"))
+        return (
+            <Github className="w-4 h-4 text-black dark:text-white shrink-0" />
+        );
+    if (lower.includes("youtube.com") || lower.includes("youtu.be"))
+        return <Youtube className="w-4 h-4 text-red-600 shrink-0" />;
+    if (lower.includes("twitch.tv"))
+        return <Twitch className="w-4 h-4 text-purple-600 shrink-0" />;
+    if (lower.startsWith("mailto:") || lower.includes("gmail.com"))
+        return <Mail className="w-4 h-4 text-rose-500 shrink-0" />;
+    if (lower.includes("snapchat.com"))
+        return <FaSnapchatGhost className="w-4 h-4 text-yellow-400 shrink-0" />;
+    if (lower.includes("discord.com") || lower.includes("discord.gg"))
+        return <FaDiscord className="w-4 h-4 text-indigo-500 shrink-0" />;
+    if (lower.includes("spotify.com"))
+        return <FaSpotify className="w-4 h-4 text-green-500 shrink-0" />;
+    if (lower.includes("wechat.com") || lower.includes("weixin.qq.com"))
+        return <FaWeixin className="w-4 h-4 text-green-600 shrink-0" />;
+    if (lower.includes("reddit.com"))
+        return <FaRedditAlien className="w-4 h-4 text-orange-500 shrink-0" />;
+    if (lower.includes("twitter.com") || lower.includes("x.com"))
+        return (
+            <FaTwitter className="w-4 h-4 text-black dark:text-white shrink-0" />
+        );
+    if (lower.includes("pinterest.com"))
+        return <FaPinterestP className="w-4 h-4 text-red-500 shrink-0" />;
+
+    return <Link2 className="w-4 h-4 text-muted-foreground shrink-0" />;
+}
+
+function formatSocialLabel(link: string) {
+    const lower = link.toLowerCase();
+
+    try {
+        const url = new URL(link);
+        const parts = url.pathname.split("/").filter(Boolean);
+
+        if (lower.includes("instagram.com")) {
+            return parts.length > 0 ? `@${parts[0]}` : "Instagram";
+        }
+
+        if (lower.includes("linkedin.com")) {
+            if (parts.length >= 2 && parts[0] === "in") {
+                return parts[1];
+            }
+            return "LinkedIn";
+        }
+
+        if (lower.includes("github.com")) {
+            return parts.length > 0 ? parts[0] : "GitHub";
+        }
+
+        if (lower.includes("youtube.com")) {
+            // youtube.com/@username or youtube.com/channel/ID
+            if (parts[0]?.startsWith("@")) return parts[0];
+            return parts.length > 0 ? parts[parts.length - 1] : "YouTube";
+        }
+
+        if (lower.includes("youtu.be")) {
+            return parts.length > 0 ? parts[0] : "YouTube";
+        }
+
+        if (lower.includes("twitter.com") || lower.includes("x.com")) {
+            return parts.length > 0 ? `@${parts[0]}` : "X";
+        }
+
+        if (lower.includes("snapchat.com")) {
+            return parts.length > 0 ? `@${parts[0]}` : "Snapchat";
+        }
+
+        if (lower.includes("discord.com") || lower.includes("discord.gg")) {
+            return parts.length > 0 ? `discord.gg/${parts[0]}` : "Discord";
+        }
+
+        if (lower.includes("spotify.com")) {
+            return parts.length > 1 ? `${parts[0]}/${parts[1]}` : "Spotify";
+        }
+
+        if (lower.includes("reddit.com")) {
+            if (parts[0] === "user" && parts[1]) return `u/${parts[1]}`;
+            return "Reddit";
+        }
+
+        if (lower.includes("twitch.tv")) {
+            return parts.length > 0 ? `@${parts[0]}` : "Twitch";
+        }
+
+        if (lower.includes("pinterest.com")) {
+            return parts.length > 0 ? `@${parts[0]}` : "Pinterest";
+        }
+
+        if (lower.startsWith("mailto:") || lower.includes("gmail.com")) {
+            return url.href.replace("mailto:", "");
+        }
+
+        if (lower.includes("wechat.com") || lower.includes("weixin.qq.com")) {
+            return "WeChat";
+        }
+
+        return url.hostname.replace("www.", "");
+    } catch {
+        return link;
+    }
+}
+
+export const SocialsCard = ({ tUser }: { tUser: any }) => {
+    const { address, socialLinks = [] } = tUser;
+
+    return (
+        <div className="bg-gray-200 p-2 font-medium shadow-md rounded-md">
+            {/* Address */}
+            {address && (
+                <a
+                    href={`https://www.google.com/maps/search/${encodeURIComponent(
+                        address
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
+                >
+                    <MapPin className="w-4 h-4 shrink-0" />
+                    <span className="truncate flex-1 text-sm">{address}</span>
+                </a>
+            )}
+
+            {/* Social Links */}
+            {socialLinks.map((link: string) => (
+                <a
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
+                >
+                    {getSocialIcon(link)}
+                    <span className="truncate flex-1 text-sm">
+                        {formatSocialLabel(link)}
+                    </span>
+                </a>
+            ))}
+
+            {socialLinks.length === 0 && !address && (
+                <p className="text-sm text-gray-500">
+                    No location or social links provided
+                </p>
+            )}
+        </div>
+    );
+};

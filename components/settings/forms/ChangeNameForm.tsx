@@ -13,20 +13,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const ChangeNameForm = () => {
+type Props = {
+    name: string;
+    isLoading?: boolean;
+};
+
+const ChangeNameForm = ({ name, isLoading }: Props) => {
     const [isPending, setIsPending] = useState(false);
-    const [isLoadingStatus, setIsLoadingStatus] = useState(true);
-    const [nameStatus, setNameStatus] = useState<{
+    const [status, setStatus] = useState<{
         canChange: boolean;
         timeLeft: string | null;
     }>({ canChange: true, timeLeft: null });
 
     useEffect(() => {
-        setIsLoadingStatus(true);
-        getProfileChangeStatus("name")
-            .then(setNameStatus)
-            .finally(() => setIsLoadingStatus(false));
-    }, []);
+        if (!isLoading) {
+            getProfileChangeStatus("name").then(setStatus);
+        }
+    }, [isLoading]);
 
     async function handleSubmit(evt: React.FormEvent<HTMLFormElement>) {
         evt.preventDefault();
@@ -39,15 +42,26 @@ const ChangeNameForm = () => {
             toast.error(error);
         } else {
             toast.success("Name changed successfully.");
-            (evt.target as HTMLFormElement).reset();
-
-            // Refresh status after successful change
-            setIsLoadingStatus(true);
-            await getProfileChangeStatus("name").then(setNameStatus);
-            setIsLoadingStatus(false);
+            getProfileChangeStatus("name").then(setStatus);
         }
 
         setIsPending(false);
+    }
+
+    if (isLoading) {
+        return (
+            <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
+                <Skeleton className="h-6 w-32 rounded-md" /> {/* Title */}
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-20 rounded-md" /> {/* Label */}
+                    <Skeleton className="h-10 w-full rounded-md" />{" "}
+                    {/* Input */}
+                    <Skeleton className="h-4 w-3/4 rounded-md" />{" "}
+                    {/* Info text */}
+                </div>
+                <Skeleton className="h-10 w-40 rounded-md" /> {/* Button */}
+            </div>
+        );
     }
 
     return (
@@ -55,48 +69,32 @@ const ChangeNameForm = () => {
             className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
             onSubmit={handleSubmit}
         >
-            {isLoadingStatus ? (
-                <div className="space-y-4">
-                    <Skeleton className="h-6 w-32 rounded-md" /> {/* Title */}
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-20 rounded-md" />{" "}
-                        {/* Label */}
-                        <Skeleton className="h-10 w-full rounded-md" />{" "}
-                        {/* Input */}
-                        <Skeleton className="h-4 w-3/4 rounded-md" />{" "}
-                        {/* Info text */}
-                    </div>
-                    <Skeleton className="h-10 w-40 rounded-md" /> {/* Button */}
-                </div>
-            ) : (
-                <>
-                    <h1 className="text-lg">Change Name</h1>
+            <h1 className="text-lg">Change Name</h1>
 
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="name">New Name</Label>
-                        <Input
-                            id="name"
-                            name="name"
-                            disabled={isPending || !nameStatus.canChange}
-                        />
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <AlertCircle className="w-5 h-5" />
-                            {nameStatus.canChange
-                                ? "You can change your name now. You’ll be limited to one change every 30 days."
-                                : `You can change your name again in ${nameStatus.timeLeft}.`}
-                        </p>
-                    </div>
+            <div className="flex flex-col gap-2">
+                <Label htmlFor="name">New Name</Label>
+                <Input
+                    id="name"
+                    name="name"
+                    defaultValue={name}
+                    disabled={isPending || !status.canChange}
+                />
+                <p className="text-xs text-muted-foreground">
+                    <AlertCircle className="w-5 h-5 inline align-middle mr-1" />
+                    {status.canChange
+                        ? "You can change your name now. You’ll be limited to one change every 30 days."
+                        : `You can change your name again in ${status.timeLeft}.`}
+                </p>
+            </div>
 
-                    <Button
-                        type="submit"
-                        className="cursor-pointer"
-                        disabled={isPending || !nameStatus.canChange}
-                    >
-                        {isPending && <Loader size={5} color="text-white" />}
-                        Change Name
-                    </Button>
-                </>
-            )}
+            <Button
+                type="submit"
+                className="cursor-pointer"
+                disabled={isPending || !status.canChange}
+            >
+                {isPending && <Loader size={5} color="text-white" />}
+                Change Name
+            </Button>
         </form>
     );
 };

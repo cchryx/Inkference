@@ -1,23 +1,27 @@
 "use server";
 
 import { auth, ErrorCode } from "@/lib/auth";
-import { normalizeName } from "@/lib/utils";
 import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
 import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 import { prisma } from "@/lib/prisma";
 
-const NAME_COOLDOWN_MINUTES = 30 * 24 * 60;
+// Cooldown settings per field (in minutes)
+const COOLDOWN_MINUTES: Record<string, number> = {
+    bio: 5,
+    birthdate: 120 * 24 * 60,
+    address: 7 * 24 * 60,
+    socialLinks: 5,
+};
 
-export async function changeNameAction(formData: FormData) {
-    const name = String(formData.get("name"));
-    if (!name) return { error: "Name is required." };
-
-    const normalizedName = normalizeName(name);
-
-    if (!normalizedName.trim() || !/[a-zA-Z]/.test(normalizedName)) {
-        return { error: "Name must contain at least one letter." };
-    }
+export async function changeProfileAction(formData: FormData, type: string) {
+    let value: any = String(formData.get(type));
+    if (!value)
+        return {
+            error: `${
+                type.charAt(0).toUpperCase() + type.slice(1)
+            } is required.`,
+        };
 
     try {
         const session = await auth.api.getSession({
@@ -27,32 +31,27 @@ export async function changeNameAction(formData: FormData) {
         const userId = session?.user?.id;
         if (!userId) return { error: "Unauthorized." };
 
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
+        const profile = await prisma.profile.findFirst({
+            where: { userId },
             select: {
-                nameUpdatedAt: true,
-                name: true,
+                [type + "UpdatedAt"]: true,
+                [type]: true,
             },
         });
 
-        if (!user) return { error: "User not found." };
+        const lastUpdated = profile?.[`${type}UpdatedAt`] ?? null;
 
-        if (user.name === normalizedName) {
-            return { error: "This is already your current name." };
-        }
-
-        const lastUpdated = user.nameUpdatedAt
-            ? new Date(user.nameUpdatedAt)
-            : null;
-
-        const cooldownMs = NAME_COOLDOWN_MINUTES * 60 * 1000;
+        const cooldownMinutes = COOLDOWN_MINUTES[type] ?? 1440;
+        const cooldownMs = cooldownMinutes * 60 * 1000;
 
         if (lastUpdated) {
-            const elapsedMs = differenceInMilliseconds(new Date(), lastUpdated);
+            const elapsedMs = differenceInMilliseconds(
+                new Date(),
+                new Date(lastUpdated)
+            );
 
             if (elapsedMs < cooldownMs) {
                 const remainingMs = cooldownMs - elapsedMs;
-
                 const timeLeft = formatDistanceStrict(
                     new Date(),
                     new Date(Date.now() + remainingMs),
@@ -70,16 +69,34 @@ export async function changeNameAction(formData: FormData) {
                 );
 
                 return {
-                    error: `You can change your name again in ${timeLeft}.`,
+                    error: `You can change your ${type} again in ${timeLeft}.`,
                 };
             }
         }
 
-        await prisma.user.update({
-            where: { id: userId },
+        if (type === "birthdate") {
+            value = Number(value);
+        } else if (type === "socialLinks") {
+            try {
+                const parsed = JSON.parse(value);
+                if (
+                    Array.isArray(parsed) &&
+                    parsed.every((v) => typeof v === "string")
+                ) {
+                    value = parsed;
+                } else {
+                    return { error: "Invalid social links format." };
+                }
+            } catch {
+                return { error: "Failed to parse social links." };
+            }
+        }
+
+        await prisma.profile.update({
+            where: { userId },
             data: {
-                name: normalizedName,
-                nameUpdatedAt: new Date(),
+                [type]: value,
+                [`${type}UpdatedAt`]: new Date(),
             },
         });
 
@@ -100,6 +117,7 @@ export async function changeNameAction(formData: FormData) {
             return { error: message };
         }
 
+        console.error("Error in changeProfileAction:", error);
         return { error: "Internal server error." };
     }
 }

@@ -5,35 +5,53 @@ import Loader from "@/components/general/Loader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/general/Skeleton";
+import { changeProfileAction } from "@/actions/changeProfileAction";
+import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
+import { toast } from "sonner";
+import { AlertCircle, ChevronDown } from "lucide-react";
 
-const ChangeBirthdate = () => {
+type Props = {
+    birthdate: number | null;
+    isLoading?: boolean;
+};
+
+const ChangeBirthdate = ({ birthdate, isLoading }: Props) => {
     const [isPending, setIsPending] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-
     const [year, setYear] = useState("");
     const [month, setMonth] = useState("");
     const [day, setDay] = useState("");
+    const [yearOpen, setYearOpen] = useState(false);
+    const [monthOpen, setMonthOpen] = useState(false);
+    const [dayOpen, setDayOpen] = useState(false);
+    const [status, setStatus] = useState<{
+        canChange: boolean;
+        timeLeft: string | null;
+    }>({ canChange: true, timeLeft: null });
+
+    useEffect(() => {
+        if (!isLoading && birthdate) {
+            const date = new Date(birthdate * 1000);
+            setDay(date.getDate().toString());
+            setMonth((date.getMonth() + 1).toString());
+            setYear(date.getFullYear().toString());
+
+            getProfileChangeStatus("birthdate").then(setStatus);
+        }
+    }, [isLoading, birthdate]);
 
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: currentYear - 1899 }, (_, i) =>
         (1900 + i).toString()
-    );
+    ).reverse();
     const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
     const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false); // simulate loading
-        }, 800);
-        return () => clearTimeout(timer);
-    }, []);
 
     async function handleSubmit(evt: React.FormEvent<HTMLFormElement>) {
         evt.preventDefault();
         setIsPending(true);
 
         if (!year || !month || !day) {
-            alert("Please select year, month, and day");
+            toast.error("Please select year, month, and day.");
             setIsPending(false);
             return;
         }
@@ -43,7 +61,18 @@ const ChangeBirthdate = () => {
         );
         const unixTimestamp = Math.floor(date.getTime() / 1000);
 
-        alert(`Unix timestamp: ${unixTimestamp}`);
+        const formData = new FormData(evt.currentTarget);
+        formData.set("birthdate", String(unixTimestamp));
+
+        const { error } = await changeProfileAction(formData, "birthdate");
+
+        if (error) {
+            toast.error(error);
+        } else {
+            toast.success("Birthdate changed successfully.");
+            getProfileChangeStatus("birthdate").then(setStatus);
+        }
+
         setIsPending(false);
     }
 
@@ -64,6 +93,7 @@ const ChangeBirthdate = () => {
                         <Skeleton className="h-4 w-8 rounded-md" />
                         <Skeleton className="h-10 w-[100px] rounded-md" />
                     </div>
+                    <Skeleton className="h-4 w-3/4 rounded-md" />
                 </div>
                 <Skeleton className="h-10 w-[160px] rounded-md" />
             </div>
@@ -77,66 +107,141 @@ const ChangeBirthdate = () => {
         >
             <h1 className="text-lg">Change Birthdate</h1>
 
-            <div className="flex flex-wrap gap-4">
-                <div className="flex flex-col gap-2">
-                    <Label htmlFor="year">Year</Label>
-                    <select
-                        id="year"
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        disabled={isPending}
-                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
+            <div className="flex flex-wrap gap-2 relative">
+                {/* YEAR */}
+                <div className="relative w-[100px] text-sm">
+                    <Label
+                        htmlFor="year"
+                        className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200"
                     >
-                        <option value="">Year</option>
-                        {years.map((y) => (
-                            <option key={y} value={y}>
-                                {y}
-                            </option>
-                        ))}
-                    </select>
+                        Year
+                    </Label>
+                    <button
+                        type="button"
+                        disabled={isPending || !status.canChange}
+                        onClick={() => {
+                            setYearOpen(!yearOpen);
+                            setMonthOpen(false);
+                            setDayOpen(false);
+                        }}
+                        onBlur={() => setTimeout(() => setYearOpen(false), 200)}
+                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 dark:text-white shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 w-full text-left flex justify-between items-center"
+                    >
+                        {year || "Year"}
+                        <ChevronDown className="w-4 h-4 opacity-60" />
+                    </button>
+                    {yearOpen && (
+                        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-300 bg-white dark:bg-gray-800 text-sm shadow-md">
+                            {years.map((y) => (
+                                <li
+                                    key={y}
+                                    onClick={() => {
+                                        setYear(y);
+                                        setYearOpen(false);
+                                    }}
+                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    {y}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <Label htmlFor="month">Month</Label>
-                    <select
-                        id="month"
-                        value={month}
-                        onChange={(e) => setMonth(e.target.value)}
-                        disabled={isPending}
-                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
+                {/* MONTH */}
+                <div className="relative w-[100px] text-sm">
+                    <Label
+                        htmlFor="month"
+                        className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200"
                     >
-                        <option value="">Month</option>
-                        {months.map((m) => (
-                            <option key={m} value={m}>
-                                {m}
-                            </option>
-                        ))}
-                    </select>
+                        Month
+                    </Label>
+                    <button
+                        type="button"
+                        disabled={isPending || !status.canChange}
+                        onClick={() => {
+                            setMonthOpen(!monthOpen);
+                            setYearOpen(false);
+                            setDayOpen(false);
+                        }}
+                        onBlur={() =>
+                            setTimeout(() => setMonthOpen(false), 200)
+                        }
+                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 dark:text-white shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 w-full text-left flex justify-between items-center"
+                    >
+                        {month || "Month"}
+                        <ChevronDown className="w-4 h-4 opacity-60" />
+                    </button>
+                    {monthOpen && (
+                        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-300 bg-white dark:bg-gray-800 text-sm shadow-md">
+                            {months.map((m) => (
+                                <li
+                                    key={m}
+                                    onClick={() => {
+                                        setMonth(m);
+                                        setMonthOpen(false);
+                                    }}
+                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    {m}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <Label htmlFor="day">Day</Label>
-                    <select
-                        id="day"
-                        value={day}
-                        onChange={(e) => setDay(e.target.value)}
-                        disabled={isPending}
-                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
+                {/* DAY */}
+                <div className="relative w-[100px] text-sm">
+                    <Label
+                        htmlFor="day"
+                        className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200"
                     >
-                        <option value="">Day</option>
-                        {days.map((d) => (
-                            <option key={d} value={d}>
-                                {d}
-                            </option>
-                        ))}
-                    </select>
+                        Day
+                    </Label>
+                    <button
+                        type="button"
+                        disabled={isPending || !status.canChange}
+                        onClick={() => {
+                            setDayOpen(!dayOpen);
+                            setMonthOpen(false);
+                            setYearOpen(false);
+                        }}
+                        onBlur={() => setTimeout(() => setDayOpen(false), 200)}
+                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 dark:text-white shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 w-full text-left flex justify-between items-center"
+                    >
+                        {day || "Day"}
+                        <ChevronDown className="w-4 h-4 opacity-60" />
+                    </button>
+                    {dayOpen && (
+                        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-300 bg-white dark:bg-gray-800 text-sm shadow-md">
+                            {days.map((d) => (
+                                <li
+                                    key={d}
+                                    onClick={() => {
+                                        setDay(d);
+                                        setDayOpen(false);
+                                    }}
+                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    {d}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
+
+                <p className="text-xs text-muted-foreground">
+                    <AlertCircle className="w-5 h-5 inline align-middle mr-1" />
+                    {status.canChange
+                        ? "You can change your birthdate now. You'll be limited to one change every 120 days."
+                        : `You can change your birthdate again in ${status.timeLeft}.`}
+                </p>
             </div>
 
             <Button
                 type="submit"
                 className="cursor-pointer"
-                disabled={isPending}
+                disabled={isPending || !status.canChange}
             >
                 {isPending && <Loader size={5} color="text-white" />}
                 Change Birthdate

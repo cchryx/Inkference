@@ -3,8 +3,10 @@
 import { auth, ErrorCode } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
-import { differenceInDays } from "date-fns";
+import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 import { prisma } from "@/lib/prisma";
+
+const USERNAME_COOLDOWN_MINUTES = 90 * 24 * 60; // 90 days
 
 export async function changeUsernameAction(formData: FormData) {
     const username = String(formData.get("username"));
@@ -36,12 +38,32 @@ export async function changeUsernameAction(formData: FormData) {
             ? new Date(user.usernameUpdatedAt)
             : null;
 
+        const cooldownMs = USERNAME_COOLDOWN_MINUTES * 60 * 1000;
+
         if (lastUpdated) {
-            const daysSinceUpdate = differenceInDays(new Date(), lastUpdated);
-            if (daysSinceUpdate < 90) {
-                const daysLeft = 90 - daysSinceUpdate;
+            const elapsedMs = differenceInMilliseconds(new Date(), lastUpdated);
+
+            if (elapsedMs < cooldownMs) {
+                const remainingMs = cooldownMs - elapsedMs;
+
+                const timeLeft = formatDistanceStrict(
+                    new Date(),
+                    new Date(Date.now() + remainingMs),
+                    {
+                        unit:
+                            remainingMs < 60 * 1000
+                                ? "second"
+                                : remainingMs < 60 * 60 * 1000
+                                ? "minute"
+                                : remainingMs < 24 * 60 * 60 * 1000
+                                ? "hour"
+                                : "day",
+                        roundingMethod: "ceil",
+                    }
+                );
+
                 return {
-                    error: `You can change your username again in ${daysLeft} day(s).`,
+                    error: `You can change your username again in ${timeLeft}.`,
                 };
             }
         }
@@ -68,9 +90,7 @@ export async function changeUsernameAction(formData: FormData) {
                 .join(" ");
             if (!/[.!?]$/.test(message)) message += ".";
 
-            return {
-                error: `${message}` || "An unknown error occurred.",
-            };
+            return { error: message };
         }
 
         return { error: "Internal server error." };
