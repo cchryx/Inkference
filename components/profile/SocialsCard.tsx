@@ -119,7 +119,7 @@ function formatSocialLabel(link: string) {
         }
 
         if (lower.includes("tiktok.com")) {
-            return parts.length > 0 ? `@${parts[0]}` : "TikTok";
+            return parts.length > 0 ? `${parts[0]}` : "TikTok";
         }
 
         if (lower.startsWith("mailto:") || lower.includes("gmail.com")) {
