@@ -56,6 +56,7 @@ export const auth = betterAuth({
             });
         },
     },
+
     emailVerification: {
         sendOnSignUp: true,
         expiresIn: 60 * 60, // 1 hour
@@ -111,7 +112,6 @@ export const auth = betterAuth({
             }
         }),
     },
-
     session: {
         expiresIn: 30 * 24 * 60 * 60, // 30 days
     },

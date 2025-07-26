@@ -15,18 +15,6 @@ export default async function Layout({ children }: LayoutProps) {
         headers: await headers(),
     });
 
-    if (session?.user.id) {
-        const existingProfile = await prisma.profile.findUnique({
-            where: { userId: session.user.id },
-        });
-
-        if (!existingProfile) {
-            await prisma.profile.create({
-                data: { userId: session.user.id },
-            });
-        }
-    }
-
     return (
         <div className="flex flex-col md:flex-row h-full">
             {session && (

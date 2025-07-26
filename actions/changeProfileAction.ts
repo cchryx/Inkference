@@ -92,9 +92,14 @@ export async function changeProfileAction(formData: FormData, type: string) {
             }
         }
 
-        await prisma.profile.update({
+        await prisma.profile.upsert({
             where: { userId },
-            data: {
+            create: {
+                [type]: value,
+                [`${type}UpdatedAt`]: new Date(),
+                userId,
+            },
+            update: {
                 [type]: value,
                 [`${type}UpdatedAt`]: new Date(),
             },
