@@ -9,17 +9,22 @@ import ChangeNameForm from "./forms/ChangeNameForm";
 import ChangeUsernameForm from "./forms/ChangeUsernameForm";
 import { toast } from "sonner";
 import ChangeSocialsForm from "./forms/ChangeSocialsForm";
+import ChangeProfileImageForm from "./forms/ChangeProfileImageForm";
+import ChangeBannerImageForm from "./forms/ChangeBannerImageForm";
 
 const Profile = () => {
     const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState<{ name: string; username: string } | null>(
-        null
-    );
+    const [user, setUser] = useState<{
+        name: string;
+        username: string;
+        image?: string | undefined;
+    } | null>(null);
     const [profile, setProfile] = useState<{
         bio: string;
         birthdate: number | null;
         address: string;
         socialLinks: string[];
+        bannerImage?: string | undefined;
     } | null>(null);
 
     useEffect(() => {
@@ -40,6 +45,14 @@ const Profile = () => {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <ChangeProfileImageForm
+                profileImage={user?.image ?? undefined}
+                isLoading={isLoading}
+            />
+            <ChangeBannerImageForm
+                bannerImage={profile?.bannerImage ?? undefined}
+                isLoading={isLoading}
+            />
             <ChangeNameForm name={user?.name ?? ""} isLoading={isLoading} />
             <ChangeUsernameForm
                 username={user?.username ?? ""}

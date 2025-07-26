@@ -18,15 +18,19 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  usernameUpdatedAt DateTime?
-  nameUpdatedAt     DateTime?
+  name          String
+  nameUpdatedAt DateTime?
 
-  name            String
-  email           String  @unique
-  emailVerified   Boolean
-  username        String? @unique
-  displayUsername String? @unique
-  image           String?
+  email          String    @unique
+  emailVerified  Boolean
+  emailUpdatedAt DateTime?
+
+  username          String?   @unique
+  displayUsername   String?   @unique
+  usernameUpdatedAt DateTime?
+
+  image          String?
+  imageUpdatedAt DateTime?
 
   sessions     Session[]
   accounts     Account[]

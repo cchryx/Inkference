@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
 
-import { changeNameAction } from "@/actions/changeNameAction";
 import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
 
 import Loader from "@/components/general/Loader";
@@ -12,6 +11,7 @@ import { Skeleton } from "@/components/general/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { changeUserAction } from "@/actions/changeUserAction";
 
 type Props = {
     name: string;
@@ -36,7 +36,7 @@ const ChangeNameForm = ({ name, isLoading }: Props) => {
         setIsPending(true);
 
         const formData = new FormData(evt.currentTarget);
-        const { error } = await changeNameAction(formData);
+        const { error } = await changeUserAction(formData, "name");
 
         if (error) {
             toast.error(error);

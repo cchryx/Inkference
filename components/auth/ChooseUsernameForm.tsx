@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import Loader from "../general/Loader";
-import { changeUsernameAction } from "@/actions/changeUsernameAction";
+import { changeUserAction } from "@/actions/changeUserAction";
 
 export const ChooseUsernameForm = () => {
     const router = useRouter();
@@ -21,7 +21,7 @@ export const ChooseUsernameForm = () => {
 
         const formData = new FormData(event.target as HTMLFormElement);
 
-        const { error } = await changeUsernameAction(formData);
+        const { error } = await changeUserAction(formData, "username");
 
         if (error) {
             toast.error(error);

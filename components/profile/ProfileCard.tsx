@@ -52,9 +52,12 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
         <div className="rounded-md overflow-hidden shadow-md w-full">
             <div className="relative">
                 <img
-                    src="https://wallup.net/wp-content/uploads/2018/03/19/546507-forest-environment-lake-mountains-digital_art-water-landscape-waterfall-clouds.jpg"
+                    src={
+                        tUser?.bannerImage ||
+                        "https://wallup.net/wp-content/uploads/2018/03/19/546507-forest-environment-lake-mountains-digital_art-water-landscape-waterfall-clouds.jpg"
+                    }
                     alt="Scenic landscape"
-                    className="w-full h-[200px] md:h-[300px] object-cover object-center"
+                    className="w-full h-[200px] md:h-[350px] object-cover object-center"
                 />
                 <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
                     {tUser?.image ? (

@@ -12,6 +12,7 @@ const COOLDOWN_MINUTES: Record<string, number> = {
     birthdate: 120 * 24 * 60,
     address: 7 * 24 * 60,
     socialLinks: 5,
+    bannerImage: 5,
 };
 
 export async function changeProfileAction(formData: FormData, type: string) {

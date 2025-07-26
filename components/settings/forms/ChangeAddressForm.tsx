@@ -170,7 +170,11 @@ export default function ChangeAddressForm({ address, isLoading }: Props) {
                 </p>
             </div>
 
-            <Button type="submit" disabled={isPending || !status.canChange}>
+            <Button
+                type="submit"
+                className="cursor-pointer"
+                disabled={isPending || !status.canChange}
+            >
                 {isPending && <Loader size={5} color="text-white" />}
                 Change Address
             </Button>

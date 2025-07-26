@@ -51,7 +51,7 @@ export default async function Page({
     return (
         <div className="flex flex-col overflow-x-scroll no-scrollbar lg:flex-row w-full py-10 px-[2%] lg:space-x-4 h-full">
             {/* Left/Main section */}
-            <div className="w-full lg:w-[80%] space-y-4">
+            <div className="w-full lg:w-[75%] space-y-4">
                 <ProfileCard tUser={tUser} />
 
                 {/* Social links for small/medium screens */}
@@ -70,7 +70,7 @@ export default async function Page({
             </div>
 
             {/* Right sidebar */}
-            <div className="hidden lg:block lg:w-[20%] space-y-4">
+            <div className="hidden lg:block lg:w-[25%] space-y-4">
                 <SocialsCard tUser={tUser} />
                 <div className="bg-gray-200 p-2 font-medium shadow-md rounded-md">
                     Recommended accounts here.

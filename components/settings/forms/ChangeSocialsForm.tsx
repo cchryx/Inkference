@@ -189,6 +189,7 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
                         />
                         <Button
                             type="button"
+                            className="cursor-pointer"
                             onClick={handleAddLink}
                             disabled={
                                 !isLinkValid || isPending || !status.canChange
@@ -202,7 +203,7 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
                     <Button
                         type="button"
                         onClick={() => setShowInput(true)}
-                        className="w-fit"
+                        className="w-fit cursor-pointer"
                         disabled={isPending || !status.canChange}
                     >
                         + Add Link

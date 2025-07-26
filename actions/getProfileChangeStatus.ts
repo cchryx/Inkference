@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 
-type UserChangeType = "name" | "username";
+type UserChangeType = "name" | "username" | "image";
 type ProfileChangeType =
     | "bio"
     | "birthdate"
@@ -19,12 +19,13 @@ type ChangeType = UserChangeType | ProfileChangeType;
 const LIMITS: Record<ChangeType, number> = {
     name: 30 * 24 * 60,
     username: 90 * 24 * 60,
+    image: 5,
     bio: 5,
     birthdate: 120 * 24 * 60,
     address: 7 * 24 * 60,
-    bannerImage: 1 * 24 * 60,
     phoneNumber: 1 * 24 * 60,
     socialLinks: 5,
+    bannerImage: 5,
 };
 
 export async function getProfileChangeStatus(type: ChangeType) {
@@ -41,7 +42,7 @@ export async function getProfileChangeStatus(type: ChangeType) {
 
     let lastUpdated: Date | null = null;
 
-    if (type === "name" || type === "username") {
+    if (type === "name" || type === "username" || type === "image") {
         const user = (await prisma.user.findUnique({
             where: { id: userId },
             select: { [updatedAtField]: true },

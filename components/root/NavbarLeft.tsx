@@ -137,6 +137,7 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                                             ? `/profile/${user.username}`
                                             : "/"
                                     }`}
+                                    onClick={() => setShowUserMenu(false)}
                                     className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer"
                                 >
                                     <User className="w-4 h-4" />
@@ -146,6 +147,7 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                             <li>
                                 <Link
                                     href="/settings"
+                                    onClick={() => setShowUserMenu(false)}
                                     className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer"
                                 >
                                     <Settings className="w-4 h-4" />
@@ -153,7 +155,10 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                                 </Link>
                             </li>
                             <li>
-                                <SignoutButton className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer text-destructive">
+                                <SignoutButton
+                                    onClick={() => setShowUserMenu(false)}
+                                    className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer text-destructive"
+                                >
                                     <LogOut className="w-4 h-4" />
                                     <span>Logout</span>
                                 </SignoutButton>

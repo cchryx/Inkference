@@ -11,23 +11,24 @@ export async function getProfileData(username?: string) {
     });
 
     let targetUserId: string;
-    let userInfo: { name: string; username: string };
+    let userInfo: { name: string; username: string; image?: string };
 
     if (username) {
         const user = await prisma.user.findUnique({
             where: { username },
-            select: { id: true, name: true, username: true },
+            select: { id: true, name: true, username: true, image: true },
         });
 
         if (!user) {
             // Return with default empty fields instead of null
             return {
-                user: { name: "", username: "" },
+                user: { name: "", username: "", image: undefined },
                 profile: {
                     bio: "",
                     birthdate: null,
                     address: "",
                     socialLinks: [],
+                    bannerImage: undefined,
                 },
             };
         }
@@ -36,6 +37,7 @@ export async function getProfileData(username?: string) {
         userInfo = {
             name: user.name ?? "",
             username: user.username ?? "",
+            image: user.image ?? undefined,
         };
     } else {
         if (!session) redirect("/auth/signin");
@@ -44,6 +46,7 @@ export async function getProfileData(username?: string) {
         userInfo = {
             name: session.user.name ?? "",
             username: session.user.username ?? "",
+            image: session.user.image ?? undefined,
         };
     }
 
@@ -54,6 +57,7 @@ export async function getProfileData(username?: string) {
             birthdate: true,
             address: true,
             socialLinks: true,
+            bannerImage: true,
         },
     });
 
@@ -61,12 +65,14 @@ export async function getProfileData(username?: string) {
         user: {
             name: userInfo.name,
             username: userInfo.username,
+            image: userInfo.image,
         },
         profile: {
             bio: profile?.bio ?? "",
             birthdate: profile?.birthdate ?? null,
             address: profile?.address ?? "",
             socialLinks: profile?.socialLinks ?? [],
+            bannerImage: profile?.bannerImage ?? undefined,
         },
     };
 }

@@ -9,14 +9,14 @@ import Loader from "@/components/general/Loader";
 import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { changeUserAction } from "@/actions/changeUserAction";
+import { changeProfileAction } from "@/actions/changeProfileAction";
 
 type Props = {
-    username: string;
+    bannerImage: string | undefined;
     isLoading?: boolean;
 };
 
-const ChangeUsernameForm = ({ username, isLoading }: Props) => {
+const ChangeBannerImageForm = ({ bannerImage, isLoading }: Props) => {
     const [isPending, setIsPending] = useState(false);
     const [status, setStatus] = useState<{
         canChange: boolean;
@@ -25,7 +25,7 @@ const ChangeUsernameForm = ({ username, isLoading }: Props) => {
 
     useEffect(() => {
         if (!isLoading) {
-            getProfileChangeStatus("username").then(setStatus);
+            getProfileChangeStatus("bannerImage").then(setStatus);
         }
     }, [isLoading]);
 
@@ -34,13 +34,13 @@ const ChangeUsernameForm = ({ username, isLoading }: Props) => {
         setIsPending(true);
 
         const formData = new FormData(evt.currentTarget);
-        const { error } = await changeUserAction(formData, "username");
+        const { error } = await changeProfileAction(formData, "bannerImage");
 
         if (error) {
             toast.error(error);
         } else {
-            toast.success("Username changed successfully.");
-            getProfileChangeStatus("username").then(setStatus);
+            toast.success("Banner image changed successfully.");
+            getProfileChangeStatus("bannerImage").then(setStatus);
         }
 
         setIsPending(false);
@@ -49,15 +49,15 @@ const ChangeUsernameForm = ({ username, isLoading }: Props) => {
     if (isLoading) {
         return (
             <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
-                <Skeleton className="h-6 w-32 rounded-md" /> {/* Title */}
+                <Skeleton className="h-6 w-40 rounded-md" />
                 <div className="space-y-2">
-                    <Skeleton className="h-4 w-20 rounded-md" /> {/* Label */}
-                    <Skeleton className="h-10 w-full rounded-md" />{" "}
-                    {/* Input */}
-                    <Skeleton className="h-4 w-3/4 rounded-md" />{" "}
-                    {/* Info text */}
+                    {/* Banner Skeleton */}
+                    <Skeleton className="h-40 w-full rounded-sm shrink-0" />
+                    <Skeleton className="h-4 w-24 rounded-md" />
+                    <Skeleton className="h-10 w-full rounded-md" />
+                    <Skeleton className="h-4 w-3/4 rounded-md" />
                 </div>
-                <Skeleton className="h-10 w-40 rounded-md" /> {/* Button */}
+                <Skeleton className="h-10 w-40 rounded-md" />
             </div>
         );
     }
@@ -67,32 +67,38 @@ const ChangeUsernameForm = ({ username, isLoading }: Props) => {
             className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
             onSubmit={handleSubmit}
         >
-            <h1 className="text-lg">Change Username</h1>
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="username">New Username</Label>
+            <h1 className="text-lg">Change Banner Image</h1>
+
+            <div className="flex flex-col gap-2 items-start">
+                <img
+                    src={bannerImage}
+                    className="h-40 w-full rounded-sm object-cover border border-gray-300 dark:border-gray-600"
+                />
+                <Label htmlFor="bannerImage">New Banner Image URL</Label>
                 <Input
-                    id="username"
-                    name="username"
-                    defaultValue={username}
+                    id="bannerImage"
+                    name="bannerImage"
+                    defaultValue={bannerImage}
                     disabled={isPending || !status.canChange}
                 />
                 <p className="text-xs text-muted-foreground">
                     <AlertCircle className="w-5 h-5 inline align-middle mr-1" />
                     {status.canChange
-                        ? "You can change your username now. You’ll be limited to one change every 90 days."
-                        : `You can change your username again in ${status.timeLeft}.`}
+                        ? "You can change your banner image now. Changes are limited every 5 minutes."
+                        : `You can change your banner image again in ${status.timeLeft}.`}
                 </p>
             </div>
+
             <Button
                 type="submit"
                 className="cursor-pointer"
                 disabled={isPending || !status.canChange}
             >
                 {isPending && <Loader size={5} color="text-white" />}
-                Change Username
+                Change Banner Image
             </Button>
         </form>
     );
 };
 
-export default ChangeUsernameForm;
+export default ChangeBannerImageForm;
