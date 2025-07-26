@@ -26,6 +26,7 @@ import {
     FaRedditAlien,
     FaSnapchatGhost,
     FaSpotify,
+    FaTiktok,
     FaTwitter,
     FaWeixin,
 } from "react-icons/fa";
@@ -112,8 +113,6 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
             return <FaDiscord className="w-4 h-4 text-indigo-500 shrink-0" />;
         if (lower.includes("spotify.com"))
             return <FaSpotify className="w-4 h-4 text-green-500 shrink-0" />;
-        if (lower.includes("wechat.com") || lower.includes("weixin.qq.com"))
-            return <FaWeixin className="w-4 h-4 text-green-600 shrink-0" />;
         if (lower.includes("reddit.com"))
             return (
                 <FaRedditAlien className="w-4 h-4 text-orange-500 shrink-0" />
@@ -124,6 +123,8 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
             );
         if (lower.includes("pinterest.com"))
             return <FaPinterestP className="w-4 h-4 text-red-500 shrink-0" />;
+        if (lower.includes("tiktok.com"))
+            return <FaTiktok className="w-4 h-4 text-black shrink-0" />;
 
         return <Link2 className="w-4 h-4 text-muted-foreground shrink-0" />;
     }

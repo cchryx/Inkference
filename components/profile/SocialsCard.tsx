@@ -15,10 +15,10 @@ import {
     FaSnapchatGhost,
     FaDiscord,
     FaSpotify,
-    FaWeixin,
     FaRedditAlien,
     FaTwitter,
     FaPinterestP,
+    FaTiktok, // TikTok icon added
 } from "react-icons/fa";
 
 function getSocialIcon(link: string) {
@@ -44,8 +44,6 @@ function getSocialIcon(link: string) {
         return <FaDiscord className="w-4 h-4 text-indigo-500 shrink-0" />;
     if (lower.includes("spotify.com"))
         return <FaSpotify className="w-4 h-4 text-green-500 shrink-0" />;
-    if (lower.includes("wechat.com") || lower.includes("weixin.qq.com"))
-        return <FaWeixin className="w-4 h-4 text-green-600 shrink-0" />;
     if (lower.includes("reddit.com"))
         return <FaRedditAlien className="w-4 h-4 text-orange-500 shrink-0" />;
     if (lower.includes("twitter.com") || lower.includes("x.com"))
@@ -54,6 +52,8 @@ function getSocialIcon(link: string) {
         );
     if (lower.includes("pinterest.com"))
         return <FaPinterestP className="w-4 h-4 text-red-500 shrink-0" />;
+    if (lower.includes("tiktok.com"))
+        return <FaTiktok className="w-4 h-4 text-black shrink-0" />;
 
     return <Link2 className="w-4 h-4 text-muted-foreground shrink-0" />;
 }
@@ -81,7 +81,6 @@ function formatSocialLabel(link: string) {
         }
 
         if (lower.includes("youtube.com")) {
-            // youtube.com/@username or youtube.com/channel/ID
             if (parts[0]?.startsWith("@")) return parts[0];
             return parts.length > 0 ? parts[parts.length - 1] : "YouTube";
         }
@@ -119,12 +118,12 @@ function formatSocialLabel(link: string) {
             return parts.length > 0 ? `@${parts[0]}` : "Pinterest";
         }
 
-        if (lower.startsWith("mailto:") || lower.includes("gmail.com")) {
-            return url.href.replace("mailto:", "");
+        if (lower.includes("tiktok.com")) {
+            return parts.length > 0 ? `@${parts[0]}` : "TikTok";
         }
 
-        if (lower.includes("wechat.com") || lower.includes("weixin.qq.com")) {
-            return "WeChat";
+        if (lower.startsWith("mailto:") || lower.includes("gmail.com")) {
+            return url.href.replace("mailto:", "");
         }
 
         return url.hostname.replace("www.", "");
