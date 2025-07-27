@@ -43,8 +43,9 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                         <Skeleton className="h-4 w-9/10 rounded-md" />
                     </div>
                     <div className="flex flex-col gap-3 mt-6 md:mt-0 md:items-end">
-                        <Skeleton className="h-8 w-24 rounded-md" />
-                        <Skeleton className="h-8 w-24 rounded-md" />
+                        <Skeleton className="h-4 w-24 rounded-md" />
+                        <Skeleton className="h-4 w-18 rounded-md" />
+                        <Skeleton className="h-4 w-20 rounded-md" />
                     </div>
                 </div>
             </div>
@@ -93,18 +94,18 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                         {tUser.bio}
                     </div>
                 </div>
-                <div className="flex space-x-3 md:space-x-0 md:space-y-2 justify-center md:justify-start md:flex-col md:items-end">
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start md:flex-col md:items-end">
                     <button
                         onClick={handleShare}
-                        className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition"
+                        className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
                     >
                         <Share2 className="w-4 h-4" />
                         Share Profile
                     </button>
-                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition">
+                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
                         Follow
                     </div>
-                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition">
+                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
                         Add Friend
                     </div>
                 </div>
