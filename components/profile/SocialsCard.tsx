@@ -145,66 +145,71 @@ export const SocialsCard = ({ tUser }: { tUser: any }) => {
     }, []);
 
     if (isLoading) {
+        const loadingWidths = ["w-4/5", "w-3/4", "w-2/3", "w-9/10", "w-3/5"];
+
         return (
-            <div className="bg-gray-200 p-2 shadow-md rounded-md space-y-2">
-                {[...Array(4)].map((_, i) => (
-                    <div key={i} className="flex flex-col gap-1">
-                        <div className="flex items-center space-x-1">
-                            <Skeleton className="w-6 h-6 rounded-md" />
-                            <Skeleton className="h-6 w-full rounded-md" />
+            <div className="bg-gray-200 h-[15rem] overflow-hidden p-2 shadow-md rounded-md">
+                <div className="space-y-2 overflow-y-scroll h-full pr-1">
+                    {[...Array(socialLinks.length || 5)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="flex items-center space-x-2 px-2 py-1 bg-gray-300/30 rounded-sm"
+                        >
+                            <Skeleton className="w-4 h-4 rounded-sm" />
+                            <Skeleton
+                                className={`h-4 rounded-sm ${
+                                    loadingWidths[i % loadingWidths.length]
+                                }`}
+                            />
                         </div>
-                        <div className="flex items-center space-x-1">
-                            <Skeleton className="w-6 h-6 rounded-md" />
-                            <Skeleton className="h-6 w-[80%] rounded-md" />
-                        </div>
-                        <div className="flex items-center space-x-1">
-                            <Skeleton className="w-6 h-6 rounded-md" />
-                            <Skeleton className="h-6 w-[90%] rounded-md" />
-                        </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-gray-200 p-2 font-medium shadow-md rounded-md">
-            {/* Address */}
-            {address && (
-                <a
-                    href={`https://www.google.com/maps/search/${encodeURIComponent(
-                        address
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
-                >
-                    <MapPin className="w-4 h-4 shrink-0" />
-                    <span className="truncate flex-1 text-sm">{address}</span>
-                </a>
-            )}
+        <div className="bg-gray-200 h-[15rem] p-2 font-medium shadow-md rounded-md">
+            <div className="overflow-y-scroll h-full pr-1">
+                {/* Address */}
+                {address && (
+                    <a
+                        href={`https://www.google.com/maps/search/${encodeURIComponent(
+                            address
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
+                    >
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span className="truncate flex-1 text-sm">
+                            {address}
+                        </span>
+                    </a>
+                )}
 
-            {/* Social Links */}
-            {socialLinks.map((link: string, index: number) => (
-                <a
-                    key={index}
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
-                >
-                    {getSocialIcon(link)}
-                    <span className="truncate flex-1 text-sm">
-                        {formatSocialLabel(link)}
-                    </span>
-                </a>
-            ))}
+                {/* Social Links */}
+                {socialLinks.map((link: string, index: number) => (
+                    <a
+                        key={index}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
+                    >
+                        {getSocialIcon(link)}
+                        <span className="truncate flex-1 text-sm">
+                            {formatSocialLabel(link)}
+                        </span>
+                    </a>
+                ))}
 
-            {socialLinks.length === 0 && !address && (
-                <p className="text-sm text-gray-500">
-                    No location or social links provided
-                </p>
-            )}
+                {socialLinks.length === 0 && !address && (
+                    <p className="text-sm text-gray-500">
+                        No location or social links provided
+                    </p>
+                )}
+            </div>
         </div>
     );
 };

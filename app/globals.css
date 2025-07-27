@@ -122,37 +122,34 @@
 }
 
 @layer utilities {
-    /* Remove scrollbar buttons globally */
     ::-webkit-scrollbar-button {
         display: none;
         width: 0;
         height: 0;
     }
 
-    /* Hide scrollbar track */
     ::-webkit-scrollbar-track {
         background: transparent;
-        box-shadow: none;
         border: none;
+        box-shadow: none;
     }
 
-    /* Style only the thumb */
     ::-webkit-scrollbar-thumb {
-        background-color: rgba(136, 136, 136, 0.6); /* gray thumb */
+        background-color: rgba(136, 136, 136, 0.6);
         border-radius: 6px;
     }
 
-    /* Global horizontal scrollbar size */
     ::-webkit-scrollbar {
-        height: 6px; /* horizontal */
-        width: 0px; /* optional: no vertical scrollbar width unless you want it */
+        width: 6px;
+        height: 6px;
+        background: transparent;
     }
 
-    /* Optional utility classes */
     .no-scrollbar {
-        -ms-overflow-style: none; /* IE & Edge */
-        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
+
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }

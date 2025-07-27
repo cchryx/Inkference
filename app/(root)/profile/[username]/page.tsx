@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import ProfileContent from "@/components/profile/ProfileContent";
+import RecommendedAccountsCard from "@/components/profile/RecommendedAccountsCard";
 
 export default async function Page({
     params,
@@ -80,33 +81,31 @@ export default async function Page({
                 <div className="hidden lg:flex flex-col w-[25%] space-y-4">
                     <SocialsCard tUser={tUser} />
 
-                    <div className="flex-1 flex">
-                        {session ? (
-                            <div className="bg-gray-200 p-2 font-medium shadow-md rounded-md w-full">
-                                Recommended accounts here.
-                            </div>
-                        ) : (
-                            <div className="bg-gray-200 p-4 shadow-md rounded-md flex flex-col items-start gap-3 w-full">
-                                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                                    We've detected that you are not signed in.
-                                    Sign in to access your full profile
-                                    experience. You’ll be able to showcase your
-                                    projects, add your work experiences and
-                                    education, list your skills, and share
-                                    photos and posts with the community.
-                                </p>
+                    {session ? (
+                        <RecommendedAccountsCard />
+                    ) : (
+                        <div className="bg-gray-200 p-4 shadow-md rounded-md flex flex-col items-start gap-3 w-full">
+                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                                We've detected that you are not signed in. Sign
+                                in to access your full profile experience.
+                                You’ll be able to showcase your projects, add
+                                your work experiences and education, list your
+                                skills, and share photos and posts with the
+                                community.
+                            </p>
 
-                                <div className="flex gap-2">
-                                    <Button asChild>
-                                        <Link href="/auth/signin">Sign In</Link>
-                                    </Button>
-                                    <Button asChild>
-                                        <Link href="/auth/signup">Sign Up</Link>
-                                    </Button>
-                                </div>
+                            <div className="flex gap-2">
+                                <Button asChild>
+                                    <Link href="/auth/signin">Sign In</Link>
+                                </Button>
+                                <Button asChild>
+                                    <Link href="/auth/signup">Sign Up</Link>
+                                </Button>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
+
+                    <div className="flex-1 bg-gray-200 p-4 shadow-md rounded-md bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center" />
                 </div>
             </div>
 

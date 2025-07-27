@@ -21,7 +21,7 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
 
     if (isLoading) {
         return (
-            <div className="rounded-md overflow-hidden shadow-md w-full bg-[#e4e6eb]">
+            <div className="rounded-md overflow-hidden h-full shadow-md w-full bg-[#e4e6eb]">
                 {/* Cover banner */}
                 <div className="relative">
                     <Skeleton className="w-full h-[200px] md:h-[350px]" />
@@ -53,7 +53,7 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
     }
 
     return (
-        <div className="rounded-md overflow-hidden shadow-md w-full">
+        <div className="rounded-md overflow-hidden shadow-md w-full h-full">
             <div className="relative">
                 {tUser?.bannerImage ? (
                     <img
@@ -76,7 +76,7 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                 </div>
             </div>
 
-            <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10">
+            <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10 h-full">
                 <div className="flex-1 space-y-2">
                     <div>
                         <div className="text-[25px] font-bold">
