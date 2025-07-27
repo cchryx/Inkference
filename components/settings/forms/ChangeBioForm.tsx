@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
 
-const MAX_LINES = 8;
+const MAX_LINES = 12;
 const MAX_CHARS = 800;
 
 type ChangeBioFormProps = {

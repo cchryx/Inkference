@@ -10,6 +10,7 @@ import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
 import { AlertCircle, User } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
 import { changeUserAction } from "@/actions/changeUserAction";
+import { set } from "date-fns";
 
 type Props = {
     profileImage: string | undefined;
@@ -26,6 +27,7 @@ const ChangeProfileImageForm = ({ profileImage, isLoading }: Props) => {
 
     useEffect(() => {
         if (!isLoading) {
+            setImagePreview(profileImage || "");
             getProfileChangeStatus("image").then(setStatus);
         }
     }, [isLoading]);
