@@ -18,7 +18,6 @@ import {
     Twitch,
 } from "lucide-react";
 import { changeProfileAction } from "@/actions/changeProfileAction";
-import { set } from "date-fns";
 import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
 import {
     FaDiscord,
@@ -27,9 +26,9 @@ import {
     FaSnapchatGhost,
     FaSpotify,
     FaTiktok,
-    FaTwitter,
-    FaWeixin,
 } from "react-icons/fa";
+
+import { FaXTwitter } from "react-icons/fa6";
 
 type Props = {
     socialLinks: string[] | null;
@@ -119,7 +118,7 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
             );
         if (lower.includes("twitter.com") || lower.includes("x.com"))
             return (
-                <FaTwitter className="w-4 h-4 text-black dark:text-white shrink-0" />
+                <FaXTwitter className="w-4 h-4 text-black dark:text-white shrink-0" />
             );
         if (lower.includes("pinterest.com"))
             return <FaPinterestP className="w-4 h-4 text-red-500 shrink-0" />;
@@ -189,6 +188,7 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
                         />
                         <Button
                             type="button"
+                            variant="outline"
                             className="cursor-pointer"
                             onClick={handleAddLink}
                             disabled={
@@ -202,8 +202,9 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
                 {!showInput && !maxLinksReached && (
                     <Button
                         type="button"
+                        variant="outline"
                         onClick={() => setShowInput(true)}
-                        className="w-fit cursor-pointer"
+                        className="w-fit text-xs px-2 py-1 h-auto cursor-pointer"
                         disabled={isPending || !status.canChange}
                     >
                         + Add Link
@@ -218,7 +219,7 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
                 <p className="text-xs text-muted-foreground">
                     <AlertCircle className="w-5 h-5 inline align-middle mr-1" />
                     {MAX_LINKS - links.length > 0
-                        ? `You can add up to 6 links. ${
+                        ? `You can add up to ${MAX_LINKS} links. ${
                               MAX_LINKS - links.length
                           } left.
 `

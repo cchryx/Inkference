@@ -12,7 +12,7 @@ import ChangeSocialsForm from "./forms/ChangeSocialsForm";
 import ChangeProfileImageForm from "./forms/ChangeProfileImageForm";
 import ChangeBannerImageForm from "./forms/ChangeBannerImageForm";
 
-const Profile = () => {
+const User = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState<{
         name: string;
@@ -45,28 +45,17 @@ const Profile = () => {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <ChangeProfileImageForm
-                profileImage={user?.image ?? undefined}
+            <ChangeNameForm name={user?.name ?? ""} isLoading={isLoading} />
+            <ChangeUsernameForm
+                username={user?.username ?? ""}
                 isLoading={isLoading}
             />
-            <ChangeBannerImageForm
-                bannerImage={profile?.bannerImage ?? undefined}
-                isLoading={isLoading}
-            />
-            <ChangeBioForm
-                biography={profile?.bio ?? ""}
-                isLoading={isLoading}
-            />
-            <ChangeSocialsForm
-                socialLinks={profile?.socialLinks ?? []}
-                isLoading={isLoading}
-            />
-            <ChangeAddressForm
-                address={profile?.address ?? ""}
+            <ChangeBirthdate
+                birthdate={profile?.birthdate ?? null}
                 isLoading={isLoading}
             />
         </div>
     );
 };
 
-export default Profile;
+export default User;

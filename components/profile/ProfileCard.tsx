@@ -24,7 +24,7 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
             <div className="rounded-md overflow-hidden shadow-md w-full bg-[#e4e6eb]">
                 {/* Cover banner */}
                 <div className="relative">
-                    <Skeleton className="w-full h-[200px] md:h-[300px]" />
+                    <Skeleton className="w-full h-[200px] md:h-[350px]" />
                     <div className="absolute left-[3%] -bottom-12 w-24 h-24 md:w-40 md:h-40 rounded-full border-4 border-white">
                         <Skeleton className="w-full h-full rounded-full" />
                     </div>
@@ -37,7 +37,10 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                             <Skeleton className="h-4 w-20 rounded-md" />
                             <Skeleton className="h-4 w-20 rounded-md" />
                         </div>
-                        <Skeleton className="h-4 w-3/4 rounded-md" />
+                        <Skeleton className="h-4 w-full rounded-md" />
+                        <Skeleton className="h-4 w-5/6 rounded-md" />
+                        <Skeleton className="h-4 w-4/5 rounded-md" />
+                        <Skeleton className="h-4 w-9/10 rounded-md" />
                     </div>
                     <div className="flex flex-col gap-3 mt-6 md:mt-0 md:items-end">
                         <Skeleton className="h-8 w-24 rounded-md" />
@@ -51,14 +54,15 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
     return (
         <div className="rounded-md overflow-hidden shadow-md w-full">
             <div className="relative">
-                <img
-                    src={
-                        tUser?.bannerImage ||
-                        "https://wallup.net/wp-content/uploads/2018/03/19/546507-forest-environment-lake-mountains-digital_art-water-landscape-waterfall-clouds.jpg"
-                    }
-                    alt="Scenic landscape"
-                    className="w-full h-[200px] md:h-[350px] object-cover object-center"
-                />
+                {tUser?.bannerImage ? (
+                    <img
+                        src={tUser.bannerImage}
+                        alt="User banner"
+                        className="w-full h-[200px] md:h-[350px] object-cover object-center"
+                    />
+                ) : (
+                    <div className="w-full h-[200px] md:h-[350px] bg-gray-800" />
+                )}
                 <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
                     {tUser?.image ? (
                         <img

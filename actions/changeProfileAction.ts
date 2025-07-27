@@ -16,13 +16,18 @@ const COOLDOWN_MINUTES: Record<string, number> = {
 };
 
 export async function changeProfileAction(formData: FormData, type: string) {
-    let value: any = String(formData.get(type));
-    if (!value)
+    let raw = formData.get(type);
+    let value: any = raw !== null ? String(raw).trim() : "";
+
+    const nullableFields = ["bannerImage", "bio", "location"];
+
+    if (!value && !nullableFields.includes(type)) {
         return {
             error: `${
                 type.charAt(0).toUpperCase() + type.slice(1)
             } is required.`,
         };
+    }
 
     try {
         const session = await auth.api.getSession({
@@ -48,7 +53,12 @@ export async function changeProfileAction(formData: FormData, type: string) {
         if (lastUpdated) {
             const elapsedMs = differenceInMilliseconds(
                 new Date(),
-                new Date(lastUpdated)
+                lastUpdated instanceof Date
+                    ? lastUpdated
+                    : typeof lastUpdated === "string" ||
+                      typeof lastUpdated === "number"
+                    ? new Date(lastUpdated)
+                    : new Date()
             );
 
             if (elapsedMs < cooldownMs) {
@@ -96,12 +106,12 @@ export async function changeProfileAction(formData: FormData, type: string) {
         await prisma.profile.upsert({
             where: { userId },
             create: {
-                [type]: value,
+                [type]: value || null,
                 [`${type}UpdatedAt`]: new Date(),
                 userId,
             },
             update: {
-                [type]: value,
+                [type]: value || null,
                 [`${type}UpdatedAt`]: new Date(),
             },
         });
@@ -123,7 +133,6 @@ export async function changeProfileAction(formData: FormData, type: string) {
             return { error: message };
         }
 
-        console.error("Error in changeProfileAction:", error);
         return { error: "Internal server error." };
     }
 }

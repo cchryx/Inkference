@@ -15,13 +15,18 @@ const COOLDOWN_MINUTES: Record<string, number> = {
 };
 
 export async function changeUserAction(formData: FormData, type: string) {
-    let value: any = String(formData.get(type));
-    if (!value)
+    let raw = formData.get(type);
+    let value: any = raw !== null ? String(raw).trim() : "";
+
+    const nullableFields = ["image"];
+
+    if (!value && !nullableFields.includes(type)) {
         return {
             error: `${
                 type.charAt(0).toUpperCase() + type.slice(1)
             } is required.`,
         };
+    }
 
     try {
         const session = await auth.api.getSession({
@@ -100,7 +105,7 @@ export async function changeUserAction(formData: FormData, type: string) {
         await prisma.user.update({
             where: { id: userId },
             data: {
-                [type]: value,
+                [type]: value || null,
                 [`${type}UpdatedAt`]: new Date(),
                 id: userId,
             },
@@ -123,7 +128,6 @@ export async function changeUserAction(formData: FormData, type: string) {
             return { error: message };
         }
 
-        console.error("Error in changeUserAction:", error);
         return { error: "Internal server error." };
     }
 }

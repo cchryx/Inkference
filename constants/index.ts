@@ -1,12 +1,19 @@
 import {
+    Aperture,
     Bell,
     BookUser,
+    Brain,
+    BriefcaseBusiness,
     Compass,
     Contact,
+    Folders,
+    GraduationCap,
     Home,
     KeySquare,
     Library,
+    Send,
     User,
+    UserCircle,
 } from "lucide-react";
 
 export const NAVBARLEFT_LINKS = [
@@ -34,9 +41,14 @@ export const NAVBARLEFT_LINKS = [
 
 export const SETTINGS_LINKS = [
     {
-        icon: User,
+        icon: UserCircle,
         id: "profile",
         label: "Profile",
+    },
+    {
+        icon: User,
+        id: "user",
+        label: "User",
     },
     {
         icon: KeySquare,
@@ -52,5 +64,38 @@ export const SETTINGS_LINKS = [
         icon: Bell,
         id: "notifications",
         label: "Notifications",
+    },
+];
+
+export const PROFILE_LINKS = [
+    {
+        icon: Folders,
+        id: "projects",
+        label: "Projects",
+    },
+    {
+        icon: BriefcaseBusiness,
+        id: "experiences",
+        label: "Experiences",
+    },
+    {
+        icon: GraduationCap,
+        id: "education",
+        label: "Education",
+    },
+    {
+        icon: Brain,
+        id: "skills",
+        label: "Skills",
+    },
+    {
+        icon: Aperture,
+        id: "photos",
+        label: "Photos",
+    },
+    {
+        icon: Send,
+        id: "posts",
+        label: "Posts",
     },
 ];

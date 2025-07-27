@@ -10,16 +10,19 @@ import {
     Twitch,
     MapPin,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import {
     FaSnapchatGhost,
     FaDiscord,
     FaSpotify,
     FaRedditAlien,
-    FaTwitter,
     FaPinterestP,
-    FaTiktok, // TikTok icon added
+    FaTiktok,
 } from "react-icons/fa";
+
+import { FaXTwitter } from "react-icons/fa6";
+import { Skeleton } from "../general/Skeleton";
 
 function getSocialIcon(link: string) {
     const lower = link.toLowerCase();
@@ -48,7 +51,7 @@ function getSocialIcon(link: string) {
         return <FaRedditAlien className="w-4 h-4 text-orange-500 shrink-0" />;
     if (lower.includes("twitter.com") || lower.includes("x.com"))
         return (
-            <FaTwitter className="w-4 h-4 text-black dark:text-white shrink-0" />
+            <FaXTwitter className="w-4 h-4 text-black dark:text-white shrink-0" />
         );
     if (lower.includes("pinterest.com"))
         return <FaPinterestP className="w-4 h-4 text-red-500 shrink-0" />;
@@ -134,6 +137,35 @@ function formatSocialLabel(link: string) {
 
 export const SocialsCard = ({ tUser }: { tUser: any }) => {
     const { address, socialLinks = [] } = tUser;
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 800);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="bg-gray-200 p-2 shadow-md rounded-md space-y-2">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex flex-col gap-1">
+                        <div className="flex items-center space-x-1">
+                            <Skeleton className="w-6 h-6 rounded-md" />
+                            <Skeleton className="h-6 w-full rounded-md" />
+                        </div>
+                        <div className="flex items-center space-x-1">
+                            <Skeleton className="w-6 h-6 rounded-md" />
+                            <Skeleton className="h-6 w-[80%] rounded-md" />
+                        </div>
+                        <div className="flex items-center space-x-1">
+                            <Skeleton className="w-6 h-6 rounded-md" />
+                            <Skeleton className="h-6 w-[90%] rounded-md" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
 
     return (
         <div className="bg-gray-200 p-2 font-medium shadow-md rounded-md">
@@ -153,9 +185,9 @@ export const SocialsCard = ({ tUser }: { tUser: any }) => {
             )}
 
             {/* Social Links */}
-            {socialLinks.map((link: string) => (
+            {socialLinks.map((link: string, index: number) => (
                 <a
-                    key={link}
+                    key={index}
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
