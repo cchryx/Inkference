@@ -1,7 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import { Heart, Eye, CalendarDays } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Project = {
-    bannerUrl: string;
+    bannerUrl?: string;
+    iconUrl?: string;
     name: string;
     description: string;
     status: "In Progress" | "Complete";
@@ -14,22 +19,48 @@ type Project = {
 };
 
 export default function ProjectCard({ project }: { project: Project }) {
+    const router = useRouter();
+    const [isOverlayVisible, setIsOverlayVisible] = useState(false);
     const formattedDate = new Date(project.postedAt).toLocaleDateString(
         "en-GB"
     );
 
+    const handleClick = () => {
+        if (isOverlayVisible) {
+            router.push(`/project/${project.name}`);
+        } else {
+            setIsOverlayVisible(true);
+            setTimeout(() => {
+                setIsOverlayVisible(false);
+            }, 3000);
+        }
+    };
+
+    const banner = project.bannerUrl || "/assets/general/fillerImage.png";
+    const icon = project.iconUrl || "/assets/general/folder.png";
+
     return (
-        <div className="group relative h-[400px] bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer">
+        <div
+            onClick={handleClick}
+            className="group relative h-[400px] bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer"
+        >
             {/* Banner Image */}
             <div
                 className="h-32 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                style={{
-                    backgroundImage: `url('${project.bannerUrl}')`,
-                }}
+                style={{ backgroundImage: `url('${banner}')` }}
             />
 
+            {/* Project Icon (overlapping square) */}
+            <div className="absolute right-4 top-[5rem]">
+                <img
+                    src={icon}
+                    alt={`${project.name} icon`}
+                    className="size-18 rounded-md border-2 border-white shadow-md object-cover"
+                />
+            </div>
+
             {/* Card Body */}
-            <div className="flex-1 bg-gray-200 p-4 flex flex-col justify-between">
+            <div className="flex-1 bg-gray-200 p-4 pt-8 flex flex-col justify-between">
                 <div>
                     <h2 className="text-lg font-semibold text-gray-800 mb-1">
                         {project.name}
@@ -69,8 +100,14 @@ export default function ProjectCard({ project }: { project: Project }) {
                 </div>
             </div>
 
-            {/* Hover Stats */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 text-sm pointer-events-none">
+            {/* Hover / Tap Stats Overlay */}
+            <div
+                className={`absolute inset-0 bg-black/50 backdrop-blur-[1px] text-white ${
+                    isOverlayVisible
+                        ? "opacity-100"
+                        : "opacity-0 group-hover:opacity-100"
+                } transition-opacity duration-300 flex flex-col justify-between p-4 text-sm pointer-events-none`}
+            >
                 {/* Top-Left Message */}
                 <div className="text-xs bg-white/10 px-2 py-1 rounded-md font-medium w-fit text-white shadow-sm">
                     Click to view project in detail
