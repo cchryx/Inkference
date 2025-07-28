@@ -1,9 +1,11 @@
-import { HeaderCard } from "@/components/project/HeaderCard";
-import { AuthorCard } from "@/components/project/AuthorCard";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+
+import { HeaderCard } from "@/components/project/HeaderCard";
+import { AuthorCard } from "@/components/project/AuthorCard";
 import ContributorsCard from "@/components/project/ContributorsCard";
 import GalleryCard from "@/components/project/GalleryCard";
+import ResourcesCard from "@/components/project/ResourcesCard";
 
 export default async function Page({
     params,
@@ -31,6 +33,9 @@ export default async function Page({
             </div>
             <div className="px-[2%]">
                 <GalleryCard />
+            </div>
+            <div className="px-[2%]">
+                <ResourcesCard />
             </div>
         </div>
     );

@@ -96,7 +96,7 @@ export const HeaderCard = () => {
                             </span>
                         </div>
 
-                        <div className="mt-1 px-2 py-1 bg-green-200 w-fit rounded-md">
+                        <div className="my-3 px-2 py-1 bg-green-200 w-fit rounded-md text-sm">
                             Completed
                         </div>
 
