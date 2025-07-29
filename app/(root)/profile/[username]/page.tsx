@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import ProfileContent from "@/components/profile/ProfileContent";
+import ProfileContent from "@/components/root/ProfileContent";
 import RecommendedAccountsCard from "@/components/profile/RecommendedAccountsCard";
 
 export default async function Page({

@@ -2,16 +2,24 @@
 
 import { PROFILE_LINKS } from "@/constants";
 import { useEffect, useRef, useState } from "react";
-import Projects from "./sections/Projects";
-import Experiences from "./sections/Experiences";
-import Education from "./sections/Education";
-import Photos from "./sections/Photos";
-import Skills from "./sections/Skills";
-import Posts from "./sections/Posts";
+import Projects from "../profile/sections/Projects";
+import Experiences from "../profile/sections/Experiences";
+import Education from "../profile/sections/Education";
+import Photos from "../profile/sections/Photos";
+import Skills from "../profile/sections/Skills";
+import Posts from "../profile/sections/Posts";
+import CreateContent from "../create/CreateContent";
+import CreateProjectModal from "../create/CreateProjectModal";
 
-const ProfileContent = ({ tUser }: { tUser: any }) => {
+type Props = {
+    tUser: any;
+    rootUser?: boolean; // ← add rootUser prop
+};
+
+const ProfileContent = ({ tUser, rootUser = false }: Props) => {
     const [active, setActive] = useState("projects");
     const [showLabel, setShowLabel] = useState<string | null>(null);
+    const [openModal, setOpenModal] = useState<"project" | null>(null);
     const bubbleRef = useRef<HTMLDivElement>(null);
 
     // Hide bubble after 3s or on outside click
@@ -64,12 +72,10 @@ const ProfileContent = ({ tUser }: { tUser: any }) => {
                                                     : "text-gray-600 group-hover:text-black"
                                             }`}
                                         />
-                                        {/* Desktop label */}
                                         <span className="hidden sm:inline text-xs mt-1 text-gray-600 group-hover:text-black transition-colors duration-300">
                                             {link.label}
                                         </span>
 
-                                        {/* Underline for active */}
                                         <div
                                             className={`absolute -bottom-1 h-0.5 w-6 rounded-full bg-black transition-all duration-300 ${
                                                 isActive
@@ -79,7 +85,6 @@ const ProfileContent = ({ tUser }: { tUser: any }) => {
                                         />
                                     </button>
 
-                                    {/* Mobile bubble label */}
                                     {showLabel === link.id && (
                                         <div
                                             ref={bubbleRef}
@@ -94,9 +99,26 @@ const ProfileContent = ({ tUser }: { tUser: any }) => {
                     </div>
                 </div>
             </div>
-
             {/* Content below */}
-            {active === "projects" && <Projects />}
+            {active === "projects" && (
+                <>
+                    {rootUser && (
+                        <>
+                            <CreateContent
+                                label="Projects"
+                                onClick={() => setOpenModal("project")}
+                            />
+
+                            {openModal === "project" && (
+                                <CreateProjectModal
+                                    onCloseModal={() => setOpenModal(null)}
+                                />
+                            )}
+                        </>
+                    )}
+                    <Projects tUser={tUser} />
+                </>
+            )}
             {active === "experiences" && <Experiences />}
             {active === "education" && <Education />}
             {active === "skills" && <Skills />}

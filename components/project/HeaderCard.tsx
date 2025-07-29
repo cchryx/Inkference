@@ -134,24 +134,6 @@ export const HeaderCard = () => {
                             </span>
                         </a>
                     </div>
-
-                    {/* Skills tags pinned to bottom */}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                        {[
-                            "React",
-                            "Tailwind",
-                            "TypeScript",
-                            "Next.js",
-                            "UI/UX",
-                        ].map((skill) => (
-                            <div
-                                key={skill}
-                                className="px-3 py-1 text-sm rounded-full bg-gray-300 text-gray-800"
-                            >
-                                {skill}
-                            </div>
-                        ))}
-                    </div>
                 </div>
 
                 {/* Right Side */}

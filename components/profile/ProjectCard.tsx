@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart, Eye, CalendarDays } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -21,18 +21,30 @@ type Project = {
 export default function ProjectCard({ project }: { project: Project }) {
     const router = useRouter();
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setIsTouchDevice(window.matchMedia("(hover: none)").matches);
+        }
+    }, []);
+
     const formattedDate = new Date(project.postedAt).toLocaleDateString(
         "en-GB"
     );
 
     const handleClick = () => {
-        if (isOverlayVisible) {
+        if (!isTouchDevice) {
+            // Desktop: go immediately
             router.push(`/project/${project.name}`);
         } else {
-            setIsOverlayVisible(true);
-            setTimeout(() => {
-                setIsOverlayVisible(false);
-            }, 3000);
+            // Mobile: tap-to-reveal first
+            if (isOverlayVisible) {
+                router.push(`/project/${project.name}`);
+            } else {
+                setIsOverlayVisible(true);
+                setTimeout(() => setIsOverlayVisible(false), 3000);
+            }
         }
     };
 

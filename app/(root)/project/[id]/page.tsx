@@ -6,6 +6,7 @@ import { AuthorCard } from "@/components/project/AuthorCard";
 import ContributorsCard from "@/components/project/ContributorsCard";
 import GalleryCard from "@/components/project/GalleryCard";
 import ResourcesCard from "@/components/project/ResourcesCard";
+import SkillsCard from "@/components/project/SkilsCard";
 
 export default async function Page({
     params,
@@ -27,6 +28,9 @@ export default async function Page({
                 <div className="lg:w-[15rem]">
                     <AuthorCard />
                 </div>
+            </div>
+            <div className="px-[2%]">
+                <SkillsCard />
             </div>
             <div className="px-[2%]">
                 <ContributorsCard />

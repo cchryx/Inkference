@@ -40,11 +40,106 @@ const randomProjects = [
         views: 312,
         postedAt: "2025-07-10T09:30:00Z",
     },
+    {
+        bannerUrl: "/assets/general/fillerImage.png",
+        name: "Task Manager",
+        description:
+            "A productivity app to manage daily tasks and track progress.",
+        status: "In Progress",
+        startDate: "01/05/2025",
+        endDate: "30/09/2025",
+        skills: ["Vue", "Firebase", "Tailwind"],
+        likes: 90,
+        views: 312,
+        postedAt: "2025-07-10T09:30:00Z",
+    },
+    {
+        bannerUrl: "/assets/general/fillerImage.png",
+        name: "Task Manager",
+        description:
+            "A productivity app to manage daily tasks and track progress.",
+        status: "In Progress",
+        startDate: "01/05/2025",
+        endDate: "30/09/2025",
+        skills: ["Vue", "Firebase", "Tailwind"],
+        likes: 90,
+        views: 312,
+        postedAt: "2025-07-10T09:30:00Z",
+    },
+    {
+        bannerUrl: "/assets/general/fillerImage.png",
+        name: "Task Manager",
+        description:
+            "A productivity app to manage daily tasks and track progress.",
+        status: "In Progress",
+        startDate: "01/05/2025",
+        endDate: "30/09/2025",
+        skills: ["Vue", "Firebase", "Tailwind"],
+        likes: 90,
+        views: 312,
+        postedAt: "2025-07-10T09:30:00Z",
+    },
+    {
+        bannerUrl: "/assets/general/fillerImage.png",
+        name: "Task Manager",
+        description:
+            "A productivity app to manage daily tasks and track progress.",
+        status: "In Progress",
+        startDate: "01/05/2025",
+        endDate: "30/09/2025",
+        skills: ["Vue", "Firebase", "Tailwind"],
+        likes: 90,
+        views: 312,
+        postedAt: "2025-07-10T09:30:00Z",
+    },
+    {
+        bannerUrl: "/assets/general/fillerImage.png",
+        name: "Task Manager",
+        description:
+            "A productivity app to manage daily tasks and track progress.",
+        status: "In Progress",
+        startDate: "01/05/2025",
+        endDate: "30/09/2025",
+        skills: ["Vue", "Firebase", "Tailwind"],
+        likes: 90,
+        views: 312,
+        postedAt: "2025-07-10T09:30:00Z",
+    },
+    {
+        bannerUrl: "/assets/general/fillerImage.png",
+        name: "Task Manager",
+        description:
+            "A productivity app to manage daily tasks and track progress.",
+        status: "In Progress",
+        startDate: "01/05/2025",
+        endDate: "30/09/2025",
+        skills: ["Vue", "Firebase", "Tailwind"],
+        likes: 90,
+        views: 312,
+        postedAt: "2025-07-10T09:30:00Z",
+    },
+    {
+        bannerUrl: "/assets/general/fillerImage.png",
+        name: "Task Manager",
+        description:
+            "A productivity app to manage daily tasks and track progress.",
+        status: "In Progress",
+        startDate: "01/05/2025",
+        endDate: "30/09/2025",
+        skills: ["Vue", "Firebase", "Tailwind"],
+        likes: 90,
+        views: 312,
+        postedAt: "2025-07-10T09:30:00Z",
+    },
 ];
 
-const Projects = () => {
+type Props = {
+    tUser: any;
+};
+
+const Projects = ({ tUser }: Props) => {
     return (
-        <div className="my-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="my-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 select-none">
             {randomProjects.map((project: any, i) => (
                 <ProjectCard key={i} project={project} />
             ))}
