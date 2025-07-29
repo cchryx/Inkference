@@ -25,8 +25,9 @@ export default async function Page({
                 <div className="lg:flex-1">
                     <HeaderCard />
                 </div>
-                <div className="lg:w-[15rem]">
+                <div className="lg:w-[15rem] flex flex-col space-y-5">
                     <AuthorCard />
+                    <div className="flex-1 bg-gray-200 p-4 shadow-md rounded-md bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center" />
                 </div>
             </div>
             <div className="px-[2%]">

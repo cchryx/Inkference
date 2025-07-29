@@ -14,10 +14,7 @@ const Step2 = ({ description, setDescription }: Props) => {
         <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
                 <Label htmlFor="description">Project Description</Label>
-                <InfoTooltip
-                    text="A detailed description of your project. (max 2,500 chars,
-                        25 lines)"
-                />
+                <InfoTooltip text="A detailed description of your project. (max 1,300 chars, 10 lines)" />
             </div>
             <Textarea
                 id="description"
@@ -27,15 +24,15 @@ const Step2 = ({ description, setDescription }: Props) => {
                 onChange={(e) => {
                     const val = e.target.value;
                     const lines = val.split("\n").length;
-                    if (lines <= 25 && val.length <= 2500) {
+                    if (lines <= 10 && val.length <= 1300) {
                         setDescription(val);
                     }
                 }}
                 rows={10}
-                className="resize-none"
+                className="resize-none max-h-[300px] overflow-y-auto"
             />
             <span className="text-xs text-gray-500">
-                {2500 - description.length} characters left
+                {1300 - description.length} characters left
             </span>
         </div>
     );

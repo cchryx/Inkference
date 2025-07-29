@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { User, Share2, Link2, CalendarDays } from "lucide-react";
+import {
+    User,
+    Share2,
+    Link2,
+    CalendarDays,
+    Heart,
+    Bookmark,
+} from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -74,16 +81,14 @@ export const HeaderCard = () => {
                 </div>
             </div>
 
-            <div className="bg-gray-200 p-4 font-medium pt-10 md:flex gap-8">
-                {/* Left Side */}
-                <div className="flex-1 flex flex-col">
-                    <div>
-                        <div className="text-[25px] font-bold">
+            <div className="bg-gray-200 p-4 font-medium pt-10 space-y-4">
+                {/* Title and Buttons Row */}
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div className="flex flex-col space-y-2">
+                        <div className="text-[25px] font-bold mt-4">
                             This Is The Name Of Project
                         </div>
-
-                        {/* Project Duration and Posted Date */}
-                        <div className="text-sm text-gray-600 mt-1 flex flex-wrap gap-4 items-center">
+                        <div className="text-sm text-gray-600 flex flex-wrap gap-4 items-center">
                             <div className="flex items-center gap-1">
                                 <CalendarDays className="w-4 h-4" />
                                 <span>
@@ -95,62 +100,88 @@ export const HeaderCard = () => {
                                 Posted on {format(postedAt, "dd MMM, yyyy")}
                             </span>
                         </div>
-
-                        <div className="my-3 px-2 py-1 bg-green-200 w-fit rounded-md text-sm">
+                        <div className="px-2 py-1 bg-green-200 w-fit rounded-md text-sm">
                             Completed
                         </div>
-
-                        <div className="mt-2 whitespace-pre-line">
-                            This is the description of the project. Lorem ipsum
-                            dolor sit amet consectetur adipisicing elit. Dolore
-                            tempora cupiditate deserunt voluptatum voluptas
-                            accusamus praesentium.
-                        </div>
                     </div>
-
-                    {/* Links section */}
-                    <div className="mt-4 text-sm flex flex-col">
-                        <a
-                            href="https://example.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
+                    <div className="flex flex-1 flex-col flex-wrap gap-2 items-start md:items-end w-full">
+                        <button
+                            onClick={handleShare}
+                            className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
                         >
-                            <Link2 className="w-4 h-4" />
-                            <span className="truncate flex-1 text-sm">
-                                https://example.com
-                            </span>
-                        </a>
+                            <Share2 className="w-4 h-4" />
+                            Share Project
+                        </button>
 
-                        <a
-                            href="https://github.com/example"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
-                        >
-                            <Link2 className="w-4 h-4" />
-                            <span className="truncate flex-1 text-sm">
-                                https://github.com/example
-                            </span>
-                        </a>
+                        <div className="flex w-full justify-start md:justify-end">
+                            <div className="flex flex-wrap gap-2">
+                                <div className="px-3 py-1 rounded-sm bg-gray-300 flex gap-2 items-center hover:bg-gray-400 transition text-sm cursor-pointer">
+                                    <Heart /> <span>100,020</span>
+                                </div>
+                                <div className="px-3 py-1 rounded-sm bg-gray-300 flex gap-2 items-center hover:bg-gray-400 transition text-sm cursor-pointer">
+                                    <Bookmark /> <span>100,020</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Side */}
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start md:flex-col md:items-end mt-6 md:mt-0">
-                    <button
-                        onClick={handleShare}
-                        className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                {/* Description */}
+                <div className="whitespace-pre-line lg:text-md md:text-sm">
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ab
+                    eius nemo ipsum harum, enim itaque id animi veniam fuga
+                    earum, sit, saepe dicta. Eum sunt blanditiis sit at
+                    laboriosam, eaque repudiandae inventore aliquid assumenda
+                    voluptas aliquam nisi nemo ad quia reprehenderit minima.
+                    Magni, quasi! Perferendis ea ipsa iste dolorum nulla
+                    exercitationem libero earum corporis, officiis repellat
+                    voluptatem explicabo amet suscipit perspiciatis? In,
+                    doloremque dignissimos omnis suscipit odio asperiores eos
+                    architecto rem id voluptatibus facere cumque porro sint
+                    consequatur amet saepe voluptate, tenetur perferendis,
+                    eligendi animi veritatis officiis incidunt. Sed eos quas
+                    modi omnis! Et harum dolor, consequatur delectus ipsa quod
+                    assumenda obcaecati vero id reiciendis modi nesciunt hic
+                    pariatur eius saepe consectetur officiis. Quasi, ex.
+                    Dignissimos voluptate dolore nulla nisi dicta impedit
+                    sapiente, quo reprehenderit ut blanditiis reiciendis
+                    asperiores deleniti! Omnis, inventore impedit quod ducimus
+                    illo hic odio fuga voluptatem atque laudantium praesentium
+                    dolor dolore asperiores voluptatum odit delectus.
+                    Consectetur praesentium nulla minus aspernatur blanditiis
+                    soluta! Ullam ex, temporibus perspiciatis dignissimos eius a
+                    corporis numquam nihil dolore consequatur, non earum! Eaque
+                    possimus architecto nesciunt distinctio? Explicabo ab
+                    consectetur nihil eum illum, vitae voluptatibus omnis natus
+                    perferendis incidunt quis dolor at deserunt odio. Qui omnis,
+                    excepturi porro earum dolorem quia cumque.
+                </div>
+
+                {/* Links Section */}
+                <div className="mt-4 text-sm flex flex-col">
+                    <a
+                        href="https://example.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
                     >
-                        <Share2 className="w-4 h-4" />
-                        Share Project
-                    </button>
-                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
-                        Like
-                    </div>
-                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
-                        Save
-                    </div>
+                        <Link2 className="w-4 h-4" />
+                        <span className="truncate flex-1 text-sm">
+                            https://example.com
+                        </span>
+                    </a>
+
+                    <a
+                        href="https://github.com/example"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
+                    >
+                        <Link2 className="w-4 h-4" />
+                        <span className="truncate flex-1 text-sm">
+                            https://github.com/example
+                        </span>
+                    </a>
                 </div>
             </div>
         </div>

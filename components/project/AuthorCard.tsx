@@ -14,10 +14,7 @@ export const AuthorCard = () => {
 
     if (isLoading) {
         return (
-            <div className="relative rounded-md overflow-hidden shadow-md w-full h-full p-4 bg-[#e4e6eb]">
-                {/* Blurred background layer */}
-                <div className="absolute inset-0 bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center blur-sm z-0" />
-
+            <div className="relative rounded-md overflow-hidden shadow-md w-full p-4 bg-[#e4e6eb]">
                 {/* Skeleton content layer */}
                 <div className="relative z-10">
                     {/* Title */}
@@ -64,10 +61,7 @@ export const AuthorCard = () => {
     }
 
     return (
-        <div className="relative rounded-md overflow-hidden shadow-md w-full h-full p-4 bg-gray-200">
-            {/* Blurred background layer */}
-            <div className="absolute inset-0 bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center blur-sm z-0" />
-
+        <div className="relative rounded-md overflow-hidden shadow-md w-full p-4 bg-gray-200">
             {/* Content layer */}
             <div className="relative z-10">
                 {/* Top Title */}
