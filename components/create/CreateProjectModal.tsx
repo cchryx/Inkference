@@ -53,7 +53,8 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
     const [resourceInput, setResourceInput] = useState("");
     const [showResourceInput, setShowResourceInput] = useState(false);
 
-    // Validations per step
+    // General Mechanics
+    const [isPending, setIsPending] = useState(false);
     const handleNextClick = () => {
         switch (step) {
             case 0:
@@ -94,6 +95,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsPending(true);
 
         if (step === totalSteps - 1) {
             try {
@@ -129,6 +131,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                 console.error(error);
             }
         }
+        setIsPending(false);
     };
 
     return (
@@ -251,7 +254,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                 <div className="flex justify-between items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl">
                     <Button
                         onClick={handleBack}
-                        disabled={step === 0}
+                        disabled={step === 0 || isPending}
                         className="cursor-pointer"
                     >
                         Back
@@ -273,6 +276,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                             onClick={handleSubmit}
                             type="submit"
                             className="cursor-pointer"
+                            disabled={isPending}
                         >
                             Create Project
                         </Button>
@@ -281,6 +285,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                             type="button"
                             onClick={handleNextClick}
                             className="cursor-pointer"
+                            disabled={isPending}
                         >
                             Next
                         </Button>

@@ -1,18 +1,20 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
 
 import { HeaderCard } from "@/components/project/HeaderCard";
 import { AuthorCard } from "@/components/project/AuthorCard";
 import ContributorsCard from "@/components/project/ContributorsCard";
-import GalleryCard from "@/components/project/GalleryCard";
 import ResourcesCard from "@/components/project/ResourcesCard";
 import SkillsCard from "@/components/project/SkilsCard";
 import { getProjectById } from "@/actions/content/getProject";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { getProfileData } from "@/actions/profile/getProfileData";
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
     const { id } = await params;
 
     const session = await auth.api.getSession({

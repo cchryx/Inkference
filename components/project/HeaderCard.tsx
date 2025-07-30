@@ -196,7 +196,7 @@ export const HeaderCard = ({ project }: Props) => {
                 </div>
 
                 {/* Links Section */}
-                <div className="mt-4 text-sm flex flex-col gap-2">
+                <div className="mt-4 text-sm flex flex-col">
                     {project.projectLinks?.length > 0
                         ? project.projectLinks.map(
                               (link: string, idx: number) => (
