@@ -191,30 +191,29 @@ export const HeaderCard = ({ project }: Props) => {
                 </div>
 
                 {/* Description */}
-                <div className="whitespace-pre-line lg:text-md md:text-sm">
+                <div className="whitespace-pre-line lg:text-md text-sm">
                     {project.description}
                 </div>
 
                 {/* Links Section */}
                 <div className="mt-4 text-sm flex flex-col">
-                    {project.projectLinks?.length > 0
-                        ? project.projectLinks.map(
-                              (link: string, idx: number) => (
-                                  <a
-                                      key={idx}
-                                      href={link}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
-                                  >
-                                      <Link2 className="w-4 h-4" />
-                                      <span className="truncate flex-1 text-sm">
-                                          {link}
-                                      </span>
-                                  </a>
-                              )
-                          )
-                        : ""}
+                    {project.projectLinks?.length > 0 &&
+                        project.projectLinks.map(
+                            (link: string, idx: number) => (
+                                <a
+                                    key={idx}
+                                    href={link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer w-full"
+                                >
+                                    <Link2 className="w-4 h-4 flex-shrink-0" />
+                                    <span className="truncate overflow-hidden whitespace-nowrap w-full text-gray-800">
+                                        {link}
+                                    </span>
+                                </a>
+                            )
+                        )}
                 </div>
             </div>
         </div>

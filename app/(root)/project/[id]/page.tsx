@@ -9,6 +9,7 @@ import SkillsCard from "@/components/project/SkilsCard";
 import { getProjectById } from "@/actions/content/getProject";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { getProfileData } from "@/actions/profile/getProfileData";
+import GalleryCard from "@/components/project/GalleryCard";
 
 export default async function Page({
     params,
@@ -46,7 +47,7 @@ export default async function Page({
                     <HeaderCard project={project} />
                 </div>
 
-                <div className="lg:w-[15rem] flex flex-col space-y-5">
+                <div className="hidden lg:w-[15rem] lg:flex flex-col space-y-5">
                     <AuthorCard tProfile={tProfile} project={project} />
 
                     <div className="flex-1 bg-gray-200 p-4 shadow-md rounded-md bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center" />
@@ -68,13 +69,13 @@ export default async function Page({
                 </div>
             )}
 
-            {/* {(isOwner || hasItems(project.galleryImages)) && (
+            {(isOwner || hasItems(project.galleryImages)) && (
                 <div className="px-[2%]">
                     <GalleryCard
-                        images={(project.galleryImages as string[]) ?? []}
+                    // images={(project.galleryImages as string[]) ?? []}
                     />
                 </div>
-            )} */}
+            )}
 
             {/* Resources */}
             {(isOwner || hasItems(project.projectResources)) && (
