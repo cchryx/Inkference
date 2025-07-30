@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
 
-import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
+import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 
 import Loader from "@/components/general/Loader";
 import { Skeleton } from "@/components/general/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { changeUserAction } from "@/actions/changeUserAction";
+import { changeUserAction } from "@/actions/auth/changeUserAction";
 
 type Props = {
     name: string;

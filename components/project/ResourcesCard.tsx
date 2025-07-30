@@ -4,20 +4,11 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
 import { ChevronDown, ChevronRight, Link2 } from "lucide-react";
 
-const links = [
-    "https://www.example.com/this/is/a/very/long/url/that/keeps/going/and/going/and/might/wrap/or/truncate/depending/on/your/styles",
-    "https://github.com/username/very-long-repo-name-with-dashes-and-descriptions-that-make-the-link-wide",
-    "https://www.figma.com/file/really-really-really-long-design-document-id-that-is-hard-to-fit-in-one-line",
-    "https://docs.google.com/document/d/1xYz7LmWhYVVxMxMjJ1TLx4g2P3PbN9LtV5EtxH5HgU0/edit?usp=sharing",
-    "https://cdn.example.com/assets/images/users/profiles/pictures/this-is-a-really-long-image-name-with-many-dashes.jpg",
-    "https://stackoverflow.com/questions/12345678/this-is-an-example-of-a-very-detailed-question-title-that-is-part-of-the-url",
-    "https://blog.example.dev/posts/2025/07/long-title-post-with-keywords-and-search-friendly-url-slugs-included",
-    "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PL1234567890abcdefghijklmnopqrstuvwxyz&index=42",
-    "https://developer.mozilla.org/en-US/docs/Web/CSS/text-overflow?utm_source=tool&utm_medium=chatgpt",
-    "https://yourdomain.com/dashboard/user/settings/preferences/advanced/network/custom-routing/rules/configurations",
-];
+type Props = {
+    resources: any;
+};
 
-const ResourcesCard = () => {
+const ResourcesCard = ({ resources }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isMinimized, setIsMinimized] = useState(false);
 
@@ -47,7 +38,7 @@ const ResourcesCard = () => {
         <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col gap-2 max-h-[300px]">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">
-                    Resources ({links.length})
+                    Resources ({resources.length})
                 </h2>
                 <button
                     onClick={toggleMinimize}
@@ -61,9 +52,9 @@ const ResourcesCard = () => {
                 </button>
             </div>
 
-            {!isMinimized && (
+            {!isMinimized && resources.length > 0 && (
                 <div className="overflow-y-auto flex flex-col gap-2 pr-1 yes-scrollbar text-sm">
-                    {links.map((url, index) => (
+                    {resources.map((url: string, index: number) => (
                         <a
                             key={index}
                             href={url}

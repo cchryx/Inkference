@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Loader from "@/components/general/Loader";
-import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
+import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle, User } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { changeUserAction } from "@/actions/changeUserAction";
+import { changeUserAction } from "@/actions/auth/changeUserAction";
 import { set } from "date-fns";
 
 type Props = {

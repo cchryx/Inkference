@@ -4,21 +4,7 @@ import { useEffect, useState } from "react";
 import { Heart, Eye, CalendarDays } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-type Project = {
-    bannerUrl?: string;
-    iconUrl?: string;
-    name: string;
-    description: string;
-    status: "In Progress" | "Complete";
-    startDate: string;
-    endDate: string;
-    skills: string[];
-    likes: number;
-    views: number;
-    postedAt: string;
-};
-
-export default function ProjectCard({ project }: { project: Project }) {
+export default function ProjectCard({ project }: { project: any }) {
     const router = useRouter();
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -29,18 +15,41 @@ export default function ProjectCard({ project }: { project: Project }) {
         }
     }, []);
 
-    const formattedDate = new Date(project.postedAt).toLocaleDateString(
-        "en-GB"
-    );
+    const bannerUrl = project.bannerImage || "/assets/general/fillerImage.png";
+    const iconUrl = project.iconImage || "/assets/general/folder.png";
+    const name = project.name;
+    const description = project.summary || "No description provided.";
+    const status =
+        project.status === "IN_PROGRESS" ? "In Progress" : "Complete";
+    const startDate = project.startDate
+        ? new Date(project.startDate).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+          })
+        : "";
+
+    const endDate = project.endDate
+        ? new Date(project.endDate).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+          })
+        : "TBD";
+    const skills = project.skills ?? [];
+    const likes = Array.isArray(project.likes) ? project.likes.length : 0;
+    const views = 0;
+    const postedAt = project.createdAt
+        ? new Date(project.createdAt).toISOString()
+        : "";
+    const formattedDate = new Date(postedAt).toLocaleDateString("en-GB");
 
     const handleClick = () => {
         if (!isTouchDevice) {
-            // Desktop: go immediately
-            router.push(`/project/${project.name}`);
+            router.push(`/project/${project.id}`);
         } else {
-            // Mobile: tap-to-reveal first
             if (isOverlayVisible) {
-                router.push(`/project/${project.name}`);
+                router.push(`/project/${project.id}`);
             } else {
                 setIsOverlayVisible(true);
                 setTimeout(() => setIsOverlayVisible(false), 3000);
@@ -48,37 +57,34 @@ export default function ProjectCard({ project }: { project: Project }) {
         }
     };
 
-    const banner = project.bannerUrl || "/assets/general/fillerImage.png";
-    const icon = project.iconUrl || "/assets/general/folder.png";
-
     return (
         <div
             onClick={handleClick}
             className="group relative h-[400px] bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer"
         >
-            {/* Banner Image */}
+            {/* Banner */}
             <div
                 className="h-32 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                style={{ backgroundImage: `url('${banner}')` }}
+                style={{ backgroundImage: `url('${bannerUrl}')` }}
             />
 
-            {/* Project Icon (overlapping square) */}
+            {/* Icon */}
             <div className="absolute right-4 top-[5rem]">
                 <img
-                    src={icon}
-                    alt={`${project.name} icon`}
+                    src={iconUrl}
+                    alt={`${name} icon`}
                     className="size-18 rounded-md border-2 border-white shadow-md object-cover"
                 />
             </div>
 
-            {/* Card Body */}
+            {/* Body */}
             <div className="flex-1 bg-gray-200 p-4 pt-8 flex flex-col justify-between">
                 <div>
                     <h2 className="text-lg font-semibold text-gray-800 mb-1">
-                        {project.name}
+                        {name}
                     </h2>
                     <p className="text-sm text-gray-600 line-clamp-4">
-                        {project.description}
+                        {description}
                     </p>
                 </div>
 
@@ -87,21 +93,21 @@ export default function ProjectCard({ project }: { project: Project }) {
                         Status:{" "}
                         <span
                             className={
-                                project.status === "Complete"
+                                status === "Complete"
                                     ? "text-green-600 font-medium"
                                     : "text-yellow-600 font-medium"
                             }
                         >
-                            {project.status}
+                            {status}
                         </span>
                     </p>
                     <p className="text-xs text-gray-500">
-                        Duration: {project.startDate} – {project.endDate}
+                        Duration: {startDate} – {endDate}
                     </p>
                 </div>
 
                 <div className="mt-3 overflow-hidden max-h-[3.2rem] flex flex-wrap gap-1">
-                    {project.skills.map((skill, idx) => (
+                    {skills.map((skill: string, idx: number) => (
                         <span
                             key={idx}
                             className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full"
@@ -112,7 +118,7 @@ export default function ProjectCard({ project }: { project: Project }) {
                 </div>
             </div>
 
-            {/* Hover / Tap Stats Overlay */}
+            {/* Overlay */}
             <div
                 className={`absolute inset-0 bg-black/50 backdrop-blur-[1px] text-white ${
                     isOverlayVisible
@@ -120,18 +126,16 @@ export default function ProjectCard({ project }: { project: Project }) {
                         : "opacity-0 group-hover:opacity-100"
                 } transition-opacity duration-300 flex flex-col justify-between p-4 text-sm pointer-events-none`}
             >
-                {/* Top-Left Message */}
                 <div className="text-xs bg-white/10 px-2 py-1 rounded-md font-medium w-fit text-white shadow-sm">
                     Click to view project in detail
                 </div>
 
-                {/* Bottom Stats */}
                 <div className="flex flex-col gap-1 text-sm">
                     <div className="flex items-center gap-2 drop-shadow-sm">
-                        <Heart className="w-4 h-4" /> {project.likes} Likes
+                        <Heart className="w-4 h-4" /> {likes} Likes
                     </div>
                     <div className="flex items-center gap-2 drop-shadow-sm">
-                        <Eye className="w-4 h-4" /> {project.views} Views
+                        <Eye className="w-4 h-4" /> {views} Views
                     </div>
                     <div className="flex items-center gap-2 drop-shadow-sm">
                         <CalendarDays className="w-4 h-4" /> Posted:{" "}

@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/general/Skeleton";
-import { changeProfileAction } from "@/actions/changeProfileAction";
+import { changeProfileAction } from "@/actions/profile/changeProfileAction";
 import { toast } from "sonner";
-import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
+import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
 
 const MAX_LINES = 12;

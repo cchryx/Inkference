@@ -13,7 +13,11 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 
-export const HeaderCard = () => {
+type Props = {
+    project: any;
+};
+
+export const HeaderCard = ({ project }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -22,50 +26,80 @@ export const HeaderCard = () => {
     }, []);
 
     const handleShare = () => {
-        const projectUrl = `${window.location.origin}/project/id`;
+        const projectUrl = `${window.location.origin}/project/${project.id}`;
         navigator.clipboard.writeText(projectUrl);
         toast.success("Project link copied.");
     };
 
-    // Dummy dates for the project
-    const startDate = new Date("2024-01-10");
-    const endDate = new Date("2024-06-20");
-    const postedAt = new Date("2024-07-15");
+    const startDate = format(new Date(project.startDate), "dd MMM, yyyy");
+    const endDate = project.endDate
+        ? format(new Date(project.endDate), "dd MMM, yyyy")
+        : "TBD";
+    const postedAt = new Date(
+        project.createdAt || project.updatedAt || Date.now()
+    );
 
     if (isLoading) {
         return (
             <div className="rounded-md overflow-hidden shadow-md w-full h-full">
+                {/* Banner + Icon */}
                 <div className="relative">
                     <Skeleton className="w-full h-[200px] md:h-[350px]" />
-                    <div className="absolute left-[3%] -bottom-[10%] size-20 md:size-40 rounded-md border-3 border-gray-200">
-                        <Skeleton className="w-full h-full rounded-md" />
+                    <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-md border-[3px] border-gray-200 overflow-hidden">
+                        <Skeleton className="w-full h-full" />
                     </div>
                 </div>
 
-                <div className="bg-gray-200 p-4 pt-10 md:flex gap-8">
-                    <div className="flex-1 flex flex-col space-y-4">
-                        <Skeleton className="h-6 w-1/2 rounded-md" />
-                        <Skeleton className="h-4 w-full rounded-md" />
-                        <Skeleton className="h-4 w-5/6 rounded-md" />
-                        <Skeleton className="h-4 w-4/5 rounded-md" />
-                        <Skeleton className="h-4 w-9/10 rounded-md" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-3/4 rounded-sm" />
-                            <Skeleton className="h-6 w-2/3 rounded-sm" />
+                {/* Body */}
+                <div className="bg-gray-200 p-4 pt-14 md:pt-16">
+                    {/* Top row: title / dates / status  +  actions on right */}
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                        <div className="flex-1 space-y-3">
+                            {/* Title */}
+                            <Skeleton className="h-8 w-3/4 rounded-md" />
+
+                            {/* Dates row */}
+                            <div className="flex flex-wrap items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                    <Skeleton className="h-4 w-4 rounded-full" />
+                                    <Skeleton className="h-4 w-44 rounded-md" />
+                                </div>
+                                <Skeleton className="h-4 w-40 rounded-md" />
+                            </div>
+
+                            {/* Status chip */}
+                            <Skeleton className="h-7 w-24 rounded-full" />
                         </div>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {[...Array(4)].map((_, i) => (
-                                <Skeleton
-                                    key={i}
-                                    className="h-6 w-20 rounded-full"
-                                />
-                            ))}
+
+                        {/* Actions (Share / Likes / Bookmarks) */}
+                        <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
+                            <Skeleton className="h-9 w-36 rounded-md" />
+                            <div className="flex gap-2">
+                                <Skeleton className="h-9 w-24 rounded-md" />
+                                <Skeleton className="h-9 w-24 rounded-md" />
+                            </div>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 justify-center md:justify-start md:flex-col md:items-end mt-6 md:mt-0">
-                        <Skeleton className="h-8 w-32 rounded-sm" />
-                        <Skeleton className="h-8 w-20 rounded-sm" />
-                        <Skeleton className="h-8 w-20 rounded-sm" />
+
+                    {/* Description paragraphs */}
+                    <div className="mt-4 space-y-2">
+                        <Skeleton className="h-4 w-[95%] rounded-md" />
+                        <Skeleton className="h-4 w-[92%] rounded-md" />
+                        <Skeleton className="h-4 w-[88%] rounded-md" />
+                        <Skeleton className="h-4 w-[90%] rounded-md" />
+                        <Skeleton className="h-4 w-[70%] rounded-md" />
+                    </div>
+
+                    {/* Links */}
+                    <div className="mt-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4 rounded-full" />
+                            <Skeleton className="h-5 w-64 rounded-md" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4 rounded-full" />
+                            <Skeleton className="h-5 w-80 rounded-md" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -75,35 +109,65 @@ export const HeaderCard = () => {
     return (
         <div className="rounded-md overflow-hidden shadow-md w-full h-full">
             <div className="relative">
-                <div className="w-full h-[200px] md:h-[350px] bg-gray-800" />
-                <div className="absolute left-[3%] -bottom-[10%] size-20 md:size-40 rounded-md border-3 border-gray-200 flex items-center justify-center bg-gray-700">
-                    <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
+                <div
+                    className="w-full h-[200px] md:h-[350px] bg-center bg-cover"
+                    style={{
+                        backgroundImage: `url('${
+                            project.bannerImage ??
+                            "/assets/general/fillerImage.png"
+                        }')`,
+                    }}
+                />
+
+                <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-md border-[3px] border-gray-200 flex items-center justify-center bg-gray-700 overflow-hidden">
+                    <img
+                        src={project.iconImage ?? "/assets/general/folder.png"}
+                        alt={`${project.name} icon`}
+                        className="w-full h-full object-cover"
+                    />
                 </div>
             </div>
 
             <div className="bg-gray-200 p-4 font-medium pt-10 space-y-4">
-                {/* Title and Buttons Row */}
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex flex-col space-y-2">
                         <div className="text-[25px] font-bold mt-4">
-                            This Is The Name Of Project
+                            {project.name}
                         </div>
+
                         <div className="text-sm text-gray-600 flex flex-wrap gap-4 items-center">
                             <div className="flex items-center gap-1">
                                 <CalendarDays className="w-4 h-4" />
                                 <span>
-                                    {format(startDate, "dd MMM, yyyy")} –{" "}
-                                    {format(endDate, "dd MMM, yyyy")}
+                                    {startDate} – {endDate}
                                 </span>
                             </div>
                             <span className="text-gray-500">
                                 Posted on {format(postedAt, "dd MMM, yyyy")}
                             </span>
                         </div>
-                        <div className="px-2 py-1 bg-green-200 w-fit rounded-md text-sm">
-                            Completed
+
+                        <div
+                            className={`px-2 py-1 w-fit rounded-md text-sm ${
+                                project.status === "COMPLETE" ||
+                                project.status === "Completed"
+                                    ? "bg-green-200 text-green-800"
+                                    : project.status === "IN_PROGRESS" ||
+                                      project.status === "In Progress"
+                                    ? "bg-yellow-200 text-yellow-800"
+                                    : "bg-gray-200 text-gray-700"
+                            }`}
+                        >
+                            {project.status === "COMPLETE" ||
+                            project.status === "Completed"
+                                ? "Completed"
+                                : project.status === "IN_PROGRESS" ||
+                                  project.status === "In Progress"
+                                ? "In Progress"
+                                : project.status}
                         </div>
                     </div>
+
                     <div className="flex flex-1 flex-col flex-wrap gap-2 items-start md:items-end w-full">
                         <button
                             onClick={handleShare}
@@ -128,60 +192,29 @@ export const HeaderCard = () => {
 
                 {/* Description */}
                 <div className="whitespace-pre-line lg:text-md md:text-sm">
-                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ab
-                    eius nemo ipsum harum, enim itaque id animi veniam fuga
-                    earum, sit, saepe dicta. Eum sunt blanditiis sit at
-                    laboriosam, eaque repudiandae inventore aliquid assumenda
-                    voluptas aliquam nisi nemo ad quia reprehenderit minima.
-                    Magni, quasi! Perferendis ea ipsa iste dolorum nulla
-                    exercitationem libero earum corporis, officiis repellat
-                    voluptatem explicabo amet suscipit perspiciatis? In,
-                    doloremque dignissimos omnis suscipit odio asperiores eos
-                    architecto rem id voluptatibus facere cumque porro sint
-                    consequatur amet saepe voluptate, tenetur perferendis,
-                    eligendi animi veritatis officiis incidunt. Sed eos quas
-                    modi omnis! Et harum dolor, consequatur delectus ipsa quod
-                    assumenda obcaecati vero id reiciendis modi nesciunt hic
-                    pariatur eius saepe consectetur officiis. Quasi, ex.
-                    Dignissimos voluptate dolore nulla nisi dicta impedit
-                    sapiente, quo reprehenderit ut blanditiis reiciendis
-                    asperiores deleniti! Omnis, inventore impedit quod ducimus
-                    illo hic odio fuga voluptatem atque laudantium praesentium
-                    dolor dolore asperiores voluptatum odit delectus.
-                    Consectetur praesentium nulla minus aspernatur blanditiis
-                    soluta! Ullam ex, temporibus perspiciatis dignissimos eius a
-                    corporis numquam nihil dolore consequatur, non earum! Eaque
-                    possimus architecto nesciunt distinctio? Explicabo ab
-                    consectetur nihil eum illum, vitae voluptatibus omnis natus
-                    perferendis incidunt quis dolor at deserunt odio. Qui omnis,
-                    excepturi porro earum dolorem quia cumque.
+                    {project.description}
                 </div>
 
                 {/* Links Section */}
-                <div className="mt-4 text-sm flex flex-col">
-                    <a
-                        href="https://example.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
-                    >
-                        <Link2 className="w-4 h-4" />
-                        <span className="truncate flex-1 text-sm">
-                            https://example.com
-                        </span>
-                    </a>
-
-                    <a
-                        href="https://github.com/example"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
-                    >
-                        <Link2 className="w-4 h-4" />
-                        <span className="truncate flex-1 text-sm">
-                            https://github.com/example
-                        </span>
-                    </a>
+                <div className="mt-4 text-sm flex flex-col gap-2">
+                    {project.projectLinks?.length > 0
+                        ? project.projectLinks.map(
+                              (link: string, idx: number) => (
+                                  <a
+                                      key={idx}
+                                      href={link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center w-fit space-x-2 hover:brightness-90 bg-gray-200 px-2 py-1 rounded-sm cursor-pointer"
+                                  >
+                                      <Link2 className="w-4 h-4" />
+                                      <span className="truncate flex-1 text-sm">
+                                          {link}
+                                      </span>
+                                  </a>
+                              )
+                          )
+                        : ""}
                 </div>
             </div>
         </div>

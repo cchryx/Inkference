@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-const contributors = [
+const con = [
     {
         name: "Jane Doe",
         username: "janedoe",
@@ -31,7 +31,11 @@ const contributors = [
     },
 ];
 
-const ContributorsCard = () => {
+type Props = {
+    contributors: any;
+};
+
+const ContributorsCard = ({ contributors }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isMinimized, setIsMinimized] = useState(false);
 
@@ -87,9 +91,9 @@ const ContributorsCard = () => {
                 </button>
             </div>
 
-            {!isMinimized && (
+            {!isMinimized && contributors.length > 0 && (
                 <div className="flex-1 overflow-x-auto flex gap-3 pr-1 whitespace-nowrap yes-scrollbar">
-                    {contributors.map((contributor, index) => (
+                    {con.map((contributor, index) => (
                         <div
                             key={index}
                             className="w-[20rem] mb-3 flex-shrink-0 flex gap-1 bg-gray-300 p-3 rounded-md hover:brightness-[90%] cursor-pointer space-x-2"

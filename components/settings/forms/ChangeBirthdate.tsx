@@ -5,8 +5,8 @@ import Loader from "@/components/general/Loader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/general/Skeleton";
-import { changeProfileAction } from "@/actions/changeProfileAction";
-import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
+import { changeProfileAction } from "@/actions/profile/changeProfileAction";
+import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { toast } from "sonner";
 import { AlertCircle, ChevronDown } from "lucide-react";
 

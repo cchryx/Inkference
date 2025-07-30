@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import { useRouter } from "next/navigation";
-import { signupEmailAction } from "@/actions/signupEmailAction";
+import { signupEmailAction } from "@/actions/auth/signupEmailAction";
 import { PasswordInput } from "./PasswordInput";
 import Loader from "../general/Loader";
 

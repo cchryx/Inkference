@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  // previewFeatures = ["prismaSchemaFolder"]
 }
 
 datasource db {
@@ -13,35 +14,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name          String
-  nameUpdatedAt DateTime?
-
-  email          String    @unique
-  emailVerified  Boolean
-  emailUpdatedAt DateTime?
-
-  username          String?   @unique
-  displayUsername   String?   @unique
-  usernameUpdatedAt DateTime?
-
-  phoneNumber          BigInt?   @unique
-  phoneNumberUpdatedAt DateTime?
-
-  image          String?
-  imageUpdatedAt DateTime?
-
-  sessions Session[]
-  accounts Account[]
-  Profile  Profile?
-
-  @@map("users")
-}
-
+////////// AUTH //////////
 model Session {
   id        String   @id @default(uuid())
   createdAt DateTime
@@ -91,6 +64,37 @@ model Verification {
   @@map("verifications")
 }
 
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name          String
+  nameUpdatedAt DateTime?
+
+  email          String    @unique
+  emailVerified  Boolean
+  emailUpdatedAt DateTime?
+
+  username          String?   @unique
+  displayUsername   String?   @unique
+  usernameUpdatedAt DateTime?
+
+  phoneNumber          BigInt?   @unique
+  phoneNumberUpdatedAt DateTime?
+
+  image          String?
+  imageUpdatedAt DateTime?
+
+  sessions Session[]
+  accounts Account[]
+
+  Profile  Profile?
+  UserData UserData?
+
+  @@map("users")
+}
+
 model Profile {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -114,10 +118,39 @@ model Profile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  posts   Post[]
-  Project Project[]
-
   @@map("profile")
+}
+
+model UserData {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects              Project[]
+  projectsContributedTo Project[] @relation("ProjectContributors")
+  projectsLiked         Project[] @relation("ProjectLikes")
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ProjectGalleryImage {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  image       String
+  description String? @db.VarChar(500)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_gallery_images")
+}
+
+enum ProjectStatus {
+  IN_PROGRESS
+  COMPLETE
 }
 
 model Project {
@@ -125,22 +158,34 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  imageCoverUrl String?
+  name        String  @db.VarChar(80)
+  summary     String? @db.VarChar(200)
+  description String? @db.VarChar(5000)
 
-  profileId String
-  profile   Profile? @relation(fields: [profileId], references: [id])
-}
+  projectLinks     String[] @db.VarChar(255)
+  projectResources String[] @db.VarChar(255)
 
-model Post {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  iconImage   String?
+  bannerImage String?
 
-  title   String
-  content String
+  status    ProjectStatus
+  startDate DateTime?
+  endDate   DateTime?
 
-  profileId String
-  profile   Profile? @relation(fields: [profileId], references: [id])
+  skills String[] @db.VarChar(50)
 
-  @@map("posts")
+  // Contributors (many-to-many)
+  contributors UserData[] @relation("ProjectContributors")
+
+  // Liked by users (many-to-many)
+  likes UserData[] @relation("ProjectLikes")
+
+  galleryImages ProjectGalleryImage[]
+
+  // Project owner
+  userDataId String
+  userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+
+  @@index([userDataId, updatedAt])
+  @@map("projects")
 }

@@ -9,9 +9,9 @@ import { Skeleton } from "@/components/general/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
+import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
-import { changeProfileAction } from "@/actions/changeProfileAction";
+import { changeProfileAction } from "@/actions/profile/changeProfileAction";
 
 function useClickOutside(
     ref: React.RefObject<HTMLElement | null>,

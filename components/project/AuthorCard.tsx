@@ -3,9 +3,16 @@
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
 import { User } from "lucide-react";
+import Link from "next/link";
 
-export const AuthorCard = () => {
+type Props = {
+    project: any;
+    tProfile: any;
+};
+
+export const AuthorCard = ({ project, tProfile }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
+    const tUser = project.userData.user;
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 800);
@@ -78,13 +85,13 @@ export const AuthorCard = () => {
                         </div>
                         <div className="flex flex-col">
                             <div className="font-semibold text-base">
-                                User Name
+                                {tUser.name}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                                @username
+                                @{tUser.username}
                             </div>
                             <div className="text-sm text-gray-700 mt-1">
-                                This is a short bio about the user.
+                                {tProfile.bio}
                             </div>
                         </div>
                     </div>
@@ -92,9 +99,11 @@ export const AuthorCard = () => {
                         <div>{0} Followers</div>
                         <div>{0} Projects</div>
                     </div>
-                    <button className="bg-gray-800 hover:bg-gray-900 text-white text-sm px-4 py-2 rounded-md transition">
-                        Checkout Profile
-                    </button>
+                    <Link href={`/profile/${tUser.username}`}>
+                        <button className="bg-gray-800 hover:bg-gray-900 text-white text-sm px-4 py-2 rounded-md transition cursor-pointer">
+                            Checkout Profile
+                        </button>
+                    </Link>
                 </div>
 
                 {/* Desktop layout (vertical) */}
@@ -103,12 +112,13 @@ export const AuthorCard = () => {
                         <User className="text-gray-300 w-16 h-16" />
                     </div>
                     <div className="mt-4">
-                        <div className="text-2xl font-bold">Username</div>
-                        <div className="text-muted-foreground">@username</div>
+                        <div className="text-2xl font-bold">{tUser.name}</div>
+                        <div className="text-muted-foreground">
+                            @{tUser.username}
+                        </div>
                     </div>
                     <div className="text-sm text-gray-700 mt-2 max-w-md">
-                        This is a short bio about the user. It gives a quick
-                        overview of who they are or what they do.
+                        {tProfile.bio}
                     </div>
                     <div className="flex flex-wrap justify-center gap-2 mt-2 w-fit ">
                         <div className="py-1 px-3 bg-gray-300 rounded-md">
@@ -118,9 +128,11 @@ export const AuthorCard = () => {
                             {0} Projects
                         </div>
                     </div>
-                    <button className="mt-4 bg-gray-800 hover:bg-gray-900 text-white text-sm px-4 py-2 rounded-md transition">
-                        Checkout Profile
-                    </button>
+                    <Link href={`/profile/${tUser.username}`}>
+                        <button className="mt-4 bg-gray-800 hover:bg-gray-900 text-white text-sm px-4 py-2 rounded-md transition cursor-pointer">
+                            Checkout Profile
+                        </button>
+                    </Link>
                 </div>
             </div>
         </div>

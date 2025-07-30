@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProfileData } from "@/actions/getProfileData";
+import { getProfileData } from "@/actions/profile/getProfileData";
 import ChangeBioForm from "./forms/ChangeBioForm";
 import ChangeBirthdate from "./forms/ChangeBirthdate";
 import ChangeAddressForm from "./forms/ChangeAddressForm";

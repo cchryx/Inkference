@@ -4,25 +4,11 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-const skills = [
-    "React",
-    "Tailwind",
-    "TypeScript",
-    "Next.js",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-    "UI/UX",
-];
+interface SkillsCardProps {
+    skills: string[];
+}
 
-const SkillsCard = () => {
+const SkillsCard = ({ skills }: SkillsCardProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isMinimized, setIsMinimized] = useState(false);
 
@@ -60,6 +46,9 @@ const SkillsCard = () => {
                 <button
                     onClick={toggleMinimize}
                     className="text-gray-600 hover:text-black transition cursor-pointer"
+                    aria-label={
+                        isMinimized ? "Expand skills" : "Collapse skills"
+                    }
                 >
                     {isMinimized ? (
                         <ChevronRight className="size-6" />
@@ -69,7 +58,7 @@ const SkillsCard = () => {
                 </button>
             </div>
 
-            {!isMinimized && (
+            {!isMinimized && skills.length > 0 && (
                 <div className="flex-1 overflow-x-auto flex gap-2 pr-1 whitespace-nowrap yes-scrollbar">
                     {skills.map((skill, index) => (
                         <div

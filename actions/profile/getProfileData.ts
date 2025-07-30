@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
-export async function getProfileData(username?: string) {
+export async function getProfileData(username?: string | null) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -20,7 +20,6 @@ export async function getProfileData(username?: string) {
         });
 
         if (!user) {
-            // Return with default empty fields instead of null
             return {
                 user: { name: "", username: "", image: undefined },
                 profile: {

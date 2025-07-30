@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import Loader from "../general/Loader";
-import { changeUserAction } from "@/actions/changeUserAction";
+import { changeUserAction } from "@/actions/auth/changeUserAction";
 
 export const ChooseUsernameForm = () => {
     const router = useRouter();

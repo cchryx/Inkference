@@ -53,7 +53,9 @@ export async function changeProfileAction(formData: FormData, type: string) {
         if (lastUpdated) {
             const elapsedMs = differenceInMilliseconds(
                 new Date(),
-                lastUpdated instanceof Date
+                typeof lastUpdated === "object" &&
+                    lastUpdated !== null &&
+                    (lastUpdated as object) instanceof Date
                     ? lastUpdated
                     : typeof lastUpdated === "string" ||
                       typeof lastUpdated === "number"

@@ -11,6 +11,7 @@ import Step5 from "./project/Step5";
 import Step6 from "./project/Step6";
 import Preview from "./project/Preview";
 import { toast } from "sonner";
+import { createProjectAction } from "@/actions/content/createProjectAction";
 
 type Props = {
     onCloseModal: () => void;
@@ -91,20 +92,42 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
         if (step > 0) setStep(step - 1);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (step === totalSteps - 1) {
-            console.log("Submitting project:", {
-                name,
-                summary,
-                description,
-                projectLinks,
-                iconImageUrl,
-                bannerImageUrl,
-                timeline,
-                projectResources,
-            });
-            onCloseModal();
+            try {
+                const result = await createProjectAction({
+                    name,
+                    summary,
+                    description,
+                    projectLinks,
+                    iconImageUrl,
+                    bannerImageUrl,
+                    projectResources,
+                    status:
+                        timeline.status === "In Progress"
+                            ? "IN_PROGRESS"
+                            : "COMPLETE",
+                    startDate: timeline.startDate!,
+                    endDate:
+                        timeline.status === "Complete"
+                            ? timeline.endDate ?? null
+                            : null,
+                    skills: [],
+                    contributorIds: [], // pass actual contributor IDs if you have them
+                });
+
+                if ("error" in result) {
+                    toast.error(result.error);
+                } else {
+                    toast.success("Project created successfully!");
+                    onCloseModal();
+                }
+            } catch (error) {
+                toast.error("Failed to create project.");
+                console.error(error);
+            }
         }
     };
 
@@ -116,7 +139,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                     <h2 className="text-xl font-bold">Create Project</h2>
                     <button
                         onClick={onCloseModal}
-                        className="text-gray-600 hover:text-black"
+                        className="text-gray-600 hover:text-black cursor-pointer"
                     >
                         <X className="w-5 h-5" />
                     </button>

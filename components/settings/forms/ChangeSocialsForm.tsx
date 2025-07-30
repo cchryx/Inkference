@@ -17,8 +17,8 @@ import {
     Mail,
     Twitch,
 } from "lucide-react";
-import { changeProfileAction } from "@/actions/changeProfileAction";
-import { getProfileChangeStatus } from "@/actions/getProfileChangeStatus";
+import { changeProfileAction } from "@/actions/profile/changeProfileAction";
+import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import {
     FaDiscord,
     FaPinterestP,

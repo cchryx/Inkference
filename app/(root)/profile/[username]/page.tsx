@@ -1,4 +1,4 @@
-import { getProfileData } from "@/actions/getProfileData";
+import { getProfileData } from "@/actions/profile/getProfileData";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { SocialsCard } from "@/components/profile/SocialsCard";
 import { ProfileCard } from "@/components/profile/ProfileCard";
@@ -7,8 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import ProfileContent from "@/components/root/ProfileContent";
+import Content from "@/components/content/Content";
 import RecommendedAccountsCard from "@/components/profile/RecommendedAccountsCard";
+import { getUserProjects } from "@/actions/content/getUserProjects";
 
 export default async function Page({
     params,
@@ -44,6 +45,9 @@ export default async function Page({
         ...(await getProfileData(username)).profile,
     };
 
+    const projects = await getUserProjects(tUser.id);
+    const content = { projects };
+
     return (
         <div className="w-full">
             {/* Main profile & sidebar */}
@@ -58,7 +62,7 @@ export default async function Page({
                     </div>
 
                     {!session && (
-                        <div className="bg-gray-200 p-4 shadow-md rounded-md flex flex-col items-start gap-3 w-full">
+                        <div className="lg:hidden bg-gray-200 p-4 shadow-md rounded-md flex flex-col items-start gap-3 w-full">
                             <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                                 We've detected that you are not signed in. Sign
                                 in to access your full profile experience.
@@ -114,7 +118,7 @@ export default async function Page({
 
             {/* Bottom section */}
             <div className="px-[2%]">
-                <ProfileContent tUser={tUser} />
+                <Content content={content} />
             </div>
         </div>
     );

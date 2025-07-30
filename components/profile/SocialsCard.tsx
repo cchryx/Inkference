@@ -169,7 +169,7 @@ export const SocialsCard = ({ tUser }: { tUser: any }) => {
     }
 
     return (
-        <div className="bg-gray-200 h-[15rem] p-2 font-medium shadow-md rounded-md">
+        <div className="bg-gray-200 max-h-[15rem] p-2 font-medium shadow-md rounded-md">
             <div className="overflow-y-scroll h-full pr-1">
                 {/* Address */}
                 {address && (
@@ -205,9 +205,9 @@ export const SocialsCard = ({ tUser }: { tUser: any }) => {
                 ))}
 
                 {socialLinks.length === 0 && !address && (
-                    <p className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 h-full w-full flex items-center justify-center">
                         No location or social links provided
-                    </p>
+                    </div>
                 )}
             </div>
         </div>
