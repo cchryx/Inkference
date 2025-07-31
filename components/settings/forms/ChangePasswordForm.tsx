@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { changePasswordAction } from "@/actions/auth/changePasswordAction";
+import { changePasswordAction } from "@/actions/auth/changePassword";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import Loader from "@/components/general/Loader";
 import { Button } from "@/components/ui/button";

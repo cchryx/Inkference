@@ -6,11 +6,12 @@ import { User } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
+    isOwner: boolean;
     project: any;
     tProfile: any;
 };
 
-export const AuthorCard = ({ project, tProfile }: Props) => {
+export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const tUser = project.userData.user;
 

@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
-import { ChevronDown, ChevronRight, Link2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Link2, Pen, Pencil } from "lucide-react";
+import EditResourcesModal from "./edit/EditResourcesModal";
 
 type Props = {
+    isOwner: boolean;
+    projectId: string;
     resources: any;
 };
 
-const ResourcesCard = ({ resources }: Props) => {
+const ResourcesCard = ({ isOwner, projectId, resources }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isMinimized, setIsMinimized] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 800);
@@ -35,42 +39,60 @@ const ResourcesCard = ({ resources }: Props) => {
     }
 
     return (
-        <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col gap-2 max-h-[300px]">
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">
-                    Resources ({resources.length})
-                </h2>
-                <button
-                    onClick={toggleMinimize}
-                    className="text-gray-600 hover:text-black transition cursor-pointer"
-                >
-                    {isMinimized ? (
-                        <ChevronRight className="size-6" />
-                    ) : (
-                        <ChevronDown className="size-6" />
-                    )}
-                </button>
-            </div>
-
-            {!isMinimized && resources.length > 0 && (
-                <div className="overflow-y-auto flex flex-col gap-2 pr-1 yes-scrollbar text-sm">
-                    {resources.map((url: string, index: number) => (
-                        <a
-                            key={index}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-2 hover:brightness-90 bg-gray-300 px-2 py-1 rounded-sm cursor-pointer w-full"
-                        >
-                            <Link2 className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate overflow-hidden whitespace-nowrap w-full text-gray-800">
-                                {url}
-                            </span>
-                        </a>
-                    ))}
+        <>
+            <EditResourcesModal
+                open={editOpen}
+                onClose={() => setEditOpen(false)}
+                projectId={projectId}
+                initialResources={resources}
+            />
+            <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col gap-2 max-h-[300px]">
+                <div className="flex items-center justify-between">
+                    <div className="flex gap-2">
+                        <h2 className="text-lg font-semibold">
+                            Project Resources ({resources.length})
+                        </h2>
+                        {isOwner && (
+                            <button
+                                onClick={() => setEditOpen(true)}
+                                className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                            >
+                                <Pencil className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        onClick={toggleMinimize}
+                        className="text-gray-600 hover:text-black transition cursor-pointer"
+                    >
+                        {isMinimized ? (
+                            <ChevronRight className="size-6" />
+                        ) : (
+                            <ChevronDown className="size-6" />
+                        )}
+                    </button>
                 </div>
-            )}
-        </div>
+
+                {!isMinimized && resources.length > 0 && (
+                    <div className="overflow-y-auto flex flex-col gap-2 pr-1 yes-scrollbar text-sm">
+                        {resources.map((url: string, index: number) => (
+                            <a
+                                key={index}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center space-x-2 hover:brightness-90 bg-gray-300 px-2 py-1 rounded-sm cursor-pointer w-full"
+                            >
+                                <Link2 className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate overflow-hidden whitespace-nowrap w-full text-gray-800">
+                                    {url}
+                                </span>
+                            </a>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
 

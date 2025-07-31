@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoTooltip } from "@/components/general/InfoToolTip";
+import InfoTooltip from "@/components/general/InfoToolTip";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@radix-ui/react-label";
 

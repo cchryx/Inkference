@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/argon2";
 import { createAuthMiddleware, APIError } from "better-auth/api";
 import { getValidDomains, normalizeName } from "@/lib/utils";
-import { sendEmailAction } from "@/actions/auth/sendEmailAction";
+import { sendEmailAction } from "@/actions/auth/sendEmail";
 import { username } from "better-auth/plugins";
 
 type AuthUser = {

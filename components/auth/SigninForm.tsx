@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-import { signinEmailAction } from "@/actions/auth/signinEmailAction";
+import { signinEmailAction } from "@/actions/auth/signinEmail";
 import Link from "next/link";
 import { PasswordInput } from "./PasswordInput";
 import Loader from "../general/Loader";

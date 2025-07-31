@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Pen, Pencil } from "lucide-react";
 
 const con = [
     {
@@ -32,10 +32,11 @@ const con = [
 ];
 
 type Props = {
+    isOwner: boolean;
     contributors: any;
 };
 
-const ContributorsCard = ({ contributors }: Props) => {
+const ContributorsCard = ({ isOwner, contributors }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isMinimized, setIsMinimized] = useState(false);
 
@@ -76,9 +77,19 @@ const ContributorsCard = ({ contributors }: Props) => {
     return (
         <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col gap-2">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">
-                    Project Contributors ({contributors.length})
-                </h2>
+                <div className="flex gap-2">
+                    <h2 className="text-lg font-semibold">
+                        Project Contributors ({contributors.length})
+                    </h2>
+                    {isOwner && (
+                        <button
+                            onClick={() => {}}
+                            className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
                 <button
                     onClick={toggleMinimize}
                     className="text-gray-600 hover:text-black transition cursor-pointer"

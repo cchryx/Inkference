@@ -1,10 +1,9 @@
 "use client";
 
-import { Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import { Button } from "@/components/ui/button";
-import { InfoTooltip } from "@/components/general/InfoToolTip";
+import InfoTooltip from "@/components/general/InfoToolTip";
 
 type Props = {
     iconImageUrl: string;

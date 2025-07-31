@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import CreateContent from "../create/CreateContent";
-import CreateProjectModal from "../create/CreateProjectModal";
-import ContentsBar from "../root/Contentsbar";
+
+import ContentsBar from "./Contentsbar";
 import Projects from "./sections/Projects";
 import Experiences from "./sections/Experiences";
 import Education from "./sections/Education";
 import Skills from "./sections/Skills";
 import Photos from "./sections/Photos";
 import Posts from "./sections/Posts";
+import CreateContent from "../project/create/CreateContent";
+import CreateProjectModal from "../project/create/CreateProjectModal";
 
 type Props = {
     content: any;

@@ -121,10 +121,6 @@ export async function changeProfileAction(formData: FormData, type: string) {
         return { error: null };
     } catch (error) {
         if (error instanceof APIError) {
-            const errorCode = error.body
-                ? (error.body.code as ErrorCode)
-                : "UNKNOWN";
-
             let message = error.message?.trim() || "An unknown error occurred";
             message = message
                 .split(/(?<=[.!?])\s+/)

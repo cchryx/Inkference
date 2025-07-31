@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/general/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { changeUserAction } from "@/actions/auth/changeUserAction";
+import { changeUserAction } from "@/actions/auth/changeUser";
 
 type Props = {
     name: string;

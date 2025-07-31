@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Label } from "@radix-ui/react-label";
-import { InfoTooltip } from "@/components/general/InfoToolTip";
+import InfoTooltip from "@/components/general/InfoToolTip";
 
 type Props = {
     onChange: (dates: {

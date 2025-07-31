@@ -18,7 +18,7 @@ export default function ProjectCard({ project }: { project: any }) {
     const bannerUrl = project.bannerImage || "/assets/general/fillerImage.png";
     const iconUrl = project.iconImage || "/assets/general/folder.png";
     const name = project.name;
-    const description = project.summary || "No description provided.";
+    const summary = project.summary || "No summary provided.";
     const status =
         project.status === "IN_PROGRESS" ? "In Progress" : "Complete";
     const startDate = project.startDate
@@ -83,8 +83,8 @@ export default function ProjectCard({ project }: { project: any }) {
                     <h2 className="text-lg font-semibold text-gray-800 mb-1">
                         {name}
                     </h2>
-                    <p className="text-sm text-gray-600 line-clamp-4">
-                        {description}
+                    <p className="text-xs text-gray-600 line-clamp-4">
+                        {summary}
                     </p>
                 </div>
 

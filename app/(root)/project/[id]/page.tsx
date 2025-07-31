@@ -5,8 +5,8 @@ import { HeaderCard } from "@/components/project/HeaderCard";
 import { AuthorCard } from "@/components/project/AuthorCard";
 import ContributorsCard from "@/components/project/ContributorsCard";
 import ResourcesCard from "@/components/project/ResourcesCard";
-import SkillsCard from "@/components/project/SkilsCard";
-import { getProjectById } from "@/actions/content/getProject";
+import SkillsCard from "@/components/project/SkillsCard";
+import { getProjectById } from "@/actions/content/project/getProject";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { getProfileData } from "@/actions/profile/getProfileData";
 import GalleryCard from "@/components/project/GalleryCard";
@@ -44,11 +44,15 @@ export default async function Page({
         <div className="w-full flex space-y-5 flex-col my-5">
             <div className="flex lg:flex-row flex-col px-[2%] w-full gap-5">
                 <div className="lg:flex-1">
-                    <HeaderCard project={project} />
+                    <HeaderCard isOwner={isOwner} project={project} />
                 </div>
 
                 <div className="hidden lg:w-[15rem] lg:flex flex-col space-y-5">
-                    <AuthorCard tProfile={tProfile} project={project} />
+                    <AuthorCard
+                        isOwner={isOwner}
+                        tProfile={tProfile}
+                        project={project}
+                    />
 
                     <div className="flex-1 bg-gray-200 p-4 shadow-md rounded-md bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center" />
                 </div>
@@ -56,7 +60,10 @@ export default async function Page({
 
             {(isOwner || hasItems(project.skills)) && (
                 <div className="px-[2%]">
-                    <SkillsCard skills={(project.skills as string[]) ?? []} />
+                    <SkillsCard
+                        isOwner={isOwner}
+                        skills={(project.skills as string[]) ?? []}
+                    />
                 </div>
             )}
 
@@ -64,6 +71,7 @@ export default async function Page({
             {(isOwner || hasItems(project.contributors)) && (
                 <div className="px-[2%]">
                     <ContributorsCard
+                        isOwner={isOwner}
                         contributors={(project.contributors as any[]) ?? []}
                     />
                 </div>
@@ -72,6 +80,7 @@ export default async function Page({
             {(isOwner || hasItems(project.galleryImages)) && (
                 <div className="px-[2%]">
                     <GalleryCard
+                    // isOwner={isOwner}
                     // images={(project.galleryImages as string[]) ?? []}
                     />
                 </div>
@@ -81,6 +90,8 @@ export default async function Page({
             {(isOwner || hasItems(project.projectResources)) && (
                 <div className="px-[2%]">
                     <ResourcesCard
+                        isOwner={isOwner}
+                        projectId={project.id}
                         resources={(project.projectResources as any[]) ?? []}
                     />
                 </div>

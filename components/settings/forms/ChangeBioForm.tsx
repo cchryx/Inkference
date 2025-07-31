@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/general/Skeleton";
-import { changeProfileAction } from "@/actions/profile/changeProfileAction";
+import { changeProfileAction } from "@/actions/profile/changeProfile";
 import { toast } from "sonner";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "./getUserData";
+import { getUserData } from "../getUserData";
 
 export async function getUserProjects(userId?: string) {
     const userData = await getUserData(userId);

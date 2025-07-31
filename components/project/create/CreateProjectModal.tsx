@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../ui/button";
 import { X } from "lucide-react";
-import Step1 from "./project/Step1";
-import Step2 from "./project/Step2";
-import Step3 from "./project/Step3";
-import Step4 from "./project/Step4";
-import Step5 from "./project/Step5";
-import Step6 from "./project/Step6";
-import Preview from "./project/Preview";
+import Step1 from "./Step1";
+import Step2 from "./Step2";
+import Step3 from "./Step3";
+import Step4 from "./Step4";
+import Step5 from "./Step5";
+import Step6 from "./Step6";
+import Preview from "./Preview";
 import { toast } from "sonner";
-import { createProjectAction } from "@/actions/content/createProjectAction";
+import { createProjectAction } from "@/actions/content/project/createProject";
+import { Button } from "@/components/ui/button";
 
 type Props = {
     onCloseModal: () => void;

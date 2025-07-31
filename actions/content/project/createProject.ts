@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { getUserData } from "./getUserData";
+import { getUserData } from "../getUserData";
 
 export async function createProjectAction(data: {
     name: string;

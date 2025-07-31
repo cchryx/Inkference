@@ -9,7 +9,7 @@ import Loader from "@/components/general/Loader";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { changeProfileAction } from "@/actions/profile/changeProfileAction";
+import { changeProfileAction } from "@/actions/profile/changeProfile";
 
 type Props = {
     bannerImage: string | undefined;

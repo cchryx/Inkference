@@ -8,7 +8,7 @@ type Props = {
     position?: "top" | "right" | "bottom" | "left";
 };
 
-export const InfoTooltip = ({ text, position = "right" }: Props) => {
+const InfoTooltip = ({ text, position = "right" }: Props) => {
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);
@@ -68,3 +68,5 @@ export const InfoTooltip = ({ text, position = "right" }: Props) => {
         </div>
     );
 };
+
+export default InfoTooltip;

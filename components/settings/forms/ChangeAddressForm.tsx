@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
-import { changeProfileAction } from "@/actions/profile/changeProfileAction";
+import { changeProfileAction } from "@/actions/profile/changeProfile";
 
 function useClickOutside(
     ref: React.RefObject<HTMLElement | null>,

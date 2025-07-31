@@ -9,7 +9,7 @@ import Loader from "@/components/general/Loader";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { changeUserAction } from "@/actions/auth/changeUserAction";
+import { changeUserAction } from "@/actions/auth/changeUser";
 
 type Props = {
     username: string;

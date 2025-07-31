@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import { Button } from "@/components/ui/button";
 import { Link2, X } from "lucide-react";
-import { InfoTooltip } from "@/components/general/InfoToolTip";
+import InfoTooltip from "@/components/general/InfoToolTip";
 
 type Step6Props = {
     projectResources: string[];
