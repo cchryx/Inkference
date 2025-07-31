@@ -16,7 +16,7 @@ export default async function Layout({ children }: LayoutProps) {
     });
 
     return (
-        <div className="flex flex-col md:flex-row h-full">
+        <div className="flex flex-col md:flex-row h-full w-full fixed">
             {session && (
                 <div className="hidden md:flex max-w-[250px]">
                     <NavbarLeft session={session} />
@@ -36,7 +36,7 @@ export default async function Layout({ children }: LayoutProps) {
                     )}
                 </section>
                 {session && (
-                    <section className="md:hidden h-[60px]">
+                    <section className="md:hidden">
                         <NavbarMobile session={session} />
                     </section>
                 )}

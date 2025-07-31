@@ -38,7 +38,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
     }, [showUserMenu]);
 
     return (
-        <div className="relative w-full h-[60px] bg-gray-200 border-t border-gray-300">
+        <div className="relative w-full pt-2 pb-5 bg-gray-200 border-t border-gray-300">
             {/* Menu bar */}
             <div className="flex justify-around items-center h-full">
                 {/* User Icon on left */}
@@ -87,7 +87,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
             {showUserMenu && (
                 <div
                     ref={userMenuRef}
-                    className="absolute bottom-[72px] left-2 z-50 w-48 bg-gray-300 rounded shadow-lg overflow-hidden"
+                    className="absolute bottom-[80px] left-2 z-50 w-48 bg-gray-300 rounded shadow-lg overflow-hidden"
                 >
                     <ul className="flex flex-col py-1">
                         <li>

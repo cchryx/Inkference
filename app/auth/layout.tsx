@@ -6,7 +6,7 @@ type LayoutProps = {
 
 export default function Layout({ children }: LayoutProps) {
     return (
-        <div className="flex h-screen w-screen overflow-hidden flex-col md:flex-row">
+        <div className="flex h-screen w-screen overflow-hidden flex-col md:flex-row fixed">
             <section className="w-full md:w-[60%] flex justify-center">
                 {children}
             </section>

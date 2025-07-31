@@ -2,8 +2,8 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        theme_color: "#000000",
-        background_color: "#000000",
+        theme_color: "#FFFFFF",
+        background_color: "#FFFFFF",
         icons: [
             {
                 purpose: "maskable",
