@@ -123,7 +123,7 @@ export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
                                 className="size-full rounded-full object-cover"
                             />
                         ) : (
-                            <User className="text-gray-300 w-6 h-6" />
+                            <User className="text-gray-300 size-15" />
                         )}
                     </div>
 
