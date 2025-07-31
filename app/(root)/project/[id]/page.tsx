@@ -80,8 +80,9 @@ export default async function Page({
             {(isOwner || hasItems(project.galleryImages)) && (
                 <div className="px-[2%]">
                     <GalleryCard
-                    // isOwner={isOwner}
-                    // images={(project.galleryImages as string[]) ?? []}
+                        isOwner={isOwner}
+                        projectId={project.id}
+                        galleryImages={project.galleryImages}
                     />
                 </div>
             )}

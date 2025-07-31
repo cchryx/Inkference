@@ -33,9 +33,7 @@ export default function Step3({
     return (
         <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
-                <Label htmlFor="projectLinks" className="text-lg">
-                    Project Links
-                </Label>
+                <Label htmlFor="projectLinks">Project Links</Label>
                 <InfoTooltip text="Add up to 3 links related to your project." />
             </div>
 

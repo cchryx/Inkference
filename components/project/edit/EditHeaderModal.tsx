@@ -13,6 +13,7 @@ import Step2 from "../create/Step2";
 import Step3 from "../create/Step3";
 import Step4 from "../create/Step4";
 import Step5 from "../create/Step5";
+import Loader from "@/components/general/Loader";
 
 type Props = {
     open: boolean;
@@ -194,7 +195,8 @@ const EditHeaderModal = ({
                         className="cursor-pointer"
                         disabled={isPending}
                     >
-                        {isPending ? "Saving..." : "Save Changes"}
+                        {isPending && <Loader size={5} color="text-white" />}
+                        Save Changes
                     </Button>
                 </div>
             </div>

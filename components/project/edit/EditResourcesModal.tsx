@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 import Modal from "@/components/general/Modal";
 import Step6 from "../create/Step6";
+import Loader from "@/components/general/Loader";
 
 type Props = {
     open: boolean;
@@ -107,10 +108,11 @@ const EditResourcesModal = ({
                     </Button>
                     <Button
                         onClick={handleSave}
-                        disabled={isPending}
                         className="cursor-pointer"
+                        disabled={isPending}
                     >
-                        {isPending ? "Saving..." : "Save Changes"}
+                        {isPending && <Loader size={5} color="text-white" />}
+                        Save Changes
                     </Button>
                 </div>
             </div>

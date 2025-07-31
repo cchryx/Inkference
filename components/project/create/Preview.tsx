@@ -1,4 +1,3 @@
-import { InfoTooltip } from "@/components/general/InfoToolTip";
 import { Label } from "@radix-ui/react-label";
 import React from "react";
 import { Link2 } from "lucide-react";

@@ -3,8 +3,33 @@
 import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
 
+type GalleryImageItem = {
+    image: string;
+    description: string;
+};
+
 export async function editProject(projectId: string, data: any) {
     try {
+        if (Array.isArray(data.galleryImages)) {
+            const galleryItems = data.galleryImages;
+
+            await prisma.projectGalleryImage.deleteMany({
+                where: { projectId },
+            });
+
+            if (galleryItems.length > 0) {
+                await prisma.projectGalleryImage.createMany({
+                    data: galleryItems.map((item: GalleryImageItem) => ({
+                        image: item.image,
+                        description: item.description,
+                        projectId,
+                    })),
+                });
+            }
+
+            delete data.galleryImages;
+        }
+
         await prisma.project.update({
             where: { id: projectId },
             data,
@@ -23,6 +48,7 @@ export async function editProject(projectId: string, data: any) {
             return { error: message };
         }
 
+        console.log(error);
         return { error: "Internal server error." };
     }
 }

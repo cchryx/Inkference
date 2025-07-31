@@ -36,9 +36,7 @@ const Step6 = ({
     return (
         <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1">
-                <Label htmlFor="projectResources" className="text-lg">
-                    Project Resources
-                </Label>
+                <Label htmlFor="projectResources">Project Resources</Label>
                 <InfoTooltip text="Add up to 20 links related to your project." />
             </div>
 

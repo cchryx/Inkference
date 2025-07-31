@@ -149,7 +149,7 @@ const Step5 = ({ onChange, initialValue }: Props) => {
             {/* Status */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-1">
-                    <Label>Status</Label>
+                    <Label htmlFor="status">Status</Label>
                     <InfoTooltip text="Select project status." />
                 </div>
                 {renderDropdown(
@@ -166,7 +166,7 @@ const Step5 = ({ onChange, initialValue }: Props) => {
             {/* Start Date */}
             <div>
                 <div className="flex items-center gap-2">
-                    <Label>Start Date</Label>
+                    <Label htmlFor="startDate">Start Date</Label>
                     <InfoTooltip text="When did you begin the project?" />
                 </div>
                 <div className="flex gap-2 mt-1">
@@ -201,7 +201,7 @@ const Step5 = ({ onChange, initialValue }: Props) => {
             {status === "Complete" && (
                 <div>
                     <div className="flex items-center gap-2">
-                        <Label>End Date</Label>
+                        <Label htmlFor="endDate">End Date</Label>
                         <InfoTooltip text="When did you finish the project?" />
                     </div>
                     <div className="flex gap-2 mt-1">
