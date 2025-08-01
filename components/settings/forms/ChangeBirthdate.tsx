@@ -9,6 +9,7 @@ import { changeProfileAction } from "@/actions/profile/changeProfile";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { toast } from "sonner";
 import { AlertCircle, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Props = {
     birthdate: number | null;
@@ -16,6 +17,7 @@ type Props = {
 };
 
 const ChangeBirthdate = ({ birthdate, isLoading }: Props) => {
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [year, setYear] = useState("");
     const [month, setMonth] = useState("");
@@ -71,6 +73,7 @@ const ChangeBirthdate = ({ birthdate, isLoading }: Props) => {
         } else {
             toast.success("Birthdate changed successfully.");
             getProfileChangeStatus("birthdate").then(setStatus);
+            router.refresh();
         }
 
         setIsPending(false);

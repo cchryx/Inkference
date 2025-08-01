@@ -85,20 +85,21 @@ export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
                             <img
                                 src={tUser.image}
                                 className="w-16 h-16 rounded-full object-cover"
+                                alt={`${tUser.name}'s profile picture`}
                             />
                         ) : (
                             <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center">
                                 <User className="text-gray-300 w-6 h-6" />
                             </div>
                         )}
-                        <div className="flex flex-col">
-                            <div className="font-semibold text-base">
+                        <div className="flex flex-col min-w-0">
+                            <div className="font-semibold text-base truncate">
                                 {tUser.name}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground truncate">
                                 @{tUser.username}
                             </div>
-                            <div className="text-xs text-gray-700 mt-1">
+                            <div className="text-xs text-gray-700 mt-1 truncate max-w-[200px]">
                                 {tProfile.bio}
                             </div>
                         </div>
@@ -127,12 +128,21 @@ export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
                         )}
                     </div>
 
-                    <div className="mt-4">
-                        <div className="text-2xl font-bold">{tUser.name}</div>
-                        <div className="text-muted-foreground">
+                    <div className="mt-4 max-w-full">
+                        <div
+                            className="text-2xl font-bold truncate"
+                            title={tUser.name}
+                        >
+                            {tUser.name}
+                        </div>
+                        <div
+                            className="text-muted-foreground truncate"
+                            title={`@${tUser.username}`}
+                        >
                             @{tUser.username}
                         </div>
                     </div>
+
                     <div className="text-sm text-gray-700 mt-2 max-w-md">
                         {tProfile.bio}
                     </div>

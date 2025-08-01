@@ -10,6 +10,7 @@ import { changeProfileAction } from "@/actions/profile/changeProfile";
 import { toast } from "sonner";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const MAX_LINES = 12;
 const MAX_CHARS = 800;
@@ -23,6 +24,7 @@ const ChangeBioForm = ({
     biography,
     isLoading = false,
 }: ChangeBioFormProps) => {
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [bio, setBio] = useState(biography);
     const [status, setStatus] = useState<{
@@ -50,6 +52,7 @@ const ChangeBioForm = ({
         } else {
             toast.success("Bio changed successfully.");
             getProfileChangeStatus("bio").then(setStatus);
+            router.refresh();
         }
 
         setIsPending(false);

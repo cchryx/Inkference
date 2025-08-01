@@ -10,6 +10,7 @@ import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
 import { changeUserAction } from "@/actions/auth/changeUser";
+import { useRouter } from "next/navigation";
 
 type Props = {
     username: string;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 const ChangeUsernameForm = ({ username, isLoading }: Props) => {
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [status, setStatus] = useState<{
         canChange: boolean;
@@ -41,6 +43,7 @@ const ChangeUsernameForm = ({ username, isLoading }: Props) => {
         } else {
             toast.success("Username changed successfully.");
             getProfileChangeStatus("username").then(setStatus);
+            router.refresh();
         }
 
         setIsPending(false);

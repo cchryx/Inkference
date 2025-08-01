@@ -69,6 +69,7 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                         <img
                             src={tUser.image}
                             className="w-full h-full rounded-full object-cover"
+                            alt={tUser.name ?? "User avatar"}
                         />
                     ) : (
                         <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
@@ -77,12 +78,18 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
             </div>
 
             <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10 h-full">
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-2 min-w-0">
                     <div>
-                        <div className="text-[25px] font-bold">
+                        <div
+                            className="text-[25px] font-bold truncate max-w-[20rem]"
+                            title={tUser?.name}
+                        >
                             {tUser?.name}
                         </div>
-                        <div className="text-muted-foreground">
+                        <div
+                            className="text-muted-foreground truncate max-w-[24rem]"
+                            title={`@${tUser?.username}`}
+                        >
                             @{tUser?.username}
                         </div>
                     </div>

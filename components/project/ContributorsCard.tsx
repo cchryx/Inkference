@@ -4,40 +4,22 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
 import { ChevronDown, ChevronRight, Pen, Pencil } from "lucide-react";
 import EditContributorsModal from "./edit/EditContributorsModal";
-
-const con = [
-    {
-        name: "Jane Doe",
-        username: "janedoe",
-        bio: "Frontend developer and designer.",
-        avatar: "https://i.pravatar.cc/100?img=1",
-    },
-    {
-        name: "John Smith",
-        username: "johnsmith",
-        bio: "Backend wizard with a passion for APIs.",
-        avatar: "https://i.pravatar.cc/100?img=2",
-    },
-    {
-        name: "Emily Ray",
-        username: "emilyray",
-        bio: "Tech lead and open-source contributor.",
-        avatar: "https://i.pravatar.cc/100?img=3",
-    },
-    {
-        name: "Mike Johnson",
-        username: "mikej",
-        bio: "Full-stack enthusiast and cloud geek.",
-        avatar: "https://i.pravatar.cc/100?img=4",
-    },
-];
+import FallbackUserIcon from "../general/FallbackUserIcon";
+import Link from "next/link";
 
 type Props = {
     isOwner: boolean;
+    projectId: string;
+    ownerId: string;
     contributors: any;
 };
 
-const ContributorsCard = ({ isOwner, contributors }: Props) => {
+const ContributorsCard = ({
+    isOwner,
+    projectId,
+    ownerId,
+    contributors,
+}: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isPending, setIsPending] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
@@ -82,14 +64,9 @@ const ContributorsCard = ({ isOwner, contributors }: Props) => {
             <EditContributorsModal
                 open={editOpen}
                 onClose={() => setEditOpen(false)}
-                projectId="project123"
-                initialContributors={[
-                    {
-                        id: "1",
-                        name: "Alice Zhang",
-                        username: "alicez",
-                    },
-                ]}
+                projectId={projectId}
+                ownerId={ownerId}
+                initialContributors={contributors}
             />
             <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col gap-2">
                 <div className="flex items-center justify-between">
@@ -120,27 +97,42 @@ const ContributorsCard = ({ isOwner, contributors }: Props) => {
 
                 {!isMinimized && contributors.length > 0 && (
                     <div className="flex-1 overflow-x-auto flex gap-3 pr-1 whitespace-nowrap yes-scrollbar">
-                        {con.map((contributor, index) => (
-                            <div
-                                key={index}
-                                className="w-[20rem] mb-3 flex-shrink-0 flex gap-1 bg-gray-300 p-3 rounded-md hover:brightness-[90%] cursor-pointer space-x-2"
-                            >
-                                <img
-                                    src={contributor.avatar}
-                                    alt={`${contributor.name}'s avatar`}
-                                    className="w-12 h-12 rounded-full object-cover mb-1"
-                                />
-                                <div className="text-xs text-gray-700 line-clamp-3">
-                                    <div className="font-semibold text-sm">
-                                        {contributor.name}
+                        {contributors.map((contributor: any, index: number) => {
+                            const user = contributor.user ?? contributor;
+
+                            return (
+                                <Link
+                                    key={user.id ?? index}
+                                    href={`/profile/${user.username}`}
+                                    className="w-[16rem] mb-3 flex-shrink-0 flex items-center gap-3 bg-gray-300 p-3 rounded-md hover:brightness-95 transition"
+                                >
+                                    {user.image ? (
+                                        <img
+                                            src={user.image}
+                                            className="w-12 h-12 rounded-full object-cover shrink-0"
+                                            alt={user.name}
+                                        />
+                                    ) : (
+                                        <FallbackUserIcon size="size-12" />
+                                    )}
+
+                                    <div className="flex flex-col justify-center text-gray-800 min-w-0">
+                                        <div
+                                            className="font-semibold text-sm truncate"
+                                            title={user.name}
+                                        >
+                                            {user.name}
+                                        </div>
+                                        <div
+                                            className="text-xs text-gray-600 truncate"
+                                            title={`@${user.username}`}
+                                        >
+                                            @{user.username}
+                                        </div>
                                     </div>
-                                    <div className="text-xs text-gray-600">
-                                        @{contributor.username}
-                                    </div>
-                                    {contributor.bio}
-                                </div>
-                            </div>
-                        ))}
+                                </Link>
+                            );
+                        })}
                     </div>
                 )}
             </div>

@@ -10,6 +10,17 @@ type GalleryImageItem = {
 
 export async function editProject(projectId: string, data: any) {
     try {
+        // Check that project exists first
+        const existingProject = await prisma.project.findUnique({
+            where: { id: projectId },
+            select: { id: true },
+        });
+
+        if (!existingProject) {
+            return { error: "Project not found." };
+        }
+
+        // Handle gallery images update if provided
         if (Array.isArray(data.galleryImages)) {
             const galleryItems = data.galleryImages;
 
@@ -30,10 +41,40 @@ export async function editProject(projectId: string, data: any) {
             delete data.galleryImages;
         }
 
-        await prisma.project.update({
-            where: { id: projectId },
-            data,
-        });
+        // Handle contributors update if provided
+        if (Array.isArray(data.contributors)) {
+            const contributorUserIds: string[] = data.contributors;
+
+            // Get UserData IDs for those user IDs
+            const userDatas = await prisma.userData.findMany({
+                where: { userId: { in: contributorUserIds } },
+                select: { id: true },
+            });
+
+            const userDataIds = userDatas.map((ud) => ud.id);
+
+            await prisma.project.update({
+                where: { id: projectId },
+                data: {
+                    contributors: {
+                        set:
+                            userDataIds.length > 0
+                                ? userDataIds.map((id) => ({ id }))
+                                : [],
+                    },
+                },
+            });
+
+            delete data.contributors;
+        }
+
+        // Update any other remaining fields on the project
+        if (Object.keys(data).length > 0) {
+            await prisma.project.update({
+                where: { id: projectId },
+                data,
+            });
+        }
 
         return { error: null };
     } catch (error) {
@@ -48,7 +89,7 @@ export async function editProject(projectId: string, data: any) {
             return { error: message };
         }
 
-        console.log(error);
+        console.error(error);
         return { error: "Internal server error." };
     }
 }

@@ -98,6 +98,10 @@ export const auth = betterAuth({
                     throw new APIError("BAD_REQUEST", {
                         message: "Name must contain at least one letter.",
                     });
+                } else if (name.length > 50) {
+                    throw new APIError("BAD_REQUEST", {
+                        message: "Name cannot be longer than 50 characters.",
+                    });
                 }
 
                 return {

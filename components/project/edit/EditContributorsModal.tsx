@@ -10,47 +10,49 @@ import Modal from "@/components/general/Modal";
 import Loader from "@/components/general/Loader";
 import { Label } from "@radix-ui/react-label";
 import InfoTooltip from "@/components/general/InfoToolTip";
-
-type User = {
-    id: string;
-    name: string;
-    username: string;
-};
+import { useSearchUsers } from "@/hooks/useUserSearch";
+import { editProject } from "@/actions/content/project/editProject";
+import FallbackUserIcon from "@/components/general/FallbackUserIcon";
 
 type Props = {
     open: boolean;
     onClose: () => void;
     projectId: string;
-    initialContributors: User[];
+    ownerId: string;
+    initialContributors: any[];
 };
-
-// Dummy data for simulation
-const dummyUsers: User[] = [
-    { id: "1", name: "Alice Zhang", username: "alicez" },
-    { id: "2", name: "Bob Lee", username: "boblee" },
-    { id: "3", name: "Chris Park", username: "chrispark" },
-    { id: "4", name: "Dana Wu", username: "danawu" },
-];
 
 const EditContributorsModal = ({
     open,
     onClose,
     projectId,
+    ownerId,
     initialContributors,
 }: Props) => {
     const router = useRouter();
     const [contributors, setContributors] =
-        useState<User[]>(initialContributors);
+        useState<any[]>(initialContributors);
     const [showInput, setShowInput] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isPending, setIsPending] = useState(false);
 
-    const handleAddContributor = (user: User) => {
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+        useSearchUsers(searchQuery);
+
+    const handleAddContributor = (user: any) => {
         if (contributors.find((c) => c.id === user.id)) {
             toast.error("User already added.");
             return;
         }
-        setContributors((prev) => [user, ...prev]);
+        setContributors((prev) => [
+            {
+                id: user.id,
+                name: user.name,
+                username: user.username,
+                image: user.image,
+            },
+            ...prev,
+        ]);
         setSearchQuery("");
         setShowInput(false);
     };
@@ -61,22 +63,33 @@ const EditContributorsModal = ({
 
     const handleSave = async () => {
         setIsPending(true);
-        toast.success("Contributors updated successfully.");
-        router.refresh();
-        onClose();
+
+        const contributorUserIds = contributors.map((c) => c.id);
+
+        const { error } = await editProject(projectId, {
+            contributors: contributorUserIds,
+        });
+
+        if (error) {
+            toast.error(error);
+        } else {
+            toast.success("Contributors updated successfully.");
+            router.refresh();
+            onClose();
+        }
+
         setIsPending(false);
     };
 
     const filteredUsers = useMemo(() => {
-        return dummyUsers.filter(
-            (u) =>
-                (u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    u.username
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase())) &&
-                !contributors.find((c) => c.id === u.id)
+        const allUsers = data?.pages.flatMap((page) => page.users) || [];
+
+        return allUsers.filter(
+            (user) =>
+                user.id !== ownerId &&
+                !contributors.find((c) => (c.user ?? c).id === user.id)
         );
-    }, [searchQuery, contributors]);
+    }, [data, contributors, ownerId]);
 
     return (
         <Modal open={open} onClose={onClose}>
@@ -126,22 +139,47 @@ const EditContributorsModal = ({
                             />
                             {/* Only show dropdown if searchQuery is not empty */}
                             {searchQuery.trim() !== "" && (
-                                <div className="bg-white border rounded-md shadow-sm max-h-48 overflow-y-auto">
+                                <div
+                                    className="bg-white border rounded-md shadow-sm max-h-48 overflow-y-auto"
+                                    onScroll={(e) => {
+                                        const target = e.currentTarget;
+                                        if (
+                                            target.scrollTop +
+                                                target.clientHeight >=
+                                                target.scrollHeight - 10 &&
+                                            hasNextPage &&
+                                            !isFetchingNextPage
+                                        ) {
+                                            fetchNextPage();
+                                        }
+                                    }}
+                                >
                                     {filteredUsers.length > 0 ? (
-                                        filteredUsers.map((user) => (
+                                        filteredUsers.map((user: any) => (
                                             <div
                                                 key={user.id}
                                                 onClick={() =>
                                                     handleAddContributor(user)
                                                 }
-                                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer"
                                             >
-                                                <p className="font-medium">
-                                                    {user.name}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    @{user.username}
-                                                </p>
+                                                {user.image ? (
+                                                    <img
+                                                        src={user.image}
+                                                        alt={user.name}
+                                                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                                    />
+                                                ) : (
+                                                    <FallbackUserIcon size="size-8" />
+                                                )}
+                                                <div className="flex flex-col min-w-0 flex-grow">
+                                                    <p className="font-medium truncate">
+                                                        {user.name}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500 truncate">
+                                                        @{user.username}
+                                                    </p>
+                                                </div>
                                             </div>
                                         ))
                                     ) : (
@@ -169,9 +207,15 @@ const EditContributorsModal = ({
                                         className="flex items-center justify-between gap-3 border rounded-xl px-3 py-2"
                                     >
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-9 h-9 rounded-md bg-gray-100 flex items-center justify-center shrink-0">
-                                                <UserCircle className="w-5 h-5 text-gray-500" />
-                                            </div>
+                                            {contributor.image ? (
+                                                <img
+                                                    src={contributor.image}
+                                                    alt={contributor.name}
+                                                    className="w-9 h-9 rounded-full object-cover shrink-0"
+                                                />
+                                            ) : (
+                                                <FallbackUserIcon size="size-9" />
+                                            )}
                                             <div className="min-w-0">
                                                 <p className="text-sm font-medium truncate">
                                                     {contributor.name}

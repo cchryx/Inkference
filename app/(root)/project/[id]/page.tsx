@@ -47,14 +47,14 @@ export default async function Page({
                     <HeaderCard isOwner={isOwner} project={project} />
                 </div>
 
-                <div className="hidden lg:w-[15rem] lg:flex flex-col space-y-5">
+                <div className="lg:w-[15rem] lg:flex flex-col space-y-5">
                     <AuthorCard
                         isOwner={isOwner}
                         tProfile={tProfile}
                         project={project}
                     />
 
-                    <div className="flex-1 bg-gray-200 p-4 shadow-md rounded-md bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center" />
+                    <div className="hidden lg:flex flex-1 bg-gray-200 p-4 shadow-md rounded-md bg-[url('/assets/general/fillerImage.png')] bg-cover bg-center" />
                 </div>
             </div>
 
@@ -72,7 +72,16 @@ export default async function Page({
                 <div className="px-[2%]">
                     <ContributorsCard
                         isOwner={isOwner}
-                        contributors={(project.contributors as any[]) ?? []}
+                        projectId={project.id}
+                        ownerId={project.userData.user.id}
+                        contributors={
+                            (project.contributors as any[])?.map((c) => ({
+                                id: c.user?.id ?? c.id,
+                                name: c.user?.name ?? c.name,
+                                username: c.user?.username ?? c.username,
+                                image: c.user?.image ?? c.image,
+                            })) ?? []
+                        }
                     />
                 </div>
             )}

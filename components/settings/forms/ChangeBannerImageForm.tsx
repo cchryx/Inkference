@@ -10,6 +10,7 @@ import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
 import { changeProfileAction } from "@/actions/profile/changeProfile";
+import { useRouter } from "next/navigation";
 
 type Props = {
     bannerImage: string | undefined;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 const ChangeBannerImageForm = ({ bannerImage, isLoading }: Props) => {
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [status, setStatus] = useState<{
         canChange: boolean;
@@ -59,6 +61,7 @@ const ChangeBannerImageForm = ({ bannerImage, isLoading }: Props) => {
         } else {
             toast.success("Banner image changed successfully.");
             getProfileChangeStatus("bannerImage").then(setStatus);
+            router.refresh();
         }
 
         setIsPending(false);

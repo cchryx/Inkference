@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { changeUserAction } from "@/actions/auth/changeUser";
+import { useRouter } from "next/navigation";
 
 type Props = {
     name: string;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 const ChangeNameForm = ({ name, isLoading }: Props) => {
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [status, setStatus] = useState<{
         canChange: boolean;
@@ -43,6 +45,7 @@ const ChangeNameForm = ({ name, isLoading }: Props) => {
         } else {
             toast.success("Name changed successfully.");
             getProfileChangeStatus("name").then(setStatus);
+            router.refresh();
         }
 
         setIsPending(false);

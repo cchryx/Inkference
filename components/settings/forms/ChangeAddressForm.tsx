@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { AlertCircle } from "lucide-react";
 import { changeProfileAction } from "@/actions/profile/changeProfile";
+import { useRouter } from "next/navigation";
 
 function useClickOutside(
     ref: React.RefObject<HTMLElement | null>,
@@ -37,6 +38,7 @@ type Props = {
 };
 
 export default function ChangeAddressForm({ address, isLoading }: Props) {
+    const router = useRouter();
     const [input, setInput] = useState(address ?? "");
     const [isPending, setIsPending] = useState(false);
     const [suggestions, setSuggestions] = useState<
@@ -98,6 +100,7 @@ export default function ChangeAddressForm({ address, isLoading }: Props) {
         } else {
             toast.success("Address changed successfully.");
             getProfileChangeStatus("address").then(setStatus);
+            router.refresh();
         }
 
         setIsPending(false);

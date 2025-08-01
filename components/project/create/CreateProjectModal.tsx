@@ -12,6 +12,7 @@ import Preview from "./Preview";
 import { toast } from "sonner";
 import { createProjectAction } from "@/actions/content/project/createProject";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 type Props = {
     onCloseModal: () => void;
@@ -54,6 +55,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
     const [showResourceInput, setShowResourceInput] = useState(false);
 
     // General Mechanics
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const handleNextClick = () => {
         switch (step) {
@@ -125,6 +127,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                 } else {
                     toast.success("Project created successfully!");
                     onCloseModal();
+                    router.refresh();
                 }
             } catch (error) {
                 toast.error("Failed to create project.");

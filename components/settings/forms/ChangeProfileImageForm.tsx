@@ -11,6 +11,7 @@ import { AlertCircle, User } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
 import { changeUserAction } from "@/actions/auth/changeUser";
 import { set } from "date-fns";
+import { useRouter } from "next/navigation";
 
 type Props = {
     profileImage: string | undefined;
@@ -18,6 +19,7 @@ type Props = {
 };
 
 const ChangeProfileImageForm = ({ profileImage, isLoading }: Props) => {
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [status, setStatus] = useState({
         canChange: true,
@@ -44,6 +46,7 @@ const ChangeProfileImageForm = ({ profileImage, isLoading }: Props) => {
         } else {
             toast.success("Profile image changed successfully.");
             getProfileChangeStatus("image").then(setStatus);
+            router.refresh();
         }
 
         setIsPending(false);

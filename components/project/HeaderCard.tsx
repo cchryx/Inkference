@@ -52,6 +52,7 @@ export const HeaderCard = ({ isOwner, project }: Props) => {
             toast.error(error);
         } else {
             toast.success("Project deleted successfully.");
+            router.refresh();
             router.push("/library");
         }
 

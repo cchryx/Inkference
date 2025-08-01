@@ -95,21 +95,30 @@ export async function changeUserAction(formData: FormData, type: string) {
 
             if (!value.trim() || !/[a-zA-Z]/.test(value)) {
                 return { error: "Name must contain at least one letter." };
-            }
-
-            if (user.name === value) {
+            } else if (user.name === value) {
                 return { error: "This is already your current name." };
+            } else if (value.length > 50) {
+                return { error: "Name cannot be longer than 50 characters." };
             }
         }
 
-        await prisma.user.update({
-            where: { id: userId },
-            data: {
-                [type]: value || null,
-                [`${type}UpdatedAt`]: new Date(),
-                id: userId,
-            },
-        });
+        if (["image", "username", "name"].includes(type)) {
+            // Use better-auth's update method for these types
+            await auth.api.updateUser({
+                headers: await headers(),
+                body: { [type]: value || null },
+            });
+        } else {
+            // For other types, update directly with Prisma
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    [type]: value || null,
+                    [`${type}UpdatedAt`]: new Date(),
+                    id: userId,
+                },
+            });
+        }
 
         return { error: null };
     } catch (error) {
