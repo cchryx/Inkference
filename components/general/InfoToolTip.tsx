@@ -56,7 +56,7 @@ const InfoTooltip = ({ text, position = "right" }: Props) => {
                         absolute z-50 rounded bg-gray-200 px-2 py-1 text-xs text-black shadow transition
                         ${positionClasses[position]}
                         max-w-[220px] 
-                        md:max-w-[600px] 
+                        md:max-w-[400px] 
                         whitespace-normal  
                         break-words  
                         w-max 

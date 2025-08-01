@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
 import { ChevronDown, ChevronRight, Pen, Pencil } from "lucide-react";
+import EditContributorsModal from "./edit/EditContributorsModal";
 
 const con = [
     {
@@ -38,7 +39,9 @@ type Props = {
 
 const ContributorsCard = ({ isOwner, contributors }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
+    const [isPending, setIsPending] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 800);
@@ -75,59 +78,73 @@ const ContributorsCard = ({ isOwner, contributors }: Props) => {
     }
 
     return (
-        <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-                <div className="flex gap-2">
-                    <h2 className="text-lg font-semibold">
-                        Project Contributors ({contributors.length})
-                    </h2>
-                    {isOwner && (
-                        <button
-                            onClick={() => {}}
-                            className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
-                        >
-                            <Pencil className="w-4 h-4" />
-                        </button>
-                    )}
+        <>
+            <EditContributorsModal
+                open={editOpen}
+                onClose={() => setEditOpen(false)}
+                projectId="project123"
+                initialContributors={[
+                    {
+                        id: "1",
+                        name: "Alice Zhang",
+                        username: "alicez",
+                    },
+                ]}
+            />
+            <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex gap-2">
+                        <h2 className="text-lg font-semibold">
+                            Project Contributors ({contributors.length})
+                        </h2>
+                        {isOwner && (
+                            <button
+                                onClick={() => setEditOpen(true)}
+                                className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                            >
+                                <Pencil className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        onClick={toggleMinimize}
+                        className="text-gray-600 hover:text-black transition cursor-pointer"
+                    >
+                        {isMinimized ? (
+                            <ChevronRight className="size-6" />
+                        ) : (
+                            <ChevronDown className="size-6" />
+                        )}
+                    </button>
                 </div>
-                <button
-                    onClick={toggleMinimize}
-                    className="text-gray-600 hover:text-black transition cursor-pointer"
-                >
-                    {isMinimized ? (
-                        <ChevronRight className="size-6" />
-                    ) : (
-                        <ChevronDown className="size-6" />
-                    )}
-                </button>
-            </div>
 
-            {!isMinimized && contributors.length > 0 && (
-                <div className="flex-1 overflow-x-auto flex gap-3 pr-1 whitespace-nowrap yes-scrollbar">
-                    {con.map((contributor, index) => (
-                        <div
-                            key={index}
-                            className="w-[20rem] mb-3 flex-shrink-0 flex gap-1 bg-gray-300 p-3 rounded-md hover:brightness-[90%] cursor-pointer space-x-2"
-                        >
-                            <img
-                                src={contributor.avatar}
-                                alt={`${contributor.name}'s avatar`}
-                                className="w-12 h-12 rounded-full object-cover mb-1"
-                            />
-                            <div className="text-xs text-gray-700 line-clamp-3">
-                                <div className="font-semibold text-sm">
-                                    {contributor.name}
+                {!isMinimized && contributors.length > 0 && (
+                    <div className="flex-1 overflow-x-auto flex gap-3 pr-1 whitespace-nowrap yes-scrollbar">
+                        {con.map((contributor, index) => (
+                            <div
+                                key={index}
+                                className="w-[20rem] mb-3 flex-shrink-0 flex gap-1 bg-gray-300 p-3 rounded-md hover:brightness-[90%] cursor-pointer space-x-2"
+                            >
+                                <img
+                                    src={contributor.avatar}
+                                    alt={`${contributor.name}'s avatar`}
+                                    className="w-12 h-12 rounded-full object-cover mb-1"
+                                />
+                                <div className="text-xs text-gray-700 line-clamp-3">
+                                    <div className="font-semibold text-sm">
+                                        {contributor.name}
+                                    </div>
+                                    <div className="text-xs text-gray-600">
+                                        @{contributor.username}
+                                    </div>
+                                    {contributor.bio}
                                 </div>
-                                <div className="text-xs text-gray-600">
-                                    @{contributor.username}
-                                </div>
-                                {contributor.bio}
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
 

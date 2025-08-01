@@ -174,15 +174,12 @@ model Project {
 
   skills String[] @db.VarChar(50)
 
-  // Contributors (many-to-many)
   contributors UserData[] @relation("ProjectContributors")
 
-  // Liked by users (many-to-many)
   likes UserData[] @relation("ProjectLikes")
 
   galleryImages ProjectGalleryImage[]
 
-  // Project owner
   userDataId String
   userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
 
