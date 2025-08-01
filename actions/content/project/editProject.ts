@@ -45,22 +45,49 @@ export async function editProject(projectId: string, data: any) {
         if (Array.isArray(data.contributors)) {
             const contributorUserIds: string[] = data.contributors;
 
-            // Get UserData IDs for those user IDs
-            const userDatas = await prisma.userData.findMany({
+            // Step 1: Fetch existing userData entries
+            const existingUserDatas = await prisma.userData.findMany({
+                where: { userId: { in: contributorUserIds } },
+                select: { id: true, userId: true },
+            });
+
+            const existingUserIdSet = new Set(
+                existingUserDatas.map((ud) => ud.userId)
+            );
+            const missingUserIds = contributorUserIds.filter(
+                (userId) => !existingUserIdSet.has(userId)
+            );
+
+            // Step 2: Create missing userData entries
+            if (missingUserIds.length > 0) {
+                await prisma.$transaction(
+                    missingUserIds.map((userId) =>
+                        prisma.userData.create({
+                            data: {
+                                userId,
+                                // Add any default values for other required fields here if needed
+                            },
+                        })
+                    )
+                );
+            }
+
+            // Step 3: Fetch all userData IDs again (now all should exist)
+            const allUserDatas = await prisma.userData.findMany({
                 where: { userId: { in: contributorUserIds } },
                 select: { id: true },
             });
 
-            const userDataIds = userDatas.map((ud) => ud.id);
+            const userDataIds = allUserDatas.map((ud) => ud.id);
 
+            // Step 4: Update contributors relation
             await prisma.project.update({
-                where: { id: projectId },
+                where: {
+                    id: projectId,
+                },
                 data: {
                     contributors: {
-                        set:
-                            userDataIds.length > 0
-                                ? userDataIds.map((id) => ({ id }))
-                                : [],
+                        set: userDataIds.map((id) => ({ id })),
                     },
                 },
             });
