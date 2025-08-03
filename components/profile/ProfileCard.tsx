@@ -2,22 +2,60 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { User, Share2, Check, Plus } from "lucide-react";
+import { User, Share2, Check, Plus, Send, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFollowUser } from "@/actions/users/toggleFollowUser";
+import { toggleFriendRequest } from "@/actions/users/toggleFriendRequest";
+import FollowModal from "./FollowModal";
 
 type ProfileCardProps = {
     tUser: any;
-    currentUserId: string | undefined;
+    session: any;
 };
 
-export const ProfileCard = ({ tUser, currentUserId }: ProfileCardProps) => {
+export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
+    const currentUserId = session?.user.id;
     const [isLoading, setIsLoading] = useState(true);
+    const [isPending, setIsPending] = useState(false);
+    const [showFollowModal, setShowFollowModal] = useState(false);
     const [followers, setFollowers] = useState(
         tUser?.relationships.followers || []
     );
+    const [isRequestSent, setIsRequestSent] = useState(
+        tUser?.relationships?.friendRequestsReceived?.some(
+            (r: any) => r.userId === currentUserId
+        ) ?? false
+    );
+    const [isFriend, setIsFriend] = useState(
+        tUser?.relationships?.friends?.some(
+            (r: any) => r.userId === currentUserId
+        ) ?? false
+    );
+
+    const handleFriendRequest = async () => {
+        setIsPending(true);
+        if (!currentUserId) {
+            toast.error("You must be logged in to add friends.");
+            return;
+        }
+
+        const { error, requested } = await toggleFriendRequest(
+            currentUserId,
+            tUser.id
+        );
+
+        if (error) {
+            toast.error(error);
+        } else {
+            setIsRequestSent(requested);
+            if (!requested) toast.success("Friend request canceled.");
+            else toast.success("Friend request sent.");
+        }
+        setIsPending(false);
+    };
 
     const handleFollow = async () => {
+        setIsPending(true);
         if (!currentUserId) {
             toast.error("You must be logged in to follow users.");
             return;
@@ -29,7 +67,7 @@ export const ProfileCard = ({ tUser, currentUserId }: ProfileCardProps) => {
 
         const updatedFollowers = isFollowed
             ? followers.filter((u: any) => u.userId !== currentUserId)
-            : [...followers, { userId: currentUserId }];
+            : [...followers, { userId: currentUserId, user: session.user }];
 
         setFollowers(updatedFollowers);
 
@@ -38,6 +76,7 @@ export const ProfileCard = ({ tUser, currentUserId }: ProfileCardProps) => {
             toast.error(error);
             setFollowers(followers);
         }
+        setIsPending(false);
     };
 
     const handleShare = () => {
@@ -84,92 +123,156 @@ export const ProfileCard = ({ tUser, currentUserId }: ProfileCardProps) => {
     }
 
     return (
-        <div className="rounded-md overflow-hidden shadow-md w-full h-full">
-            <div className="relative">
-                {tUser?.bannerImage ? (
-                    <img
-                        src={tUser.bannerImage}
-                        alt="User banner"
-                        className="w-full h-[200px] md:h-[350px] object-cover object-center"
-                    />
-                ) : (
-                    <div className="w-full h-[200px] md:h-[350px] bg-gray-800" />
-                )}
-                <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
-                    {tUser?.image ? (
+        <>
+            <FollowModal
+                open={showFollowModal}
+                onClose={() => setShowFollowModal(false)}
+                followers={followers}
+                following={tUser.relationships.following}
+            />
+
+            <div className="rounded-md overflow-hidden shadow-md w-full h-full">
+                <div className="relative">
+                    {tUser?.bannerImage ? (
                         <img
-                            src={tUser.image}
-                            className="w-full h-full rounded-full object-cover"
-                            alt={tUser.name ?? "User avatar"}
+                            src={tUser.bannerImage}
+                            alt="User banner"
+                            className="w-full h-[200px] md:h-[350px] object-cover object-center"
                         />
                     ) : (
-                        <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
+                        <div className="w-full h-[200px] md:h-[350px] bg-gray-800" />
                     )}
-                </div>
-            </div>
-
-            <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10 h-full">
-                <div className="flex-1 space-y-2 min-w-0">
-                    <div>
-                        <div
-                            className="text-[25px] font-bold truncate max-w-[20rem]"
-                            title={tUser?.name}
-                        >
-                            {tUser?.name}
-                        </div>
-                        <div
-                            className="text-muted-foreground truncate max-w-[24rem]"
-                            title={`@${tUser?.username}`}
-                        >
-                            @{tUser?.username}
-                        </div>
-                    </div>
-                    <div className="flex space-x-4 py-1 px-2 bg-gray-300 rounded-md w-fit">
-                        <div>{followers.length} Followers</div>
-                        <div>{0} Following</div>
-                    </div>
-                    <div className="text-sm whitespace-pre-line">
-                        {tUser.bio}
+                    <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
+                        {tUser?.image ? (
+                            <img
+                                src={tUser.image}
+                                className="w-full h-full rounded-full object-cover"
+                                alt={tUser.name ?? "User avatar"}
+                            />
+                        ) : (
+                            <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
+                        )}
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start md:flex-col md:items-end">
-                    <button
-                        onClick={handleShare}
-                        className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
-                    >
-                        <Share2 className="w-4 h-4" />
-                        Share Profile
-                    </button>
+                <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10 h-full">
+                    <div className="flex-1 space-y-2 min-w-0">
+                        <div>
+                            <div
+                                className="text-[25px] font-bold truncate max-w-[20rem]"
+                                title={tUser?.name}
+                            >
+                                {tUser?.name}
+                            </div>
+                            <div
+                                className="text-muted-foreground truncate max-w-[24rem]"
+                                title={`@${tUser?.username}`}
+                            >
+                                @{tUser?.username}
+                            </div>
+                        </div>
+                        <div className="flex space-x-3 bg-gray-300 rounded-md w-fit">
+                            <button
+                                onClick={() => setShowFollowModal(true)}
+                                className="text-sm cursor-pointer py-1 px-2 rounded-md bg-gray-300 hover:brightness-[90%]"
+                            >
+                                <span className="text-blue-600 font-bold">
+                                    {followers.length}
+                                </span>{" "}
+                                Followers
+                            </button>
+                            <button
+                                onClick={() => setShowFollowModal(true)}
+                                className="text-sm cursor-pointer py-1 px-2 rounded-md bg-gray-300 hover:brightness-[90%]"
+                            >
+                                <span className="text-blue-600 font-bold">
+                                    {tUser.relationships.following.length}
+                                </span>{" "}
+                                Following
+                            </button>
+                        </div>
 
-                    {currentUserId !== tUser.id && (
+                        <div className="text-sm whitespace-pre-line">
+                            {tUser.bio}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 justify-center md:justify-start md:flex-col md:items-end">
                         <button
-                            onClick={handleFollow}
-                            className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm cursor-pointer transition ${
-                                followers.some(
-                                    (u: any) => u.userId === currentUserId
-                                )
-                                    ? "bg-gray-500 text-white"
-                                    : "bg-gray-300 hover:bg-gray-400"
-                            }`}
+                            onClick={handleShare}
+                            className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
                         >
-                            {followers.some(
-                                (u: any) => u.userId === currentUserId
-                            ) ? (
-                                <>
-                                    <Check className="w-4 h-4" />
-                                    Following
-                                </>
-                            ) : (
-                                <>
-                                    <Plus className="w-4 h-4" />
-                                    Follow
-                                </>
-                            )}
+                            <Share2 className="w-4 h-4" />
+                            Share Profile
                         </button>
-                    )}
+
+                        {currentUserId !== tUser.id && session && (
+                            <>
+                                <button
+                                    disabled={isPending}
+                                    onClick={handleFriendRequest}
+                                    className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm transition
+                                ${
+                                    isPending
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : isFriend
+                                        ? "bg-green-600 text-white cursor-pointer"
+                                        : isRequestSent
+                                        ? "bg-gray-500 text-white cursor-pointer"
+                                        : "bg-gray-300 hover:bg-gray-400 cursor-pointer"
+                                }`}
+                                >
+                                    {isFriend ? (
+                                        <>
+                                            <Users className="w-4 h-4" />
+                                            Friends
+                                        </>
+                                    ) : isRequestSent ? (
+                                        <>
+                                            <Send className="w-4 h-4" />
+                                            Friend Request Sent
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UserPlus className="w-4 h-4" />
+                                            Add Friend
+                                        </>
+                                    )}
+                                </button>{" "}
+                                <button
+                                    disabled={isPending}
+                                    onClick={handleFollow}
+                                    className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm transition
+                                ${
+                                    isPending
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : followers.some(
+                                              (u: any) =>
+                                                  u.userId === currentUserId
+                                          )
+                                        ? "bg-gray-500 text-white cursor-pointer"
+                                        : "bg-gray-300 hover:bg-gray-400 cursor-pointer"
+                                }`}
+                                >
+                                    {followers.some(
+                                        (u: any) => u.userId === currentUserId
+                                    ) ? (
+                                        <>
+                                            <Check className="w-4 h-4" />
+                                            Following
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="w-4 h-4" />
+                                            Follow
+                                        </>
+                                    )}
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };

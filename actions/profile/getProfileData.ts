@@ -50,27 +50,93 @@ export async function getProfileData(username?: string | null) {
         };
     }
 
-    const [profile, relationships] = await Promise.all([
-        prisma.profile.findUnique({
-            where: { userId: targetUserId },
-            select: {
-                bio: true,
-                birthdate: true,
-                address: true,
-                socialLinks: true,
-                bannerImage: true,
+    // 🟦 Ensure relationships entry exists
+    let relationships = await prisma.relationships.findUnique({
+        where: { userId: targetUserId },
+        select: {
+            id: true,
+            isPrivate: true,
+            followers: {
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
             },
-        }),
-        prisma.relationships.findUnique({
+            following: {
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
+            },
+            friends: {
+                select: { userId: true },
+            },
+            blockedUsers: {
+                select: { userId: true },
+            },
+            followRequestsReceived: {
+                select: { userId: true },
+            },
+            followRequestsSent: {
+                select: { userId: true },
+            },
+            friendRequestsReceived: {
+                select: { userId: true },
+            },
+            friendRequestsSent: {
+                select: { userId: true },
+            },
+        },
+    });
+
+    if (!relationships) {
+        await prisma.relationships.create({
+            data: {
+                userId: targetUserId,
+            },
+        });
+
+        // Refetch with proper select
+        relationships = await prisma.relationships.findUnique({
             where: { userId: targetUserId },
             select: {
                 id: true,
                 isPrivate: true,
                 followers: {
-                    select: { userId: true },
+                    select: {
+                        userId: true,
+                        user: {
+                            select: {
+                                username: true,
+                                name: true,
+                                image: true,
+                            },
+                        },
+                    },
                 },
                 following: {
-                    select: { userId: true },
+                    select: {
+                        userId: true,
+                        user: {
+                            select: {
+                                username: true,
+                                name: true,
+                                image: true,
+                            },
+                        },
+                    },
                 },
                 friends: {
                     select: { userId: true },
@@ -91,15 +157,22 @@ export async function getProfileData(username?: string | null) {
                     select: { userId: true },
                 },
             },
-        }),
-    ]);
+        });
+    }
+
+    const profile = await prisma.profile.findUnique({
+        where: { userId: targetUserId },
+        select: {
+            bio: true,
+            birthdate: true,
+            address: true,
+            socialLinks: true,
+            bannerImage: true,
+        },
+    });
 
     return {
-        user: {
-            name: userInfo.name,
-            username: userInfo.username,
-            image: userInfo.image,
-        },
+        user: userInfo,
         profile: {
             bio: profile?.bio ?? "",
             birthdate: profile?.birthdate ?? null,
@@ -107,6 +180,6 @@ export async function getProfileData(username?: string | null) {
             socialLinks: profile?.socialLinks ?? [],
             bannerImage: profile?.bannerImage ?? undefined,
         },
-        relationships: relationships ?? null,
+        relationships,
     };
 }

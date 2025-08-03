@@ -57,10 +57,7 @@ export default async function Page({
             <div className="flex flex-col lg:flex-row items-stretch gap-4 w-full px-[2%] py-5">
                 {/* Left/Main section */}
                 <div className="flex-1 flex flex-col space-y-4 lg:space-y-0">
-                    <ProfileCard
-                        currentUserId={session?.user.id}
-                        tUser={tUser}
-                    />
+                    <ProfileCard session={session} tUser={tUser} />
 
                     {/* Social links for small/medium screens */}
                     <div className="block lg:hidden">

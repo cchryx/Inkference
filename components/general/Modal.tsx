@@ -1,23 +1,29 @@
-import React from "react";
+// components/general/Modal.tsx
+import { ReactNode } from "react";
+import { createPortal } from "react-dom";
 
-type Props = {
+type ModalProps = {
     open: boolean;
     onClose: () => void;
-    children: React.ReactNode;
+    children: ReactNode;
 };
 
-const Modal = ({ open, onClose, children }: Props) => {
+const Modal = ({ open, onClose, children }: ModalProps) => {
     if (!open) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+    return createPortal(
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            onClick={onClose}
+        >
             <div
-                className="bg-gray-100 rounded-xl w-full md:w-[70%] lg:w-[40%] shadow-lg flex flex-col max-h-[90vh]"
+                className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4"
                 onClick={(e) => e.stopPropagation()}
             >
                 {children}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

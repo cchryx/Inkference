@@ -20,7 +20,7 @@ export async function createProjectAction(data: {
     const userData = await getUserData();
 
     if (!userData || "error" in userData) {
-        return { error: "Unauthorized or no user data found" };
+        return { error: "Unauthorized or no user data found." };
     }
 
     const project = await prisma.project.create({
