@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Heart, Eye, CalendarDays } from "lucide-react";
+import { Heart, Eye, CalendarDays, Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ProjectCard({ project }: { project: any }) {
@@ -38,7 +38,8 @@ export default function ProjectCard({ project }: { project: any }) {
         : "TBD";
     const skills = project.skills ?? [];
     const likes = Array.isArray(project.likes) ? project.likes.length : 0;
-    const views = 0;
+    const views = Array.isArray(project.views) ? project.views.length : 0;
+    const saves = Array.isArray(project.saves) ? project.saves.length : 0;
     const postedAt = project.createdAt
         ? new Date(project.createdAt).toISOString()
         : "";
@@ -132,10 +133,13 @@ export default function ProjectCard({ project }: { project: any }) {
 
                 <div className="flex flex-col gap-1 text-sm">
                     <div className="flex items-center gap-2 drop-shadow-sm">
+                        <Eye className="w-4 h-4" /> {views} Views
+                    </div>
+                    <div className="flex items-center gap-2 drop-shadow-sm">
                         <Heart className="w-4 h-4" /> {likes} Likes
                     </div>
                     <div className="flex items-center gap-2 drop-shadow-sm">
-                        <Eye className="w-4 h-4" /> {views} Views
+                        <Bookmark className="w-4 h-4" /> {saves} Saves
                     </div>
                     <div className="flex items-center gap-2 drop-shadow-sm">
                         <CalendarDays className="w-4 h-4" /> Posted:{" "}

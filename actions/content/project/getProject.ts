@@ -11,6 +11,8 @@ export async function getProjectById(projectId: string) {
             userData: { include: { user: true } },
             contributors: { include: { user: true } },
             likes: true,
+            saves: true,
+            views: true,
             galleryImages: true,
         },
     });

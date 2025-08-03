@@ -44,7 +44,11 @@ export default async function Page({
         <div className="w-full flex space-y-5 flex-col my-5">
             <div className="flex lg:flex-row flex-col px-[2%] w-full gap-5">
                 <div className="lg:flex-1">
-                    <HeaderCard isOwner={isOwner} project={project} />
+                    <HeaderCard
+                        isOwner={isOwner}
+                        session={session}
+                        project={project}
+                    />
                 </div>
 
                 <div className="lg:w-[15rem] lg:flex flex-col space-y-5">

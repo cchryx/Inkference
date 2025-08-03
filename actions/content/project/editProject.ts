@@ -116,7 +116,6 @@ export async function editProject(projectId: string, data: any) {
             return { error: message };
         }
 
-        console.error(error);
         return { error: "Internal server error." };
     }
 }

@@ -19,6 +19,8 @@ export async function getUserProjects(userId?: string) {
             endDate: true,
             createdAt: true,
             likes: true,
+            saves: true,
+            views: true,
             iconImage: true,
             bannerImage: true,
             description: true,

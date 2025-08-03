@@ -9,6 +9,7 @@ import {
     Folders,
     GraduationCap,
     Home,
+    Inbox,
     KeySquare,
     Library,
     Send,
@@ -31,6 +32,11 @@ export const NAVBARLEFT_LINKS = [
         icon: Library,
         route: "/library",
         label: "Library",
+    },
+    {
+        icon: Inbox,
+        route: "/inbox",
+        label: "Inbox",
     },
     {
         icon: BookUser,

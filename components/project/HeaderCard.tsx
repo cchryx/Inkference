@@ -13,6 +13,7 @@ import {
     Pen,
     Trash,
     Trash2,
+    Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -20,23 +21,78 @@ import ConfirmModal from "../general/ConfirmModal";
 import { deleteProject } from "@/actions/content/project/deleteProject";
 import { useRouter } from "next/navigation";
 import EditHeaderModal from "./edit/EditHeaderModal";
+import { likeProject } from "@/actions/content/project/likeProject";
+import { viewProject } from "@/actions/content/project/viewProject";
+import { saveProject } from "@/actions/content/project/saveProject";
 
 type Props = {
     isOwner: boolean;
+    session: any;
     project: any;
 };
 
-export const HeaderCard = ({ isOwner, project }: Props) => {
+export const HeaderCard = ({ isOwner, session, project }: Props) => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [isPending, setIsPending] = useState(false);
     const [confirmMopen, setConfirmMOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
+    const [likes, setLikes] = useState(project.likes || []);
+    const [saves, setSaves] = useState(project.saves || []);
+
+    const currentUserId = session?.user.id;
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 800);
+
+        if (currentUserId) {
+            viewProject(project.id, currentUserId);
+        }
+
         return () => clearTimeout(timer);
     }, []);
+
+    const handleLike = async () => {
+        if (!currentUserId) {
+            toast.error("You must be logged in to like projects.");
+            return;
+        }
+
+        const isLiked = likes.some((u: any) => u.userId === currentUserId);
+
+        const updatedLikes = isLiked
+            ? likes.filter((u: any) => u.userId !== currentUserId)
+            : [...likes, { userId: currentUserId }];
+
+        setLikes(updatedLikes);
+
+        const { error } = await likeProject(project.id, currentUserId);
+        if (error) {
+            toast.error(error);
+            setLikes(likes);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!currentUserId) {
+            toast.error("You must be logged in to save projects.");
+            return;
+        }
+
+        const isSaved = saves.some((u: any) => u.userId === currentUserId);
+
+        const updatedSaves = isSaved
+            ? saves.filter((u: any) => u.userId !== currentUserId)
+            : [...saves, { userId: currentUserId }];
+
+        setSaves(updatedSaves);
+
+        const { error } = await saveProject(project.id, currentUserId);
+        if (error) {
+            toast.error(error);
+            setSaves(saves);
+        }
+    };
 
     const handleShare = () => {
         const projectUrl = `${window.location.origin}/project/${project.id}`;
@@ -262,12 +318,60 @@ export const HeaderCard = ({ isOwner, project }: Props) => {
                             </div>
 
                             <div className="flex w-full flex-wrap gap-2 justify-start md:justify-end">
-                                <div className="px-3 py-1 rounded-sm bg-gray-300 flex gap-2 items-center hover:bg-gray-400 transition text-sm cursor-pointer">
-                                    <Heart /> <span>100,020</span>
-                                </div>
-                                <div className="px-3 py-1 rounded-sm bg-gray-300 flex gap-2 items-center hover:bg-gray-400 transition text-sm cursor-pointer">
-                                    <Bookmark /> <span>100,020</span>
-                                </div>
+                                <button
+                                    className="px-3 py-1 rounded-sm flex gap-2 items-center transition text-sm bg-gray-300 cursor-default"
+                                    disabled
+                                >
+                                    <Eye className="w-4 h-4 text-gray-600" />
+                                    <span>{project.views?.length ?? 0}</span>
+                                </button>
+                                <button
+                                    onClick={handleLike}
+                                    className={`px-3 py-1 rounded-sm flex gap-2 items-center transition text-sm cursor-pointer ${
+                                        likes.some(
+                                            (u: any) =>
+                                                u.userId === currentUserId
+                                        )
+                                            ? "bg-red-400 text-white"
+                                            : "bg-gray-300 hover:bg-gray-400"
+                                    }`}
+                                >
+                                    <Heart
+                                        className={`w-4 h-4 ${
+                                            likes.some(
+                                                (u: any) =>
+                                                    u.userId === currentUserId
+                                            )
+                                                ? "fill-white"
+                                                : ""
+                                        }`}
+                                    />
+                                    <span>{likes.length}</span>
+                                </button>
+
+                                <button
+                                    onClick={handleSave}
+                                    className={`px-3 py-1 rounded-sm flex gap-2 items-center transition text-sm cursor-pointer ${
+                                        saves.some(
+                                            (u: any) =>
+                                                u.userId === currentUserId
+                                        )
+                                            ? "bg-yellow-500 text-white"
+                                            : "bg-gray-300 hover:bg-gray-400"
+                                    }`}
+                                >
+                                    <Bookmark
+                                        className={`w-4 h-4 ${
+                                            saves.some(
+                                                (u: any) =>
+                                                    u.userId === currentUserId
+                                            )
+                                                ? "fill-white"
+                                                : ""
+                                        }`}
+                                    />
+                                    <span>{saves.length}</span>
+                                </button>
                             </div>
                         </div>
                     </div>

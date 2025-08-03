@@ -89,8 +89,9 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  Profile  Profile?
-  UserData UserData?
+  Profile       Profile?
+  UserData      UserData?
+  Relationships Relationships?
 
   @@map("users")
 }
@@ -129,6 +130,8 @@ model UserData {
   projects              Project[]
   projectsContributedTo Project[] @relation("ProjectContributors")
   projectsLiked         Project[] @relation("ProjectLikes")
+  projectsViewed        Project[] @relation("ProjectViews")
+  projectsSaved         Project[] @relation("ProjectSaves")
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -178,7 +181,9 @@ model Project {
 
   contributors UserData[] @relation("ProjectContributors")
 
+  views UserData[] @relation("ProjectViews")
   likes UserData[] @relation("ProjectLikes")
+  saves UserData[] @relation("ProjectSaves")
 
   galleryImages ProjectGalleryImage[]
 
@@ -187,4 +192,32 @@ model Project {
 
   @@index([userDataId, updatedAt])
   @@map("projects")
+}
+
+model Relationships {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  isPrivate Boolean @default(false)
+
+  following Relationships[] @relation("UserFollows")
+  followers Relationships[] @relation("UserFollows")
+
+  friends  Relationships[] @relation("UserFriends")
+  friendOf Relationships[] @relation("UserFriends")
+
+  blockedUsers Relationships[] @relation("UserBlocks")
+  blockedBy    Relationships[] @relation("UserBlocks")
+
+  followRequestsSent     Relationships[] @relation("FollowRequests")
+  followRequestsReceived Relationships[] @relation("FollowRequests")
+
+  friendRequestsSent     Relationships[] @relation("FriendRequests")
+  friendRequestsReceived Relationships[] @relation("FriendRequests")
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("relationships")
 }

@@ -2,16 +2,43 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { User, Share2 } from "lucide-react";
+import { User, Share2, Check, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { toggleFollowUser } from "@/actions/users/toggleFollowUser";
 
-export const ProfileCard = ({ tUser }: { tUser: any }) => {
+type ProfileCardProps = {
+    tUser: any;
+    currentUserId: string | undefined;
+};
+
+export const ProfileCard = ({ tUser, currentUserId }: ProfileCardProps) => {
     const [isLoading, setIsLoading] = useState(true);
+    const [followers, setFollowers] = useState(
+        tUser?.relationships.followers || []
+    );
 
-    useEffect(() => {
-        const timer = setTimeout(() => setIsLoading(false), 800);
-        return () => clearTimeout(timer);
-    }, []);
+    const handleFollow = async () => {
+        if (!currentUserId) {
+            toast.error("You must be logged in to follow users.");
+            return;
+        }
+
+        const isFollowed = followers.some(
+            (u: any) => u.userId === currentUserId
+        );
+
+        const updatedFollowers = isFollowed
+            ? followers.filter((u: any) => u.userId !== currentUserId)
+            : [...followers, { userId: currentUserId }];
+
+        setFollowers(updatedFollowers);
+
+        const { error } = await toggleFollowUser(currentUserId, tUser.id);
+        if (error) {
+            toast.error(error);
+            setFollowers(followers);
+        }
+    };
 
     const handleShare = () => {
         const profileUrl = `${window.location.origin}/profile/${tUser?.username}`;
@@ -19,10 +46,14 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
         toast.success("Profile link copied.");
     };
 
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 800);
+        return () => clearTimeout(timer);
+    }, []);
+
     if (isLoading) {
         return (
             <div className="rounded-md overflow-hidden h-full shadow-md w-full bg-[#e4e6eb]">
-                {/* Cover banner */}
                 <div className="relative">
                     <Skeleton className="w-full h-[200px] md:h-[350px]" />
                     <div className="absolute left-[3%] -bottom-12 w-24 h-24 md:w-40 md:h-40 rounded-full border-4 border-white">
@@ -94,13 +125,14 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                         </div>
                     </div>
                     <div className="flex space-x-4 py-1 px-2 bg-gray-300 rounded-md w-fit">
-                        <div>{0} Followers</div>
+                        <div>{followers.length} Followers</div>
                         <div>{0} Following</div>
                     </div>
                     <div className="text-sm whitespace-pre-line">
                         {tUser.bio}
                     </div>
                 </div>
+
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start md:flex-col md:items-end">
                     <button
                         onClick={handleShare}
@@ -109,12 +141,33 @@ export const ProfileCard = ({ tUser }: { tUser: any }) => {
                         <Share2 className="w-4 h-4" />
                         Share Profile
                     </button>
-                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
-                        Follow
-                    </div>
-                    <div className="px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
-                        Add Friend
-                    </div>
+
+                    {currentUserId !== tUser.id && (
+                        <button
+                            onClick={handleFollow}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm cursor-pointer transition ${
+                                followers.some(
+                                    (u: any) => u.userId === currentUserId
+                                )
+                                    ? "bg-gray-500 text-white"
+                                    : "bg-gray-300 hover:bg-gray-400"
+                            }`}
+                        >
+                            {followers.some(
+                                (u: any) => u.userId === currentUserId
+                            ) ? (
+                                <>
+                                    <Check className="w-4 h-4" />
+                                    Following
+                                </>
+                            ) : (
+                                <>
+                                    <Plus className="w-4 h-4" />
+                                    Follow
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

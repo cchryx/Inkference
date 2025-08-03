@@ -29,6 +29,7 @@ export async function getProfileData(username?: string | null) {
                     socialLinks: [],
                     bannerImage: undefined,
                 },
+                relationships: null,
             };
         }
 
@@ -49,16 +50,49 @@ export async function getProfileData(username?: string | null) {
         };
     }
 
-    const profile = await prisma.profile.findUnique({
-        where: { userId: targetUserId },
-        select: {
-            bio: true,
-            birthdate: true,
-            address: true,
-            socialLinks: true,
-            bannerImage: true,
-        },
-    });
+    const [profile, relationships] = await Promise.all([
+        prisma.profile.findUnique({
+            where: { userId: targetUserId },
+            select: {
+                bio: true,
+                birthdate: true,
+                address: true,
+                socialLinks: true,
+                bannerImage: true,
+            },
+        }),
+        prisma.relationships.findUnique({
+            where: { userId: targetUserId },
+            select: {
+                id: true,
+                isPrivate: true,
+                followers: {
+                    select: { userId: true },
+                },
+                following: {
+                    select: { userId: true },
+                },
+                friends: {
+                    select: { userId: true },
+                },
+                blockedUsers: {
+                    select: { userId: true },
+                },
+                followRequestsReceived: {
+                    select: { userId: true },
+                },
+                followRequestsSent: {
+                    select: { userId: true },
+                },
+                friendRequestsReceived: {
+                    select: { userId: true },
+                },
+                friendRequestsSent: {
+                    select: { userId: true },
+                },
+            },
+        }),
+    ]);
 
     return {
         user: {
@@ -73,5 +107,6 @@ export async function getProfileData(username?: string | null) {
             socialLinks: profile?.socialLinks ?? [],
             bannerImage: profile?.bannerImage ?? undefined,
         },
+        relationships: relationships ?? null,
     };
 }
