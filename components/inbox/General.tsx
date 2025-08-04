@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getProfileData } from "@/actions/profile/getProfileData";
 import Link from "next/link";
 import { Skeleton } from "@/components/general/Skeleton";
+import FallbackUserIcon from "../general/FallbackUserIcon";
 
 const General = () => {
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -66,14 +67,17 @@ const General = () => {
                                 href={`/profile/${notification.user.username}`}
                                 className="flex items-center gap-3 flex-1"
                             >
-                                <img
-                                    src={
-                                        notification.user.image ||
-                                        "/default-avatar.png"
-                                    }
-                                    alt={notification.user.username}
-                                    className="w-10 h-10 rounded-full object-cover"
-                                />
+                                {notification.user.image ? (
+                                    <img
+                                        src={notification.user.image}
+                                        alt={notification.user.username}
+                                        width={40}
+                                        height={40}
+                                        className="rounded-full object-cover w-10 h-10"
+                                    />
+                                ) : (
+                                    <FallbackUserIcon size="w-10 h-10" />
+                                )}
                                 <div className="flex flex-col truncate">
                                     <span className="font-medium truncate">
                                         {notification.user.name}

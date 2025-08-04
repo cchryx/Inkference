@@ -5,6 +5,7 @@ import { getProfileData } from "@/actions/profile/getProfileData";
 import Link from "next/link";
 import { Skeleton } from "@/components/general/Skeleton";
 import { UserCheck, UserX } from "lucide-react";
+import FallbackUserIcon from "../general/FallbackUserIcon";
 
 const Requests = () => {
     const [followRequestsReceived, setFollowRequestsReceived] = useState<any[]>(
@@ -70,13 +71,17 @@ const Requests = () => {
                             href={`/profile/${req.user.username}`}
                             className="cursor-pointer flex items-center gap-3 flex-1"
                         >
-                            <img
-                                src={req.user.image || "/default-avatar.png"}
-                                alt={req.user.username}
-                                width={40}
-                                height={40}
-                                className="rounded-full object-cover w-10 h-10"
-                            />
+                            {req.user.image ? (
+                                <img
+                                    src={req.user.image}
+                                    alt={req.user.username}
+                                    width={40}
+                                    height={40}
+                                    className="rounded-full object-cover w-10 h-10"
+                                />
+                            ) : (
+                                <FallbackUserIcon size="w-10 h-10" />
+                            )}
                             <div className="flex flex-col truncate">
                                 <span className="font-medium truncate">
                                     {req.user.name}
