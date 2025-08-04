@@ -12,9 +12,12 @@ import {
     Inbox,
     KeySquare,
     Library,
+    Mail,
+    Mailbox,
     Send,
     User,
     UserCircle,
+    UserPlus,
 } from "lucide-react";
 
 export const NAVBARLEFT_LINKS = [
@@ -103,5 +106,18 @@ export const PROFILE_LINKS = [
         icon: Send,
         id: "posts",
         label: "Posts",
+    },
+];
+
+export const INBOX_LINKS = [
+    {
+        icon: Mail,
+        id: "general",
+        label: "General",
+    },
+    {
+        icon: UserPlus,
+        id: "requests",
+        label: "Requests",
     },
 ];

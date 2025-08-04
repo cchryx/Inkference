@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SETTINGS_LINKS } from "@/constants";
-import Authentication from "@/components/settings/Authenticaion";
-import Profile from "@/components/settings/Profile";
-import { Settings } from "lucide-react";
-import User from "@/components/settings/User";
+import { INBOX_LINKS } from "@/constants";
+import { Inbox } from "lucide-react";
+import General from "@/components/inbox/General";
+import Requests from "@/components/inbox/Requests";
 
 export default function Page() {
-    const [activeSection, setActiveSection] = useState("profile");
+    const [activeSection, setActiveSection] = useState("general");
     const [showMobileLabel, setShowMobileLabel] = useState(false);
     const [isSlidingOut, setIsSlidingOut] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -96,7 +95,7 @@ export default function Page() {
                     </svg>
                 </div>
                 <div className="text-sm font-semibold capitalize">
-                    <Settings className="w-4 h-4 inline-block mr-1" />
+                    <Inbox className="w-4 h-4 inline-block mr-1" />
                     {activeSection}
                 </div>
                 <div className="w-6 h-6" />
@@ -112,13 +111,13 @@ export default function Page() {
                     >
                         <div className="flex items-center justify-center lg:justify-start px-2 mb-8">
                             <div className="flex items-center gap-2 font-bold text-gray-600 text-lg lg:text-xl">
-                                <Settings className="w-6 h-6 shrink-0" />
-                                <div className="hidden lg:block">Settings</div>
+                                <Inbox className="w-6 h-6 shrink-0" />
+                                <div className="hidden lg:block">Inbox</div>
                             </div>
                         </div>
 
                         <div className="space-y-2 relative">
-                            {SETTINGS_LINKS.map(({ id, label, icon: Icon }) => (
+                            {INBOX_LINKS.map(({ id, label, icon: Icon }) => (
                                 <div
                                     key={id}
                                     onClick={() => handleSelect(id)}
@@ -161,20 +160,8 @@ export default function Page() {
                             {activeSection}
                         </div>
                         <div className="mt-4">
-                            {activeSection === "profile" && <Profile />}
-                            {activeSection === "user" && <User />}
-                            {activeSection === "authentication" && (
-                                <Authentication />
-                            )}
-                            {activeSection === "relations" && (
-                                <div>Relations settings</div>
-                            )}
-                            {activeSection === "notifications" && (
-                                <div>Notifications settings</div>
-                            )}
-                            {activeSection === "more" && (
-                                <div>More settings coming soon...</div>
-                            )}
+                            {activeSection === "general" && <General />}
+                            {activeSection === "requests" && <Requests />}
                         </div>
                     </div>
                 </div>
@@ -196,7 +183,7 @@ export default function Page() {
                 >
                     <div className="flex justify-between items-center pb-3 border-b">
                         <div className="font-semibold text-gray-800 text-base">
-                            <Settings className="inline-block mr-1" /> Settings
+                            <Inbox className="inline-block mr-1" /> Inbox
                         </div>
                         <div
                             onClick={() => setShowMobileMenu(false)}
@@ -207,7 +194,7 @@ export default function Page() {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3 mt-4">
-                        {SETTINGS_LINKS.map(({ id, label, icon: Icon }) => (
+                        {INBOX_LINKS.map(({ id, label, icon: Icon }) => (
                             <div
                                 key={id}
                                 onClick={() => handleSelect(id)}

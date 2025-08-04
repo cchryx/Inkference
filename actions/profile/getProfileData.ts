@@ -87,16 +87,52 @@ export async function getProfileData(username?: string | null) {
                 select: { userId: true },
             },
             followRequestsReceived: {
-                select: { userId: true },
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
             },
             followRequestsSent: {
-                select: { userId: true },
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
             },
             friendRequestsReceived: {
-                select: { userId: true },
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
             },
             friendRequestsSent: {
-                select: { userId: true },
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
             },
         },
     });
@@ -145,16 +181,52 @@ export async function getProfileData(username?: string | null) {
                     select: { userId: true },
                 },
                 followRequestsReceived: {
-                    select: { userId: true },
+                    select: {
+                        userId: true,
+                        user: {
+                            select: {
+                                username: true,
+                                name: true,
+                                image: true,
+                            },
+                        },
+                    },
                 },
                 followRequestsSent: {
-                    select: { userId: true },
+                    select: {
+                        userId: true,
+                        user: {
+                            select: {
+                                username: true,
+                                name: true,
+                                image: true,
+                            },
+                        },
+                    },
                 },
                 friendRequestsReceived: {
-                    select: { userId: true },
+                    select: {
+                        userId: true,
+                        user: {
+                            select: {
+                                username: true,
+                                name: true,
+                                image: true,
+                            },
+                        },
+                    },
                 },
                 friendRequestsSent: {
-                    select: { userId: true },
+                    select: {
+                        userId: true,
+                        user: {
+                            select: {
+                                username: true,
+                                name: true,
+                                image: true,
+                            },
+                        },
+                    },
                 },
             },
         });

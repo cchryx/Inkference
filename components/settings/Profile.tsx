@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import { getProfileData } from "@/actions/profile/getProfileData";
 import ChangeBioForm from "./forms/ChangeBioForm";
-import ChangeBirthdate from "./forms/ChangeBirthdate";
 import ChangeAddressForm from "./forms/ChangeAddressForm";
-import ChangeNameForm from "./forms/ChangeNameForm";
-import ChangeUsernameForm from "./forms/ChangeUsernameForm";
 import { toast } from "sonner";
 import ChangeSocialsForm from "./forms/ChangeSocialsForm";
 import ChangeProfileImageForm from "./forms/ChangeProfileImageForm";

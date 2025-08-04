@@ -2,11 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
-import { User, Share2, Check, Plus, Send, UserPlus, Users } from "lucide-react";
+import {
+    User,
+    Share2,
+    Check,
+    Plus,
+    Send,
+    UserPlus,
+    Users,
+    UserMinus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { toggleFollowUser } from "@/actions/users/toggleFollowUser";
 import { toggleFriendRequest } from "@/actions/users/toggleFriendRequest";
 import FollowModal from "./FollowModal";
+import { acceptFriendRequest } from "@/actions/users/acceptFriendRequest";
+import { removeFriend } from "@/actions/users/removeFriend";
 
 type ProfileCardProps = {
     tUser: any;
@@ -26,31 +37,74 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
             (r: any) => r.userId === currentUserId
         ) ?? false
     );
+
+    const [isRequestReceived, setIsRequestReceived] = useState(
+        tUser?.relationships?.friendRequestsSent?.some(
+            (r: any) => r.userId === currentUserId
+        ) ?? false
+    );
     const [isFriend, setIsFriend] = useState(
         tUser?.relationships?.friends?.some(
             (r: any) => r.userId === currentUserId
         ) ?? false
     );
 
-    const handleFriendRequest = async () => {
+    const handleRemoveFriend = async () => {
         setIsPending(true);
         if (!currentUserId) {
-            toast.error("You must be logged in to add friends.");
+            toast.error("You must be logged in to manage friends.");
+            setIsPending(false);
             return;
         }
 
-        const { error, requested } = await toggleFriendRequest(
-            currentUserId,
-            tUser.id
+        const { error, unfriended } = await removeFriend(
+            tUser.id,
+            currentUserId
         );
-
         if (error) {
             toast.error(error);
-        } else {
-            setIsRequestSent(requested);
-            if (!requested) toast.success("Friend request canceled.");
-            else toast.success("Friend request sent.");
+        } else if (unfriended) {
+            toast.success("Removed friend successfully.");
+            setIsFriend(false);
+            setIsRequestSent(false);
+            setIsRequestReceived(false);
         }
+        setIsPending(false);
+    };
+
+    const handleFriendRequest = async () => {
+        setIsPending(true);
+        if (!currentUserId) {
+            toast.error("You must be logged in to manage friends.");
+            return;
+        }
+
+        if (isRequestReceived) {
+            const { error, accepted } = await acceptFriendRequest(
+                tUser.id,
+                currentUserId
+            );
+            if (error) {
+                toast.error(error);
+            } else {
+                toast.success("Friend request accepted.");
+                setIsFriend(true);
+                setIsRequestReceived(false);
+            }
+        } else {
+            const { error, requested } = await toggleFriendRequest(
+                currentUserId,
+                tUser.id
+            );
+            if (error) {
+                toast.error(error);
+            } else {
+                setIsRequestSent(requested);
+                if (!requested) toast.success("Friend request canceled.");
+                else toast.success("Friend request sent.");
+            }
+        }
+
         setIsPending(false);
     };
 
@@ -208,37 +262,54 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
 
                         {currentUserId !== tUser.id && session && (
                             <>
-                                <button
-                                    disabled={isPending}
-                                    onClick={handleFriendRequest}
-                                    className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm transition
-                                ${
-                                    isPending
-                                        ? "bg-gray-400 cursor-not-allowed"
-                                        : isFriend
-                                        ? "bg-green-600 text-white cursor-pointer"
-                                        : isRequestSent
-                                        ? "bg-gray-500 text-white cursor-pointer"
-                                        : "bg-gray-300 hover:bg-gray-400 cursor-pointer"
-                                }`}
-                                >
-                                    {isFriend ? (
-                                        <>
-                                            <Users className="w-4 h-4" />
-                                            Friends
-                                        </>
-                                    ) : isRequestSent ? (
-                                        <>
-                                            <Send className="w-4 h-4" />
-                                            Friend Request Sent
-                                        </>
-                                    ) : (
-                                        <>
-                                            <UserPlus className="w-4 h-4" />
-                                            Add Friend
-                                        </>
-                                    )}
-                                </button>{" "}
+                                {isFriend ? (
+                                    <button
+                                        disabled={isPending}
+                                        onClick={handleRemoveFriend}
+                                        className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm transition
+                                            ${
+                                                isPending
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-gray-300 hover:bg-gray-400 cursor-pointer"
+                                            }`}
+                                    >
+                                        <UserMinus className="w-4 h-4" />
+                                        Remove Friend
+                                    </button>
+                                ) : (
+                                    <button
+                                        disabled={isPending}
+                                        onClick={handleFriendRequest}
+                                        className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm transition
+                                            ${
+                                                isPending
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : isRequestReceived
+                                                    ? "bg-blue-600 text-white cursor-pointer"
+                                                    : isRequestSent
+                                                    ? "bg-gray-300 hover:bg-gray-400 cursor-pointer"
+                                                    : "bg-gray-300 hover:bg-gray-400 cursor-pointer"
+                                            }`}
+                                    >
+                                        {isRequestReceived ? (
+                                            <>
+                                                <Check className="w-4 h-4" />
+                                                Accept Friend Request
+                                            </>
+                                        ) : isRequestSent ? (
+                                            <>
+                                                <Send className="w-4 h-4" />
+                                                Friend Request Sent
+                                            </>
+                                        ) : (
+                                            <>
+                                                <UserPlus className="w-4 h-4" />
+                                                Add Friend
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+
                                 <button
                                     disabled={isPending}
                                     onClick={handleFollow}
