@@ -115,13 +115,27 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
         setIsPending(false);
     };
 
-    const startDate = format(new Date(project.startDate), "dd MMM, yyyy");
+    const startDate = project.startDate
+        ? new Date(project.startDate).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+          })
+        : "";
     const endDate = project.endDate
-        ? format(new Date(project.endDate), "dd MMM, yyyy")
+        ? new Date(project.endDate).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+          })
         : "TBD";
-    const postedAt = new Date(
-        project.createdAt || project.updatedAt || Date.now()
-    );
+    const postedAt = project.createdAt
+        ? new Date(project.createdAt).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+          })
+        : "";
 
     if (isLoading) {
         return (
@@ -236,14 +250,14 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                         }}
                     />
 
-                    <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-md border-[3px] border-gray-200 flex items-center justify-center bg-gray-700 overflow-hidden">
+                    <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-md border-[3px] flex items-center justify-center overflow-hidden">
                         <img
                             src={
                                 project.iconImage ??
                                 "/assets/general/folder.png"
                             }
                             alt={`${project.name} icon`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover bg-gray-800/50"
                         />
                     </div>
                 </div>
@@ -263,7 +277,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                                     </span>
                                 </div>
                                 <span className="text-gray-500">
-                                    Posted on {format(postedAt, "dd MMM, yyyy")}
+                                    Posted on {postedAt}
                                 </span>
                             </div>
 

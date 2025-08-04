@@ -201,7 +201,6 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                             <img
                                 src={tUser.image}
                                 className="w-full h-full rounded-full object-cover"
-                                alt={tUser.name ?? "User avatar"}
                             />
                         ) : (
                             <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
@@ -211,13 +210,23 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
 
                 <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10 h-full">
                     <div className="flex-1 space-y-2 min-w-0">
+                        {isFriend && currentUserId !== tUser.id && (
+                            <span className="text-blue-600 text-bold border-blue-600 border-2 text-xs px-2 py-1 rounded-sm whitespace-nowrap inline-flex items-center gap-1">
+                                <Users className="size-4" />
+                                Friends
+                            </span>
+                        )}
+
                         <div>
-                            <div
-                                className="text-[25px] font-bold truncate max-w-[20rem]"
-                                title={tUser?.name}
-                            >
-                                {tUser?.name}
+                            <div className="flex items-center gap-2 max-w-full">
+                                <div
+                                    className="text-[25px] font-bold truncate max-w-[20rem]"
+                                    title={tUser?.name}
+                                >
+                                    {tUser?.name}
+                                </div>
                             </div>
+
                             <div
                                 className="text-muted-foreground truncate max-w-[24rem]"
                                 title={`@${tUser?.username}`}

@@ -28,7 +28,6 @@ export default function ProjectCard({ project }: { project: any }) {
               year: "numeric",
           })
         : "";
-
     const endDate = project.endDate
         ? new Date(project.endDate).toLocaleDateString("en-US", {
               month: "long",
@@ -74,7 +73,7 @@ export default function ProjectCard({ project }: { project: any }) {
                 <img
                     src={iconUrl}
                     alt={`${name} icon`}
-                    className="size-18 rounded-md border-2 border-white shadow-md object-cover"
+                    className="size-18 rounded-md border-2 border-white shadow-md object-cover bg-gray-800/50"
                 />
             </div>
 

@@ -104,7 +104,7 @@ const Preview = ({
             <div>
                 <span className="font-semibold">Project Start Date :</span>{" "}
                 {timeline.startDate
-                    ? new Date(timeline.startDate).toLocaleDateString(
+                    ? new Date(timeline.startDate * 1000).toLocaleDateString(
                           undefined,
                           {
                               year: "numeric",
@@ -119,7 +119,7 @@ const Preview = ({
                 <div>
                     <span className="font-semibold">Project End Date :</span>{" "}
                     {timeline.endDate
-                        ? new Date(timeline.endDate).toLocaleDateString(
+                        ? new Date(timeline.endDate * 1000).toLocaleDateString(
                               undefined,
                               {
                                   year: "numeric",

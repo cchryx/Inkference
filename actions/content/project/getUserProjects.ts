@@ -26,7 +26,10 @@ export async function getUserProjects(userId?: string) {
             description: true,
             skills: true,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [
+            { endDate: { sort: "desc", nulls: "last" } },
+            { startDate: "desc" },
+        ],
     });
 
     return projects;
