@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/general/Skeleton";
 import { changeUserAction } from "@/actions/auth/changeUser";
 import { set } from "date-fns";
 import { useRouter } from "next/navigation";
+import { UserIcon } from "@/components/general/UserIcon";
 
 type Props = {
     profileImage: string | undefined;
@@ -89,14 +90,7 @@ const ChangeProfileImageForm = ({ profileImage, isLoading }: Props) => {
             <div className="flex flex-col gap-2 items-start">
                 <div className="flex gap-4 w-full">
                     <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center shrink-0">
-                        {imagePreview ? (
-                            <img
-                                src={imagePreview}
-                                className="h-24 w-24 rounded-full object-cover border border-gray-300 dark:border-gray-600"
-                            />
-                        ) : (
-                            <User className="text-white w-10 h-10" />
-                        )}
+                        <UserIcon image={profileImage} size="size-full" />
                     </div>
 
                     <div className="gap-2 flex flex-col w-full">

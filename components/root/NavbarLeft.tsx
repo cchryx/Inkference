@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 
 import { SignoutButton } from "../auth/SignoutButton";
 import { NAVBARLEFT_LINKS, NAVBARLEFT_SUB_LINKS } from "@/constants/index";
+import { UserIcon } from "../general/UserIcon";
 
 type NavbarLeftProps = {
     session: any;
@@ -99,17 +100,7 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                     }`}
                     onClick={() => setShowUserMenu(!showUserMenu)}
                 >
-                    {user?.image ? (
-                        <img
-                            src={user.image}
-                            alt="User profile"
-                            className="w-12 h-12 rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
-                            <User className="text-gray-300" size={20} />
-                        </div>
-                    )}
+                    <UserIcon image={user.image} size="size-12" />
 
                     {isOpen && (
                         <div className="flex flex-col max-w-full overflow-hidden">

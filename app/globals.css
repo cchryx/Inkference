@@ -114,7 +114,7 @@
 
 @layer base {
     * {
-        @apply border-border outline-ring/50;
+        @apply border-border outline-ring/50 p-0 m-0 list-none scroll-smooth break-words;
     }
     body {
         @apply bg-background text-foreground min-h-screen;

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { NAVBARLEFT_LINKS, NAVBARLEFT_SUB_LINKS } from "@/constants/index";
 import { SignoutButton } from "../auth/SignoutButton";
+import { UserIcon } from "../general/UserIcon";
 
 type NavbarMobileProps = {
     session: any;
@@ -50,17 +51,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                     className="flex flex-col items-center text-xs cursor-pointer border-black border-2 rounded-full"
                     onClick={() => setShowUserMenu((prev) => !prev)}
                 >
-                    {user?.image ? (
-                        <img
-                            src={user.image}
-                            alt="User avatar"
-                            className="w-8 h-8 rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                            <User className="text-gray-300" size={14} />
-                        </div>
-                    )}
+                    <UserIcon image={user.image} size="size-8" />
                 </div>
 
                 {/* Main Nav Links */}

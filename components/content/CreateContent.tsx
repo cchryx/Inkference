@@ -22,8 +22,9 @@ const CreateContent = ({ label, onClick }: Props) => {
                     <Plus className="w-5 h-5" />
                 </div>
                 <div className="text-md font-medium text-gray-800">
-                    Create a new{" "}
-                    <span>{label.toLowerCase().replace(/s$/, "")}</span>
+                    {label
+                        .toLowerCase()
+                        .replace(/^./, (char) => char.toUpperCase())}
                 </div>
             </div>
         </div>

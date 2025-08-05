@@ -18,6 +18,7 @@ import { toggleFriendRequest } from "@/actions/users/toggleFriendRequest";
 import FollowModal from "./FollowModal";
 import { acceptFriendRequest } from "@/actions/users/acceptFriendRequest";
 import { removeFriend } from "@/actions/users/removeFriend";
+import { UserIcon } from "../general/UserIcon";
 
 type ProfileCardProps = {
     tUser: any;
@@ -197,14 +198,7 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                         <div className="w-full h-[200px] md:h-[350px] bg-gray-800" />
                     )}
                     <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
-                        {tUser?.image ? (
-                            <img
-                                src={tUser.image}
-                                className="w-full h-full rounded-full object-cover"
-                            />
-                        ) : (
-                            <User className="text-gray-300 w-8 h-8 md:w-20 md:h-20" />
-                        )}
+                        <UserIcon image={tUser.image} size="size-full" />
                     </div>
                 </div>
 

@@ -41,15 +41,14 @@ export default async function Page({
     }
 
     const profileData = await getProfileData(username);
+    const projects = await getUserProjects(tUser.id);
 
     tUser = {
         ...tUser,
         ...profileData.profile,
         relationships: profileData.relationships,
+        projects,
     };
-
-    const projects = await getUserProjects(tUser.id);
-    const content = { projects };
 
     return (
         <div className="w-full">
@@ -121,7 +120,7 @@ export default async function Page({
 
             {/* Bottom section */}
             <div className="px-[2%]">
-                <Content content={content} />
+                <Content userData={tUser} />
             </div>
         </div>
     );

@@ -2,8 +2,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { getUserProjects } from "@/actions/content/project/getUserProjects";
 import Content from "@/components/content/Content";
+import { getUserData } from "@/actions/content/getUserData";
 
 export default async function Page() {
     const session = await auth.api.getSession({
@@ -12,12 +12,11 @@ export default async function Page() {
 
     if (!session) return redirect("/auth/signin");
 
-    const projects = await getUserProjects(session.user.id);
-    const content = { projects };
+    const userData = await getUserData(session.user.id);
 
     return (
         <div className="w-full px-[2%] py-5">
-            <Content rootUser content={content} />
+            <Content rootUser userData={userData} />
         </div>
     );
 }

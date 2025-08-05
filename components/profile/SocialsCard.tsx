@@ -148,9 +148,13 @@ export const SocialsCard = ({ tUser }: { tUser: any }) => {
         const loadingWidths = ["w-4/5", "w-3/4", "w-2/3", "w-9/10", "w-3/5"];
 
         return (
-            <div className="bg-gray-200 h-[15rem] overflow-hidden p-2 shadow-md rounded-md">
+            <div className="bg-gray-200 max-h-[15rem] overflow-hidden p-2 shadow-md rounded-md">
                 <div className="space-y-2 overflow-y-scroll h-full pr-1">
-                    {[...Array(socialLinks.length || 5)].map((_, i) => (
+                    {[
+                        ...Array(
+                            socialLinks.length + (tUser.address ? 1 : 0) || 5
+                        ),
+                    ].map((_, i) => (
                         <div
                             key={i}
                             className="flex items-center space-x-2 px-2 py-1 bg-gray-300/30 rounded-sm"

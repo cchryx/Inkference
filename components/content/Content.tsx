@@ -9,17 +9,19 @@ import Education from "./sections/Education";
 import Skills from "./sections/Skills";
 import Photos from "./sections/Photos";
 import Posts from "./sections/Posts";
-import CreateContent from "../project/create/CreateContent";
+import CreateContent from "./CreateContent";
 import CreateProjectModal from "../project/create/CreateProjectModal";
+import Subnavbar from "../root/Subnavbar";
 
 type Props = {
-    content: any;
+    userData: any;
     rootUser?: boolean;
 };
 
-const Content = ({ content, rootUser = false }: Props) => {
+const Content = ({ userData, rootUser = false }: Props) => {
     const [active, setActive] = useState("projects");
-    const [openModal, setOpenModal] = useState<"project" | null>(null);
+    const [openModal, setOpenModal] = useState<string | null>(null);
+    const [projectView, setProjectView] = useState("myProjects");
 
     return (
         <div className="w-full">
@@ -31,11 +33,25 @@ const Content = ({ content, rootUser = false }: Props) => {
                 <>
                     {rootUser && (
                         <>
-                            <CreateContent
-                                label="Projects"
-                                onClick={() => setOpenModal("project")}
+                            <Subnavbar
+                                categories={[
+                                    { key: "myProjects", label: "My Projects" },
+                                    {
+                                        key: "contributedTo",
+                                        label: "Contributed To",
+                                    },
+                                    { key: "saved", label: "Saved" },
+                                    { key: "liked", label: "Liked" },
+                                    { key: "viewed", label: "Viewed" },
+                                ]}
+                                active={projectView}
+                                setActive={setProjectView}
                             />
 
+                            <CreateContent
+                                label="Create/add a new project"
+                                onClick={() => setOpenModal("project")}
+                            />
                             {openModal === "project" && (
                                 <CreateProjectModal
                                     onCloseModal={() => setOpenModal(null)}
@@ -43,14 +59,104 @@ const Content = ({ content, rootUser = false }: Props) => {
                             )}
                         </>
                     )}
-                    <Projects rootUser={rootUser} projects={content.projects} />
+
+                    <Projects
+                        rootUser={rootUser}
+                        category={projectView}
+                        projects={
+                            projectView === "contributedTo"
+                                ? userData.projectsContributedTo
+                                : projectView === "saved"
+                                ? userData.projectsSaved
+                                : projectView === "liked"
+                                ? userData.projectsLiked
+                                : projectView === "viewed"
+                                ? userData.projectsViewed
+                                : userData.projects
+                        }
+                    />
                 </>
             )}
-            {active === "experiences" && <Experiences />}
-            {active === "education" && <Education />}
-            {active === "skills" && <Skills />}
-            {active === "photos" && <Photos />}
-            {active === "posts" && <Posts />}
+
+            {active === "experiences" && (
+                <>
+                    {rootUser && (
+                        <>
+                            <CreateContent
+                                label="Add experience"
+                                onClick={() => setOpenModal("experiences")}
+                            />
+                            {openModal === "experiences"}
+                        </>
+                    )}
+                    <Experiences rootUser={rootUser} />
+                </>
+            )}
+            {active === "education" && (
+                <>
+                    {rootUser && (
+                        <>
+                            <CreateContent
+                                label="Add education"
+                                onClick={() => setOpenModal("education")}
+                            />
+                            {openModal === "education"}
+                        </>
+                    )}
+                    <Education />
+                </>
+            )}
+            {active === "skills" && (
+                <>
+                    <>
+                        {rootUser && (
+                            <>
+                                <CreateContent
+                                    label="Add a skill"
+                                    onClick={() => setOpenModal("skill")}
+                                />
+                                {openModal === "skill"}
+                            </>
+                        )}
+                        <Education />
+                    </>
+                    <Skills />
+                </>
+            )}
+            {active === "photos" && (
+                <>
+                    <>
+                        {rootUser && (
+                            <>
+                                <CreateContent
+                                    label="Upload photos"
+                                    onClick={() => setOpenModal("photo")}
+                                />
+                                {openModal === "photo"}
+                            </>
+                        )}
+                        <Education />
+                    </>
+                    <Photos />
+                </>
+            )}
+            {active === "posts" && (
+                <>
+                    <>
+                        {rootUser && (
+                            <>
+                                <CreateContent
+                                    label="Create a post"
+                                    onClick={() => setOpenModal("post")}
+                                />
+                                {openModal === "post"}
+                            </>
+                        )}
+                        <Education />
+                    </>
+                    <Posts />
+                </>
+            )}
         </div>
     );
 };
