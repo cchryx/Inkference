@@ -15,7 +15,7 @@ type TopBarProps = {
 
 const Topbar = ({ active, setActive, links }: TopBarProps) => {
     return (
-        <div className="bg-gray-200 md:bg-gray-300 shadow-md w-full">
+        <div className="bg-gray-200 md:bg-gray-300 shadow-md w-full relative fixed">
             <div className="p-3 flex justify-center">
                 <div className="flex gap-8 md:gap-10">
                     {links.map(({ id, label }) => {

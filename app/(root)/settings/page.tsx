@@ -172,9 +172,6 @@ export default function Page() {
                             {activeSection === "notifications" && (
                                 <div>Notifications settings</div>
                             )}
-                            {activeSection === "more" && (
-                                <div>More settings coming soon...</div>
-                            )}
                         </div>
                     </div>
                 </div>

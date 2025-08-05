@@ -146,4 +146,5 @@ export const NAVBARLEFT_SUB_LINKS = [
 export const HOMETOP_LINKS = [
     { id: "for_you", label: "For You" },
     { id: "following", label: "Following" },
+    { id: "friends", label: "Friends" },
 ];

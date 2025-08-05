@@ -7,6 +7,17 @@ import Topbar from "../root/Topbar";
 const TopbarWrapper = () => {
     const [active, setActive] = useState("for_you");
 
+    const contentList = Array.from({ length: 10 }).map((_, i) => ({
+        key: `${active}-${i}`,
+        label: `${active === "for_you" ? "For You" : "Following"} - Box ${
+            i + 1
+        }`,
+        bgClass:
+            active === "for_you"
+                ? "bg-blue-200 text-blue-900"
+                : "bg-green-200 text-green-900",
+    }));
+
     return (
         <>
             <Topbar
@@ -14,26 +25,18 @@ const TopbarWrapper = () => {
                 setActive={setActive}
                 links={HOMETOP_LINKS}
             />
-            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-                {active === "for_you" &&
-                    Array.from({ length: 10 }).map((_, i) => (
-                        <div
-                            key={`for-you-${i}`}
-                            className="h-32 bg-blue-200 rounded-lg shadow-md flex items-center justify-center text-xl font-semibold text-blue-900"
-                        >
-                            For You - Box {i + 1}
-                        </div>
-                    ))}
 
-                {active === "following" &&
-                    Array.from({ length: 10 }).map((_, i) => (
-                        <div
-                            key={`following-${i}`}
-                            className="h-32 bg-green-200 rounded-lg shadow-md flex items-center justify-center text-xl font-semibold text-green-900"
-                        >
-                            Following - Box {i + 1}
+            <div className="flex-1 overflow-y-scroll snap-y snap-mandatory no-scrollbar h-full">
+                {contentList.map((item) => (
+                    <div
+                        key={item.key}
+                        className={`snap-start h-full w-full flex items-center justify-center ${item.bgClass}`}
+                    >
+                        <div className="w-[90%] md:w-[40%] h-[80%] bg-white rounded-xl shadow-lg flex items-center justify-center text-2xl font-semibold">
+                            {item.label}
                         </div>
-                    ))}
+                    </div>
+                ))}
             </div>
         </>
     );

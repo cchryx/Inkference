@@ -17,12 +17,15 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
 
     const [showUserMenu, setShowUserMenu] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
+    const avatarRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
                 userMenuRef.current &&
-                !userMenuRef.current.contains(event.target as Node)
+                avatarRef.current &&
+                !userMenuRef.current.contains(event.target as Node) &&
+                !avatarRef.current.contains(event.target as Node)
             ) {
                 setShowUserMenu(false);
             }
@@ -38,13 +41,14 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
     }, [showUserMenu]);
 
     return (
-        <div className="relative w-full pt-2 pb-5 bg-gray-200 border-t border-gray-300">
+        <div className="relative overflow-hidden fixed w-full pt-2 pb-5 bg-gray-200 border-t border-gray-300">
             {/* Menu bar */}
             <div className="flex justify-around items-center h-full">
                 {/* User Icon on left */}
                 <div
+                    ref={avatarRef}
                     className="flex flex-col items-center text-xs cursor-pointer border-black border-2 rounded-full"
-                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    onClick={() => setShowUserMenu((prev) => !prev)}
                 >
                     {user?.image ? (
                         <img
@@ -87,7 +91,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
             {showUserMenu && (
                 <div
                     ref={userMenuRef}
-                    className="absolute bottom-[80px] left-2 z-50 w-48 bg-gray-300 rounded shadow-lg overflow-hidden"
+                    className="fixed bottom-[80px] left-2 z-50 w-48 bg-gray-300 rounded shadow-lg overflow-hidden"
                 >
                     <ul className="flex flex-col py-1">
                         {NAVBARLEFT_SUB_LINKS.map(

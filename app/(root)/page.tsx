@@ -11,7 +11,7 @@ export default async function Page() {
     if (!session) return redirect("/auth/signin");
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full fixed relative overflow-hidden">
             <TopbarWrapper />
         </div>
     );
