@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PROFILE_LINKS } from "@/constants";
 
 const ContentsBar = ({
@@ -11,6 +11,26 @@ const ContentsBar = ({
     setActive: React.Dispatch<React.SetStateAction<string>>;
 }) => {
     const [visibleLabel, setVisibleLabel] = useState<string | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target as Node)
+            ) {
+                setVisibleLabel(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         if (visibleLabel) {
@@ -20,7 +40,10 @@ const ContentsBar = ({
     }, [visibleLabel]);
 
     return (
-        <div className="sticky top-0 z-40 bg-gray-200 rounded-md shadow-md">
+        <div
+            ref={containerRef}
+            className="sticky top-0 z-40 bg-gray-200 rounded-md shadow-md"
+        >
             <div className="w-full p-2 flex justify-center">
                 <div className="flex gap-8 md:gap-10">
                     {PROFILE_LINKS.map((link) => {

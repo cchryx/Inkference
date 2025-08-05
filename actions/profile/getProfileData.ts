@@ -11,7 +11,12 @@ export async function getProfileData(username?: string | null) {
     });
 
     let targetUserId: string;
-    let userInfo: { name: string; username: string; image?: string };
+    let userInfo: {
+        id: string;
+        name: string;
+        username: string;
+        image?: string;
+    };
 
     if (username) {
         const user = await prisma.user.findUnique({
@@ -21,7 +26,7 @@ export async function getProfileData(username?: string | null) {
 
         if (!user) {
             return {
-                user: { name: "", username: "", image: undefined },
+                user: { id: "", name: "", username: "", image: undefined },
                 profile: {
                     bio: "",
                     birthdate: null,
@@ -35,6 +40,7 @@ export async function getProfileData(username?: string | null) {
 
         targetUserId = user.id;
         userInfo = {
+            id: user.id ?? "",
             name: user.name ?? "",
             username: user.username ?? "",
             image: user.image ?? undefined,
@@ -44,6 +50,7 @@ export async function getProfileData(username?: string | null) {
 
         targetUserId = session.user.id;
         userInfo = {
+            id: session.user.id ?? "",
             name: session.user.name ?? "",
             username: session.user.username ?? "",
             image: session.user.image ?? undefined,

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { SignoutButton } from "../auth/SignoutButton";
-import { NAVBARLEFT_LINKS } from "@/constants/index";
+import { NAVBARLEFT_LINKS, NAVBARLEFT_SUB_LINKS } from "@/constants/index";
 
 type NavbarLeftProps = {
     session: any;
@@ -130,39 +130,41 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                         className="absolute left-full bottom-0 mb-2 ml-2 w-48 bg-gray-300 rounded-sm z-50 overflow-hidden"
                     >
                         <ul className="flex flex-col">
-                            <li>
-                                <Link
-                                    href={`${
-                                        user.username
-                                            ? `/profile/${user.username}`
-                                            : "/"
-                                    }`}
-                                    onClick={() => setShowUserMenu(false)}
-                                    className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer"
-                                >
-                                    <User className="w-4 h-4" />
-                                    <span>Profile</span>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href="/settings"
-                                    onClick={() => setShowUserMenu(false)}
-                                    className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer"
-                                >
-                                    <Settings className="w-4 h-4" />
-                                    <span>Settings</span>
-                                </Link>
-                            </li>
-                            <li>
-                                <SignoutButton
-                                    onClick={() => setShowUserMenu(false)}
-                                    className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer text-destructive"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                    <span>Logout</span>
-                                </SignoutButton>
-                            </li>
+                            {NAVBARLEFT_SUB_LINKS.map(
+                                ({ icon: Icon, route, label, action }) => {
+                                    const resolvedHref =
+                                        typeof route === "function"
+                                            ? route(user?.username)
+                                            : route;
+
+                                    return (
+                                        <li key={label}>
+                                            {action === "signout" ? (
+                                                <SignoutButton
+                                                    onClick={() =>
+                                                        setShowUserMenu(false)
+                                                    }
+                                                    className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer text-destructive"
+                                                >
+                                                    <Icon className="w-4 h-4" />
+                                                    <span>{label}</span>
+                                                </SignoutButton>
+                                            ) : (
+                                                <Link
+                                                    href={resolvedHref || "/"}
+                                                    onClick={() =>
+                                                        setShowUserMenu(false)
+                                                    }
+                                                    className="flex items-center gap-2 px-4 py-2 hover:brightness-90 bg-gray-300 rounded-sm cursor-pointer"
+                                                >
+                                                    <Icon className="size-4 text-bold" />
+                                                    <span>{label}</span>
+                                                </Link>
+                                            )}
+                                        </li>
+                                    );
+                                }
+                            )}
                         </ul>
                     </div>
                 )}

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import TopbarWrapper from "@/components/home/TopbarWrapper";
 
 export default async function Page() {
     const session = await auth.api.getSession({
@@ -10,8 +11,8 @@ export default async function Page() {
     if (!session) return redirect("/auth/signin");
 
     return (
-        <div className="flex items-center justify-center h-full">
-            Other stuff
+        <div className="flex flex-col h-full">
+            <TopbarWrapper />
         </div>
     );
 }

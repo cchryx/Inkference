@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
 
 export async function acceptFriendRequest(
-    targetUserId: string,
-    currentUserId: string
+    currentUserId: string,
+    targetUserId: string
 ) {
     try {
         if (currentUserId === targetUserId) {

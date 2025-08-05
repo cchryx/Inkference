@@ -6,8 +6,12 @@ import Link from "next/link";
 import { Skeleton } from "@/components/general/Skeleton";
 import { UserCheck, UserX } from "lucide-react";
 import FallbackUserIcon from "../general/FallbackUserIcon";
+import { acceptFriendRequest } from "@/actions/users/acceptFriendRequest";
+import { toggleFriendRequest } from "@/actions/users/toggleFriendRequest";
+import { toast } from "sonner";
 
 const Requests = () => {
+    const [isPending, setIsPending] = useState(false);
     const [followRequestsReceived, setFollowRequestsReceived] = useState<any[]>(
         []
     );
@@ -17,23 +21,72 @@ const Requests = () => {
     const [followRequestsSent, setFollowRequestsSent] = useState<any[]>([]);
     const [friendRequestsSent, setFriendRequestsSent] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+    const fetchData = async () => {
+        const userData = await getProfileData();
+        setCurrentUserId(userData?.user.id ?? null);
+        setFollowRequestsReceived(
+            userData.relationships?.followRequestsReceived || []
+        );
+        setFriendRequestsReceived(
+            userData.relationships?.friendRequestsReceived || []
+        );
+        setFollowRequestsSent(userData.relationships?.followRequestsSent || []);
+        setFriendRequestsSent(userData.relationships?.friendRequestsSent || []);
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            const { relationships } = await getProfileData();
-            setFollowRequestsReceived(
-                relationships?.followRequestsReceived || []
-            );
-            setFriendRequestsReceived(
-                relationships?.friendRequestsReceived || []
-            );
-            setFollowRequestsSent(relationships?.followRequestsSent || []);
-            setFriendRequestsSent(relationships?.friendRequestsSent || []);
-            setLoading(false);
-        };
-
         fetchData();
     }, []);
+
+    const handleAction = async (
+        type: "accept" | "decline" | "cancel",
+        targetUserId: string
+    ) => {
+        setIsPending(true);
+        if (!currentUserId) return;
+
+        if (type === "accept") {
+            const { error } = await acceptFriendRequest(
+                currentUserId,
+                targetUserId
+            );
+            if (error) {
+                toast.error(error);
+            } else {
+                toast.success("Accepted friend request.");
+            }
+        }
+
+        if (type === "decline") {
+            const { error } = await toggleFriendRequest(
+                targetUserId,
+                currentUserId
+            );
+            if (error) {
+                toast.error(error);
+            } else {
+                toast.success("Declined friend request.");
+            }
+        }
+
+        if (type === "cancel") {
+            const { error } = await toggleFriendRequest(
+                currentUserId,
+                targetUserId
+            );
+            if (error) {
+                toast.error(error);
+            } else {
+                toast.success("Canceled friend request.");
+            }
+        }
+
+        await fetchData();
+        setIsPending(false);
+    };
 
     if (loading) {
         return (
@@ -95,18 +148,20 @@ const Requests = () => {
                         {isReceived ? (
                             <div className="flex gap-2">
                                 <button
+                                    disabled={isPending}
                                     className="p-2 rounded-md bg-green-500 text-white hover:brightness-[90%] transition cursor-pointer"
-                                    onClick={() => {
-                                        /* Handle Accept */
-                                    }}
+                                    onClick={() =>
+                                        handleAction("accept", req.userId)
+                                    }
                                 >
                                     <UserCheck className="w-4 h-4" />
                                 </button>
                                 <button
+                                    disabled={isPending}
                                     className="p-2 rounded-md bg-red-500 text-white hover:brightness-[90%] transition cursor-pointer"
-                                    onClick={() => {
-                                        /* Handle Decline */
-                                    }}
+                                    onClick={() =>
+                                        handleAction("decline", req.userId)
+                                    }
                                 >
                                     <UserX className="w-4 h-4" />
                                 </button>
@@ -114,9 +169,9 @@ const Requests = () => {
                         ) : (
                             <button
                                 className="px-3 py-1 cursor-pointer rounded-md bg-gray-500 text-white hover:bg-gray-600 transition text-sm"
-                                onClick={() => {
-                                    /* Handle Cancel */
-                                }}
+                                onClick={() =>
+                                    handleAction("cancel", req.userId)
+                                }
                             >
                                 Cancel
                             </button>

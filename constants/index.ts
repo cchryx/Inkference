@@ -12,9 +12,11 @@ import {
     Inbox,
     KeySquare,
     Library,
+    LogOut,
     Mail,
     Mailbox,
     Send,
+    Settings,
     User,
     UserCircle,
     UserPlus,
@@ -35,11 +37,6 @@ export const NAVBARLEFT_LINKS = [
         icon: Library,
         route: "/library",
         label: "Library",
-    },
-    {
-        icon: Inbox,
-        route: "/inbox",
-        label: "Inbox",
     },
     {
         icon: BookUser,
@@ -120,4 +117,33 @@ export const INBOX_LINKS = [
         id: "requests",
         label: "Requests",
     },
+];
+
+export const NAVBARLEFT_SUB_LINKS = [
+    {
+        icon: User,
+        route: (username: string | undefined) =>
+            username ? `/profile/${username}` : "/",
+        label: "Profile",
+    },
+    {
+        icon: Inbox,
+        route: "/inbox",
+        label: "Inbox",
+    },
+    {
+        icon: Settings,
+        route: "/settings",
+        label: "Settings",
+    },
+    {
+        icon: LogOut,
+        action: "signout",
+        label: "Signout",
+    },
+];
+
+export const HOMETOP_LINKS = [
+    { id: "for_you", label: "For You" },
+    { id: "following", label: "Following" },
 ];

@@ -4,7 +4,7 @@ import { User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { NAVBARLEFT_LINKS } from "@/constants/index";
+import { NAVBARLEFT_LINKS, NAVBARLEFT_SUB_LINKS } from "@/constants/index";
 import { SignoutButton } from "../auth/SignoutButton";
 
 type NavbarMobileProps = {
@@ -90,39 +90,45 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                     className="absolute bottom-[80px] left-2 z-50 w-48 bg-gray-300 rounded shadow-lg overflow-hidden"
                 >
                     <ul className="flex flex-col py-1">
-                        <li>
-                            <Link
-                                href={`${
-                                    user.username
-                                        ? `/profile/${user.username}`
-                                        : "/"
-                                }`}
-                                className="flex items-center gap-2 px-4 py-2 hover:brightness-95 text-sm"
-                                onClick={() => setShowUserMenu(false)}
-                            >
-                                <User className="w-4 h-4" />
-                                <span>Profile</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/settings"
-                                className="flex items-center gap-2 px-4 py-2 hover:brightness-95 text-sm"
-                                onClick={() => setShowUserMenu(false)}
-                            >
-                                <Settings className="w-4 h-4" />
-                                <span>Settings</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <SignoutButton
-                                className="flex items-center gap-2 px-4 py-2 hover:brightness-95 text-sm text-red-600"
-                                onClick={() => setShowUserMenu(false)}
-                            >
-                                <LogOut className="w-4 h-4" />
-                                <span>Logout</span>
-                            </SignoutButton>
-                        </li>
+                        {NAVBARLEFT_SUB_LINKS.map(
+                            ({ icon: Icon, label, route, action }) => {
+                                const href =
+                                    typeof route === "function"
+                                        ? route(user?.username)
+                                        : route;
+
+                                if (action === "signout") {
+                                    return (
+                                        <li key={label}>
+                                            <SignoutButton
+                                                className="flex items-center gap-2 px-4 py-2 hover:brightness-95 text-sm text-red-600 cursor-pointer"
+                                                onClick={() =>
+                                                    setShowUserMenu(false)
+                                                }
+                                            >
+                                                <Icon className="w-4 h-4" />
+                                                <span>{label}</span>
+                                            </SignoutButton>
+                                        </li>
+                                    );
+                                }
+
+                                return (
+                                    <li key={label}>
+                                        <Link
+                                            href={href || "/"}
+                                            onClick={() =>
+                                                setShowUserMenu(false)
+                                            }
+                                            className="flex items-center gap-2 px-4 py-2 hover:brightness-95 text-sm"
+                                        >
+                                            <Icon className="size-4 text-bold" />
+                                            <span>{label}</span>
+                                        </Link>
+                                    </li>
+                                );
+                            }
+                        )}
                     </ul>
                 </div>
             )}
