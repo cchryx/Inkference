@@ -81,9 +81,9 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
         }
 
         if (isRequestReceived) {
-            const { error, accepted } = await acceptFriendRequest(
-                tUser.id,
-                currentUserId
+            const { error } = await acceptFriendRequest(
+                currentUserId,
+                tUser.id
             );
             if (error) {
                 toast.error(error);

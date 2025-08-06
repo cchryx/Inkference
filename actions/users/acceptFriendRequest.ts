@@ -72,7 +72,7 @@ export async function acceptFriendRequest(
             }),
         ]);
 
-        return { error: null, accepted: true };
+        return { error: null };
     } catch (error) {
         if (error instanceof APIError) {
             let message = error.message?.trim() || "An unknown error occurred";
