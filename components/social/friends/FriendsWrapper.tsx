@@ -39,7 +39,7 @@ const FriendsWrapper = ({ friendsList = [] }: FriendsWrapperProps) => {
     const isEmpty = filteredFriends.length === 0;
 
     return (
-        <div className="relative w-full md:w-3xl p-4 flex flex-col items-center overflow-hidden space-y-3 select-none">
+        <div className="relative w-full h-full md:w-3xl p-4 flex flex-col items-center overflow-hidden space-y-3 select-none">
             {/* Search Bar */}
             <div className="w-full pb-1">
                 <Input
@@ -88,7 +88,7 @@ const FriendsWrapper = ({ friendsList = [] }: FriendsWrapperProps) => {
                     ))}
                 </div>
             )}
-            <div ref={observerRef} className="h-10" />
+            <div ref={observerRef} className="h-0" />
         </div>
     );
 };

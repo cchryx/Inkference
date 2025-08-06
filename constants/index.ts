@@ -4,6 +4,7 @@ import {
     BookUser,
     Brain,
     BriefcaseBusiness,
+    Building2,
     Compass,
     Contact,
     Folders,
@@ -155,5 +156,5 @@ export const HOMETOP_LINKS = [
 export const SOCIALNAVBAR_LINKS = [
     { label: "Messages", route: "/social/messages", icon: MessagesSquare },
     { label: "Friends", route: "/social/friends", icon: Users },
-    { label: "Communities", route: "/social/communities", icon: Group },
+    { label: "Communities", route: "/social/communities", icon: Building2 },
 ];
