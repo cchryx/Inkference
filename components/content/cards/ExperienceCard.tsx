@@ -9,12 +9,12 @@ type Experience = {
         name: string;
         image?: string | null;
     } | null;
+    status: "IN_PROGRESS" | "COMPLETE";
     startDate: string;
     endDate?: string | null;
     location?: string | null;
     locationType?: string | null;
     employmentType?: string | null;
-    status: "IN_PROGRESS" | "COMPLETE";
 };
 
 // Helper to calculate months between two dates, inclusive

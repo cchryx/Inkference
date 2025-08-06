@@ -12,6 +12,7 @@ import Posts from "./sections/Posts";
 import CreateContent from "./CreateContent";
 import CreateProjectModal from "../project/create/CreateProjectModal";
 import Subnavbar from "../root/Subnavbar";
+import AddExperienceModal from "../experience/create/AddExperienceModal";
 
 type Props = {
     userData: any;
@@ -86,7 +87,11 @@ const Content = ({ userData, rootUser = false }: Props) => {
                                 label="Add experience"
                                 onClick={() => setOpenModal("experiences")}
                             />
-                            {openModal === "experiences"}
+                            {openModal === "experiences" && (
+                                <AddExperienceModal
+                                    onCloseModal={() => setOpenModal(null)}
+                                />
+                            )}
                         </>
                     )}
                     <Experiences rootUser={rootUser} />
