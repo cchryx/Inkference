@@ -88,7 +88,16 @@ export async function getProfileData(username?: string | null) {
                 },
             },
             friends: {
-                select: { userId: true },
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
             },
             blockedUsers: {
                 select: { userId: true },
@@ -182,7 +191,16 @@ export async function getProfileData(username?: string | null) {
                     },
                 },
                 friends: {
-                    select: { userId: true },
+                    select: {
+                        userId: true,
+                        user: {
+                            select: {
+                                username: true,
+                                name: true,
+                                image: true,
+                            },
+                        },
+                    },
                 },
                 blockedUsers: {
                     select: { userId: true },

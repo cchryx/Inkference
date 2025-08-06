@@ -8,6 +8,7 @@ import {
     Contact,
     Folders,
     GraduationCap,
+    Group,
     Home,
     Inbox,
     KeySquare,
@@ -15,11 +16,13 @@ import {
     LogOut,
     Mail,
     Mailbox,
+    MessagesSquare,
     Send,
     Settings,
     User,
     UserCircle,
     UserPlus,
+    Users,
 } from "lucide-react";
 
 export const NAVBARLEFT_LINKS = [
@@ -40,7 +43,7 @@ export const NAVBARLEFT_LINKS = [
     },
     {
         icon: BookUser,
-        route: "/social",
+        route: "/social/messages",
         label: "Social",
     },
 ];
@@ -147,4 +150,10 @@ export const HOMETOP_LINKS = [
     { id: "for_you", label: "For You" },
     { id: "following", label: "Following" },
     { id: "friends", label: "Friends" },
+];
+
+export const SOCIALNAVBAR_LINKS = [
+    { label: "Messages", route: "/social/messages", icon: MessagesSquare },
+    { label: "Friends", route: "/social/friends", icon: Users },
+    { label: "Communities", route: "/social/communities", icon: Group },
 ];

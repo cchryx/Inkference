@@ -92,7 +92,7 @@ export default function ExperienceCard({
                     <img
                         src={organization.image || fillerImage}
                         alt={organization.name}
-                        className="size-18 rounded object-cover border-2 border-gray-300 shadow-md"
+                        className="size-18 rounded object-contain border-2 border-gray-300 shadow-md rounded-md"
                         onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             if (target.src !== fillerImage) {

@@ -28,7 +28,7 @@ const Experiences = ({ rootUser = false }: Props) => {
                 "Led a team to redesign the onboarding flow and improve user retention.",
             organization: {
                 name: "Figma",
-                image: "/logos/figma.png",
+                image: "https://cdn.sanity.io/images/599r6htc/regionalized/5094051dac77593d0f0978bdcbabaf79e5bb855c-1080x1080.png?w=540&h=540&q=75&fit=max&auto=format",
             },
             startDate: "2021-04-01",
             endDate: "Present",
@@ -42,7 +42,7 @@ const Experiences = ({ rootUser = false }: Props) => {
             description: null,
             organization: {
                 name: "Google",
-                image: "/logos/google.png",
+                image: "https://yt3.googleusercontent.com/2eI1TjX447QZFDe6R32K0V2mjbVMKT5mIfQR-wK5bAsxttS_7qzUDS1ojoSKeSP0NuWd6sl7qQ=s900-c-k-c0x00ffffff-no-rj",
             },
             startDate: "2020-05-15",
             endDate: "2020-08-20",
@@ -68,7 +68,7 @@ const Experiences = ({ rootUser = false }: Props) => {
             description: null,
             organization: {
                 name: "Shopify",
-                image: "/logos/shopify.png",
+                image: "https://www.realisable.co.uk/wp-content/themes/realisable/images/logos/shopify.svg",
             },
             startDate: "2018-03-01",
             endDate: "2019-11-01",
@@ -83,7 +83,7 @@ const Experiences = ({ rootUser = false }: Props) => {
                 "Collaborated with developers to create a design system using Figma and Storybook.",
             organization: {
                 name: "Startup XYZ",
-                image: "/logos/startupxyz.png",
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/.xyz_logo.svg/1200px-.xyz_logo.svg.png",
             },
             startDate: "2022-01-10",
             endDate: null,

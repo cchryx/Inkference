@@ -57,7 +57,12 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                 {/* Main Nav Links */}
                 {NAVBARLEFT_LINKS.map((link: any) => {
                     const Icon = link.icon;
-                    const isActive = pathname === link.route;
+                    const isActive =
+                        (pathname === "/" && pathname === link.route) ||
+                        (pathname.startsWith(link.route) &&
+                            link.route !== "/") ||
+                        (pathname.startsWith("/social/") &&
+                            link.route.startsWith("/social/"));
 
                     return (
                         <Link
