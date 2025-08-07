@@ -136,6 +136,8 @@ model UserData {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  experiences Experience[]
+
   @@map("userData")
 }
 
@@ -220,4 +222,28 @@ model Relationships {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("relationships")
+}
+
+model Experience {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title        String @db.VarChar(60)
+  organization String @db.VarChar(100)
+  description  String @db.Text
+
+  startDate DateTime
+  endDate   DateTime?
+  status    String
+
+  location       String @db.VarChar(100)
+  locationType   String
+  employmentType String
+
+  userDataId String
+  userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+
+  @@index([userDataId, updatedAt])
+  @@map("experiences")
 }

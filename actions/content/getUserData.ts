@@ -21,6 +21,21 @@ export async function getUserData(userId?: string) {
         skills: true,
     };
 
+    const experienceSelect = {
+        id: true,
+        title: true,
+        organization: true,
+        description: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+        location: true,
+        locationType: true,
+        employmentType: true,
+        createdAt: true,
+        updatedAt: true,
+    };
+
     const orderByDur: any = [
         { endDate: { sort: "desc", nulls: "last" } },
         { startDate: "desc" },
@@ -49,6 +64,9 @@ export async function getUserData(userId?: string) {
                 projectsSaved: {
                     select: projectSelect,
                 },
+                experiences: {
+                    select: experienceSelect,
+                },
             },
         });
         if (!userData) return { error: "User data not found." };
@@ -74,6 +92,9 @@ export async function getUserData(userId?: string) {
             projectsLiked: { select: projectSelect },
             projectsViewed: { select: projectSelect },
             projectsSaved: { select: projectSelect },
+            experiences: {
+                select: experienceSelect,
+            },
         },
     });
 
@@ -90,6 +111,9 @@ export async function getUserData(userId?: string) {
                 projectsLiked: { select: projectSelect },
                 projectsViewed: { select: projectSelect },
                 projectsSaved: { select: projectSelect },
+                experiences: {
+                    select: experienceSelect,
+                },
             },
         });
     }

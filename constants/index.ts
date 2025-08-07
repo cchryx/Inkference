@@ -44,7 +44,7 @@ export const NAVBARLEFT_LINKS = [
     },
     {
         icon: BookUser,
-        route: "/social/messages",
+        route: "/social/friends",
         label: "Social",
     },
 ];

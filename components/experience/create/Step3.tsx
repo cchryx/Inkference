@@ -19,6 +19,7 @@ type Props = {
 };
 
 const employmentOptions = [
+    "Volunteer",
     "Self-employed",
     "Freelance",
     "Internship",

@@ -23,18 +23,19 @@ export default function ProjectCard({ project }: { project: any }) {
         project.status === "IN_PROGRESS" ? "In Progress" : "Complete";
     const startDate = project.startDate
         ? new Date(project.startDate).toLocaleDateString("en-US", {
-              month: "long",
+              month: "short",
               day: "numeric",
               year: "numeric",
           })
         : "";
+
     const endDate = project.endDate
         ? new Date(project.endDate).toLocaleDateString("en-US", {
-              month: "long",
+              month: "short",
               day: "numeric",
               year: "numeric",
           })
-        : "TBD";
+        : "Present";
     const skills = project.skills ?? [];
     const likes = Array.isArray(project.likes) ? project.likes.length : 0;
     const views = Array.isArray(project.views) ? project.views.length : 0;

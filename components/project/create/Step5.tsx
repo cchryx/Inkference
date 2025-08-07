@@ -89,7 +89,7 @@ const Step5 = ({ onChange, initialValue }: Props) => {
         const endValid = endYear && endMonth && endDay;
 
         const toUnix = (y: string, m: string, d: string) =>
-            Math.floor(Date.UTC(+y, +m - 1, +d) / 1000);
+            Math.floor(new Date(+y, +m - 1, +d).getTime() / 1000);
 
         onChange({
             status,

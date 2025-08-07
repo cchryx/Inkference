@@ -7,20 +7,20 @@ import InfoTooltip from "@/components/general/InfoToolTip";
 
 type Props = {
     onChange: (dates: {
-        status: "In Progress" | "Complete";
+        status: "Ongoing" | "Complete";
         startDate: number | null;
         endDate: number | null;
     }) => void;
     initialValue?: {
-        status: "In Progress" | "Complete";
+        status: "Ongoing" | "Complete";
         startDate: number | null;
         endDate: number | null;
     };
 };
 
 const Step2 = ({ onChange, initialValue }: Props) => {
-    const [status, setStatus] = useState<"In Progress" | "Complete">(
-        initialValue?.status || "In Progress"
+    const [status, setStatus] = useState<"Ongoing" | "Complete">(
+        initialValue?.status || "Ongoing"
     );
 
     const toParts = (timestamp: number | null) => {
@@ -89,7 +89,7 @@ const Step2 = ({ onChange, initialValue }: Props) => {
         const endValid = endYear && endMonth && endDay;
 
         const toUnix = (y: string, m: string, d: string) =>
-            Math.floor(Date.UTC(+y, +m - 1, +d) / 1000);
+            Math.floor(new Date(+y, +m - 1, +d).getTime() / 1000);
 
         onChange({
             status,
@@ -150,15 +150,15 @@ const Step2 = ({ onChange, initialValue }: Props) => {
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-1">
                     <Label htmlFor="status">Status</Label>
-                    <InfoTooltip text="Select project status." />
+                    <InfoTooltip text="Select experience status." />
                 </div>
                 {renderDropdown(
                     null,
                     status,
-                    ["In Progress", "Complete"],
+                    ["Ongoing", "Complete"],
                     statusOpen,
                     setStatusOpen,
-                    (val) => setStatus(val as "In Progress" | "Complete"),
+                    (val) => setStatus(val as "Ongoing" | "Complete"),
                     true
                 )}
             </div>

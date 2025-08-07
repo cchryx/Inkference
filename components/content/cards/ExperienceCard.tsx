@@ -1,15 +1,21 @@
 "use client";
 
-import { Briefcase, CalendarDays, MapPin } from "lucide-react";
+import { deleteExperience } from "@/actions/content/experience/deleteExperience";
+import ConfirmModal from "@/components/general/ConfirmModal";
+import { Briefcase, CalendarDays, MapPin, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type Experience = {
+    id: string;
     title: string;
     description?: string | null;
     organization: {
         name: string;
         image?: string | null;
     } | null;
-    status: "IN_PROGRESS" | "COMPLETE";
+    status: "Ongoing" | "Complete";
     startDate: string;
     endDate?: string | null;
     location?: string | null;
@@ -24,11 +30,17 @@ function monthsBetween(start: Date, end: Date) {
     return years * 12 + months + 1;
 }
 
-export default function ExperienceCard({
+const ExperienceCard = ({
     experience,
+    rootUser = false,
 }: {
     experience: Experience;
-}) {
+    rootUser?: boolean;
+}) => {
+    const router = useRouter();
+    const [isPending, setIsPending] = useState(false);
+    const [confirmMopen, setConfirmMOpen] = useState(false);
+
     const {
         title,
         description,
@@ -43,100 +55,145 @@ export default function ExperienceCard({
 
     const formattedStart = new Date(startDate).toLocaleDateString("en-US", {
         month: "short",
+        day: "numeric",
         year: "numeric",
     });
 
     const formattedEnd =
-        status === "IN_PROGRESS" || !endDate
+        status === "Ongoing" || !endDate
             ? "Present"
             : new Date(endDate).toLocaleDateString("en-US", {
                   month: "short",
+                  day: "numeric",
                   year: "numeric",
               });
 
     const start = new Date(startDate);
     const end =
-        endDate && status === "COMPLETE" ? new Date(endDate) : new Date();
+        endDate && status === "Complete" ? new Date(endDate) : new Date();
 
     const durationMonths =
-        status === "COMPLETE" ? monthsBetween(start, end) : null;
+        status === "Complete" ? monthsBetween(start, end) : null;
 
-    const statusLabel = status === "IN_PROGRESS" ? "In Progress" : "Complete";
+    const statusLabel = status;
 
     const statusColor =
-        status === "IN_PROGRESS"
+        status === "Ongoing"
             ? "bg-yellow-100 text-yellow-800"
             : "bg-green-100 text-green-800";
 
     const fillerImage = "/assets/general/fillerImage.png";
 
-    return (
-        <div className="h-[300px] bg-gray-200 rounded-xl shadow-md hover:shadow-lg transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.01] duration-300 overflow-hidden flex flex-col p-4">
-            {/* Top section with flex: text left, image right */}
-            <div className="flex justify-between items-start">
-                <div className="max-w-[70%]">
-                    {/* Title */}
-                    <h2 className="text-lg font-semibold text-gray-800 line-clamp-1">
-                        {title}
-                    </h2>
+    const handleDeleteExperience = async () => {
+        setIsPending(true);
+        const { error } = await deleteExperience(experience.id);
+        if (error) {
+            toast.error(error);
+        } else {
+            toast.success("Experience deleted successfully.");
+            router.refresh();
+        }
+        setIsPending(false);
+    };
 
-                    {/* Organization name */}
+    return (
+        <>
+            <ConfirmModal
+                isPending={isPending}
+                open={confirmMopen}
+                title="Delete this experience?"
+                text="This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={() => {
+                    handleDeleteExperience();
+                    setConfirmMOpen(false);
+                }}
+                onClose={() => setConfirmMOpen(false)}
+            />
+            <div className="relative h-[300px] bg-gray-200 rounded-xl shadow-md hover:shadow-lg transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.01] duration-300 overflow-hidden flex flex-col p-4">
+                {/* Top section with flex: text left, image right */}
+                <div className="flex justify-between items-start">
+                    <div className="max-w-[70%]">
+                        {/* Title */}
+                        <h2 className="text-lg font-semibold text-gray-800 line-clamp-1">
+                            {title}
+                        </h2>
+
+                        {/* Organization name */}
+                        {organization && (
+                            <p className="mt-1 text-sm text-gray-600 font-medium">
+                                {organization.name}
+                            </p>
+                        )}
+                    </div>
+
                     {organization && (
-                        <p className="mt-1 text-sm text-gray-600 font-medium">
-                            {organization.name}
+                        <img
+                            src={organization.image || fillerImage}
+                            alt={organization.name}
+                            className="size-18 rounded object-contain border-2 border-gray-300 shadow-md rounded-md"
+                            onError={(e) => {
+                                const target =
+                                    e.currentTarget as HTMLImageElement;
+                                if (target.src !== fillerImage) {
+                                    target.src = fillerImage;
+                                }
+                            }}
+                        />
+                    )}
+                </div>
+
+                {/* Description */}
+                {description && (
+                    <p className="text-sm text-gray-600 mt-3 line-clamp-6 overflow-hidden">
+                        {description}
+                    </p>
+                )}
+
+                {/* Status */}
+                <span
+                    className={`mt-4 w-fit inline-block text-xs font-medium px-2 py-1 rounded ${statusColor}`}
+                >
+                    {statusLabel}
+                </span>
+
+                {/* Meta */}
+                <div className="mt-auto text-xs text-gray-500 flex flex-col gap-1 pr-6">
+                    <p>
+                        <CalendarDays className="inline w-4 h-4 mr-1" />
+                        {formattedStart} – {formattedEnd}
+                        {durationMonths ? ` (${durationMonths} months)` : ""}
+                    </p>
+                    {location && locationType && (
+                        <p>
+                            <MapPin className="inline w-4 h-4 mr-1" />
+                            {location} ({locationType})
+                        </p>
+                    )}
+                    {employmentType && (
+                        <p>
+                            <Briefcase className="inline w-4 h-4 mr-1" />
+                            {employmentType}
                         </p>
                     )}
                 </div>
 
-                {organization && (
-                    <img
-                        src={organization.image || fillerImage}
-                        alt={organization.name}
-                        className="size-18 rounded object-contain border-2 border-gray-300 shadow-md rounded-md"
-                        onError={(e) => {
-                            const target = e.currentTarget as HTMLImageElement;
-                            if (target.src !== fillerImage) {
-                                target.src = fillerImage;
-                            }
+                {/* Delete Button */}
+                {rootUser && (
+                    <button
+                        title="Delete"
+                        className="absolute bottom-3 cursor-pointer right-3 text-black hover:text-red-600 p-1 rounded-full hover:bg-red-100 transition"
+                        onClick={() => {
+                            setConfirmMOpen(true);
                         }}
-                    />
+                    >
+                        <Trash className="w-5 h-5" />
+                    </button>
                 )}
             </div>
-
-            {/* Description */}
-            {description && (
-                <p className="text-sm text-gray-600 mt-3 line-clamp-6 overflow-hidden">
-                    {description}
-                </p>
-            )}
-
-            {/* Status */}
-            <span
-                className={`mt-4 w-fit inline-block text-xs font-medium px-2 py-1 rounded ${statusColor}`}
-            >
-                {statusLabel}
-            </span>
-
-            {/* Meta */}
-            <div className="mt-auto text-xs text-gray-500 flex flex-col gap-1">
-                <p>
-                    <CalendarDays className="inline w-4 h-4 mr-1" />
-                    {formattedStart} – {formattedEnd}
-                    {durationMonths ? ` (${durationMonths} months)` : ""}
-                </p>
-                {location && locationType && (
-                    <p>
-                        <MapPin className="inline w-4 h-4 mr-1" />
-                        {location} ({locationType})
-                    </p>
-                )}
-                {employmentType && (
-                    <p>
-                        <Briefcase className="inline w-4 h-4 mr-1" />
-                        {employmentType}
-                    </p>
-                )}
-            </div>
-        </div>
+        </>
     );
-}
+};
+
+export default ExperienceCard;

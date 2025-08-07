@@ -117,7 +117,7 @@ const Preview = ({
 
             {timeline.status === "Complete" && (
                 <div>
-                    <span className="font-semibold">Project End Date :</span>{" "}
+                    <span className="font-semibold">Project End Date:</span>{" "}
                     {timeline.endDate
                         ? new Date(timeline.endDate * 1000).toLocaleDateString(
                               undefined,

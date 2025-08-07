@@ -10,7 +10,7 @@ import Step5 from "./Step5";
 import Step6 from "./Step6";
 import Preview from "./Preview";
 import { toast } from "sonner";
-import { createProjectAction } from "@/actions/content/project/createProject";
+import { createProject } from "@/actions/content/project/createProject";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -101,7 +101,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
 
         if (step === totalSteps - 1) {
             try {
-                const result = await createProjectAction({
+                const result = await createProject({
                     name,
                     summary,
                     description,

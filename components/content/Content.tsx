@@ -94,7 +94,10 @@ const Content = ({ userData, rootUser = false }: Props) => {
                             )}
                         </>
                     )}
-                    <Experiences rootUser={rootUser} />
+                    <Experiences
+                        rootUser={rootUser}
+                        experiences={userData.experiences}
+                    />
                 </>
             )}
             {active === "education" && (

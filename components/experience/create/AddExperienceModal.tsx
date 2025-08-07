@@ -7,9 +7,9 @@ import Step2 from "./Step2";
 import Step3 from "./Step3";
 import Preview from "./Preview";
 import { toast } from "sonner";
-import { createProjectAction } from "@/actions/content/project/createProject";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { addExperience } from "@/actions/content/experience/addExperience";
 
 type Props = {
     onCloseModal: () => void;
@@ -30,7 +30,7 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
 
     // Step 2
     const [timeline, setTimeline] = useState({
-        status: "In Progress" as "In Progress" | "Complete",
+        status: "Ongoing" as "Ongoing" | "Complete",
         startDate: null as number | null,
         endDate: null as number | null,
     });
@@ -69,13 +69,13 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
                 }
                 break;
             case 2:
-                if (!locationType || !employmentType) {
+                if (!locationSelected) {
+                    toast.error("Please select a location from suggestions.");
+                    return;
+                } else if (!locationType || !employmentType) {
                     toast.error(
                         "Location type and employment type are required."
                     );
-                    return;
-                } else if (!locationSelected) {
-                    toast.error("Please select a location from suggestions.");
                     return;
                 }
                 break;
@@ -87,46 +87,43 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
         if (step > 0) setStep(step - 1);
     };
 
-    // const handleSubmit = async (e: React.FormEvent) => {
-    //     e.preventDefault();
-    //     setIsPending(true);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsPending(true);
 
-    //     if (step === totalSteps - 1) {
-    //         try {
-    //             const result = await createProjectAction({
-    //                 title,
-    //                 description,
-    //                 projectLinks,
-    //                 iconImageUrl,
-    //                 bannerImageUrl,
-    //                 projectResources,
-    //                 status:
-    //                     timeline.status === "In Progress"
-    //                         ? "IN_PROGRESS"
-    //                         : "COMPLETE",
-    //                 startDate: timeline.startDate!,
-    //                 endDate:
-    //                     timeline.status === "Complete"
-    //                         ? timeline.endDate ?? null
-    //                         : null,
-    //                 skills: [],
-    //                 contributorIds: [],
-    //             });
+        if (step === totalSteps - 1) {
+            try {
+                const result = await addExperience({
+                    title,
+                    description,
+                    organization,
+                    location,
+                    locationType,
+                    employmentType,
+                    status:
+                        timeline.status === "Ongoing" ? "Ongoing" : "Complete",
+                    startDate: timeline.startDate!,
+                    endDate:
+                        timeline.status === "Complete"
+                            ? timeline.endDate ?? null
+                            : null,
+                });
 
-    //             if ("error" in result) {
-    //                 toast.error(result.error);
-    //             } else {
-    //                 toast.success("Project created successfully!");
-    //                 onCloseModal();
-    //                 router.refresh();
-    //             }
-    //         } catch (error) {
-    //             toast.error("Failed to create project.");
-    //             console.error(error);
-    //         }
-    //     }
-    //     setIsPending(false);
-    // };
+                if ("error" in result) {
+                    toast.error(result.error);
+                } else {
+                    toast.success("Experience added successfully!");
+                    onCloseModal();
+                    router.refresh();
+                }
+            } catch (error) {
+                toast.error("Failed to add experience.");
+                console.error(error);
+            }
+        }
+
+        setIsPending(false);
+    };
 
     return (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
@@ -172,6 +169,17 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
                             setEmploymentType={setEmploymentType}
                         />
                     )}
+                    {step === 3 && (
+                        <Preview
+                            title={title}
+                            organization={organization}
+                            description={description}
+                            timeline={timeline}
+                            location={location}
+                            employmentType={employmentType}
+                            locationType={locationType}
+                        />
+                    )}
                 </form>
 
                 {/* Bottom Navigation */}
@@ -197,12 +205,12 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
                     </div>
                     {step === totalSteps - 1 ? (
                         <Button
-                            // onClick={handleSubmit}
+                            onClick={handleSubmit}
                             type="submit"
                             className="cursor-pointer"
                             disabled={isPending}
                         >
-                            Create Project
+                            Add Experience
                         </Button>
                     ) : (
                         <Button

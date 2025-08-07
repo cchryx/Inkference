@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getUserData } from "../getUserData";
 
-export async function createProjectAction(data: {
+export async function createProject(data: {
     name: string;
     summary: string;
     description: string;
