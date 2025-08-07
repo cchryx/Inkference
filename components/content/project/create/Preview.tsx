@@ -34,21 +34,21 @@ const Preview = ({
             </div>
 
             <div>
-                <Label className="font-semibold">Project Summary</Label>
+                <Label className="font-semibold">Project Summary:</Label>
                 <div className="break-words">
                     {summary || "[No Summary Provided]"}
                 </div>
             </div>
 
             <div>
-                <Label className="font-semibold">Project Description</Label>
+                <Label className="font-semibold">Project Description:</Label>
                 <div className="max-h-32 overflow-y-auto break-words whitespace-pre-wrap border p-2 rounded bg-gray-50">
                     {description || "[No Description Provided]"}
                 </div>
             </div>
 
             <div>
-                <Label className="font-semibold">Project Links</Label>
+                <Label className="font-semibold">Project Links:</Label>
                 <div>
                     {projectLinks.length > 0 ? (
                         <ul className="list-none flex flex-col space-y-2">
@@ -102,7 +102,7 @@ const Preview = ({
             </div>
 
             <div>
-                <span className="font-semibold">Project Start Date :</span>{" "}
+                <span className="font-semibold">Project Start Date:</span>{" "}
                 {timeline.startDate
                     ? new Date(timeline.startDate * 1000).toLocaleDateString(
                           undefined,
@@ -132,7 +132,7 @@ const Preview = ({
             )}
 
             <div>
-                <Label className="font-semibold">Project Resources</Label>
+                <Label className="font-semibold">Project Resources:</Label>
                 <div
                     className={`overflow-y-auto ${
                         projectResources.length > 3 ? "max-h-30" : ""

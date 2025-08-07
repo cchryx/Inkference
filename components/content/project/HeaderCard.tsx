@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import ConfirmModal from "../general/ConfirmModal";
+import ConfirmModal from "../../general/ConfirmModal";
 import { deleteProject } from "@/actions/content/project/deleteProject";
 import { useRouter } from "next/navigation";
 import EditHeaderModal from "./edit/EditHeaderModal";

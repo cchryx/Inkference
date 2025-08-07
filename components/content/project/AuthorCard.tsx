@@ -9,9 +9,17 @@ type Props = {
     isOwner: boolean;
     project: any;
     tProfile: any;
+    tProjects: any[];
+    tFollowers: any[];
 };
 
-export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
+export const AuthorCard = ({
+    isOwner,
+    project,
+    tProfile,
+    tFollowers,
+    tProjects,
+}: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const tUser = project.userData.user;
 
@@ -69,7 +77,7 @@ export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
     }
 
     return (
-        <div className="relative rounded-md overflow-hidden shadow-md w-full p-4 bg-gray-200">
+        <div className="relative rounded-md overflow-hidden shadow-md w-full p-4 bg-gray-200 select-none">
             {/* Content layer */}
             <div className="relative z-10">
                 {/* Top Title */}
@@ -105,8 +113,8 @@ export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
                         </div>
                     </div>
                     <div className="flex space-x-4 py-1 px-2 bg-gray-300 rounded-md w-fit text-sm">
-                        <div>{0} Followers</div>
-                        <div>{0} Projects</div>
+                        <div>{tFollowers.length} Followers</div>
+                        <div>{tProjects.length} Projects</div>
                     </div>
                     <Link href={`/profile/${tUser.username}`}>
                         <button className="bg-gray-800 hover:bg-gray-900 text-white text-sm px-4 py-2 rounded-md transition cursor-pointer">
@@ -148,10 +156,10 @@ export const AuthorCard = ({ isOwner, project, tProfile }: Props) => {
                     </div>
                     <div className="flex flex-wrap justify-center gap-2 mt-2 w-fit ">
                         <div className="py-1 px-3 bg-gray-300 rounded-md text-sm">
-                            {0} Followers
+                            {tFollowers.length} Followers
                         </div>
                         <div className="py-1 px-3 bg-gray-300 rounded-md text-sm">
-                            {0} Projects
+                            {tProjects.length} Projects
                         </div>
                     </div>
                     <Link href={`/profile/${tUser.username}`}>

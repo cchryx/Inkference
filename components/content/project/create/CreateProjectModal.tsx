@@ -125,7 +125,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                 if ("error" in result) {
                     toast.error(result.error);
                 } else {
-                    toast.success("Project created successfully!");
+                    toast.success("Project created successfully.");
                     onCloseModal();
                     router.refresh();
                 }

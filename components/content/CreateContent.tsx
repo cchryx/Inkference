@@ -11,7 +11,7 @@ const CreateContent = ({ label, onClick }: Props) => {
     return (
         <div
             onClick={onClick}
-            className={`relative overflow-hidden border border-gray-200 mt-5 rounded-xl shadow-sm py-3 md:py-5 flex items-center justify-center group transition-all duration-300 ease-in-out ${
+            className={`relative select-none overflow-hidden border border-gray-200 mt-5 rounded-xl shadow-sm py-3 md:py-5 flex items-center justify-center group transition-all duration-300 ease-in-out ${
                 onClick ? "cursor-pointer hover:shadow-md" : ""
             }`}
         >

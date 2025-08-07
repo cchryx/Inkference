@@ -137,6 +137,7 @@ model UserData {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   experiences Experience[]
+  educations  Education[]
 
   @@map("userData")
 }
@@ -246,4 +247,24 @@ model Experience {
 
   @@index([userDataId, updatedAt])
   @@map("experiences")
+}
+
+model Education {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userDataId String
+  userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+
+  degree                 String
+  fieldOfStudy           String
+  school                 String
+  activitiesAndSocieties String
+
+  startDate DateTime
+  endDate   DateTime
+
+  @@index([userDataId, updatedAt])
+  @@map("educations")
 }

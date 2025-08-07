@@ -36,7 +36,20 @@ export async function getUserData(userId?: string) {
         updatedAt: true,
     };
 
+    const educationSelect = {
+        id: true,
+        degree: true,
+        fieldOfStudy: true,
+        school: true,
+        activitiesAndSocieties: true,
+        startDate: true,
+        endDate: true,
+        createdAt: true,
+        updatedAt: true,
+    };
+
     const orderByDur: any = [
+        { status: "asc" },
         { endDate: { sort: "desc", nulls: "last" } },
         { startDate: "desc" },
     ];
@@ -66,6 +79,11 @@ export async function getUserData(userId?: string) {
                 },
                 experiences: {
                     select: experienceSelect,
+                    orderBy: orderByDur,
+                },
+                educations: {
+                    select: educationSelect,
+                    orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
                 },
             },
         });
@@ -94,6 +112,11 @@ export async function getUserData(userId?: string) {
             projectsSaved: { select: projectSelect },
             experiences: {
                 select: experienceSelect,
+                orderBy: orderByDur,
+            },
+            educations: {
+                select: educationSelect,
+                orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
             },
         },
     });
@@ -113,6 +136,11 @@ export async function getUserData(userId?: string) {
                 projectsSaved: { select: projectSelect },
                 experiences: {
                     select: experienceSelect,
+                    orderBy: orderByDur,
+                },
+                educations: {
+                    select: educationSelect,
+                    orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
                 },
             },
         });

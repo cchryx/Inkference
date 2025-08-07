@@ -112,7 +112,7 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
                 if ("error" in result) {
                     toast.error(result.error);
                 } else {
-                    toast.success("Experience added successfully!");
+                    toast.success("Experience added successfully.");
                     onCloseModal();
                     router.refresh();
                 }

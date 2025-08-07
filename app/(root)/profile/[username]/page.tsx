@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Content from "@/components/content/Content";
 import RecommendedAccountsCard from "@/components/profile/RecommendedAccountsCard";
-import { getUserProjects } from "@/actions/content/project/getUserProjects";
+import { getUserData } from "@/actions/content/getUserData";
 
 export default async function Page({
     params,
@@ -41,13 +41,15 @@ export default async function Page({
     }
 
     const profileData = await getProfileData(username);
-    const projects = await getUserProjects(tUser.id);
+    const userData: any = await getUserData(tUser.id);
 
     tUser = {
         ...tUser,
         ...profileData.profile,
         relationships: profileData.relationships,
-        projects,
+        projects: userData.projects,
+        experiences: userData.experiences,
+        educations: userData.educations,
     };
 
     return (

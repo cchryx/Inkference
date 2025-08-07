@@ -1,15 +1,16 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-import { HeaderCard } from "@/components/project/HeaderCard";
-import { AuthorCard } from "@/components/project/AuthorCard";
-import ContributorsCard from "@/components/project/ContributorsCard";
-import ResourcesCard from "@/components/project/ResourcesCard";
-import SkillsCard from "@/components/project/SkillsCard";
+import { HeaderCard } from "@/components/content/project/HeaderCard";
+import { AuthorCard } from "@/components/content/project/AuthorCard";
+import ContributorsCard from "@/components/content/project/ContributorsCard";
+import ResourcesCard from "@/components/content/project/ResourcesCard";
+import SkillsCard from "@/components/content/project/SkillsCard";
 import { getProjectById } from "@/actions/content/project/getProject";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { getProfileData } from "@/actions/profile/getProfileData";
-import GalleryCard from "@/components/project/GalleryCard";
+import GalleryCard from "@/components/content/project/GalleryCard";
+import { getUserData } from "@/actions/content/getUserData";
 
 export default async function Page({
     params,
@@ -34,8 +35,13 @@ export default async function Page({
             </div>
         );
     }
-    const tProfile = (await getProfileData(project.userData.user.username))
-        .profile;
+    const tUser = await getProfileData(project.userData.user.username);
+    const tProfile = tUser.profile;
+    const tUserData: any = await getUserData(project.userData.userId);
+    const tProjects = tUserData?.projects;
+    const tFollowers = tUser.relationships?.followers;
+
+    console.log(tFollowers?.length);
 
     const isOwner = session?.user.id === project.userData.user.id;
     const hasItems = (arr: unknown) => Array.isArray(arr) && arr.length > 0;
@@ -54,7 +60,9 @@ export default async function Page({
                 <div className="lg:w-[15rem] lg:flex flex-col space-y-5">
                     <AuthorCard
                         isOwner={isOwner}
+                        tProjects={tProjects || []}
                         tProfile={tProfile}
+                        tFollowers={tFollowers || []}
                         project={project}
                     />
 

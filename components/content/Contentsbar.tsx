@@ -42,10 +42,10 @@ const ContentsBar = ({
     return (
         <div
             ref={containerRef}
-            className="sticky top-0 z-40 bg-gray-200 rounded-md shadow-md"
+            className="sticky top-0 z-40 bg-gray-200 rounded-md shadow-md select-none"
         >
             <div className="w-full p-2 flex justify-center">
-                <div className="flex gap-8 md:gap-10">
+                <div className="flex gap-6 md:gap-10">
                     {PROFILE_LINKS.map((link) => {
                         const isActive = active === link.id;
                         const isLabelVisible = visibleLabel === link.id;

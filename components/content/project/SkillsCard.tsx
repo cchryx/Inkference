@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Skeleton } from "../general/Skeleton";
+import { Skeleton } from "../../general/Skeleton";
 import { ChevronDown, ChevronRight, Pen, Pencil } from "lucide-react";
 
 interface SkillsCardProps {

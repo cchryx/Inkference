@@ -24,10 +24,10 @@ const Step1 = ({
 }: Props) => {
     return (
         <>
-            {/* Project Name */}
+            {/* Experience Title */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                    <Label htmlFor="name">Experience Title</Label>
+                    <Label htmlFor="title">Experience Title</Label>
                     <InfoTooltip text="Title of the experience. Like your job title. (max 60 chars)" />
                 </div>
                 <Input
@@ -42,10 +42,12 @@ const Step1 = ({
                 </span>
             </div>
 
-            {/* Project Organization */}
+            {/* Experience Organization */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                    <Label htmlFor="name">Experience Organization</Label>
+                    <Label htmlFor="organization">
+                        Experience Organization
+                    </Label>
                     <InfoTooltip text="Is there an organization that is providing this experience. (max 60 chars)" />
                 </div>
                 <Input
@@ -62,10 +64,10 @@ const Step1 = ({
                 </span>
             </div>
 
-            {/* Project Summary */}
+            {/* Experience Description */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                    <Label htmlFor="summary">Experience Description</Label>
+                    <Label htmlFor="description">Experience Description</Label>
                     <InfoTooltip
                         text="A brief description of your experience. What did you do? (max 150 chars,
                             1 line)"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Skeleton } from "../general/Skeleton";
+import { Skeleton } from "../../general/Skeleton";
 import { ChevronDown, ChevronRight, Link2, Pen, Pencil } from "lucide-react";
 import EditResourcesModal from "./edit/EditResourcesModal";
 

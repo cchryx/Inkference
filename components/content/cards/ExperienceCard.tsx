@@ -11,10 +11,7 @@ type Experience = {
     id: string;
     title: string;
     description?: string | null;
-    organization: {
-        name: string;
-        image?: string | null;
-    } | null;
+    organization: string | null;
     status: "Ongoing" | "Complete";
     startDate: string;
     endDate?: string | null;
@@ -116,23 +113,23 @@ const ExperienceCard = ({
                 <div className="flex justify-between items-start">
                     <div className="max-w-[70%]">
                         {/* Title */}
-                        <h2 className="text-lg font-semibold text-gray-800 line-clamp-1">
+                        <h2 className="text-lg font-semibold text-gray-800 line-clamp-3">
                             {title}
                         </h2>
 
                         {/* Organization name */}
+                        {/* Organization name */}
                         {organization && (
                             <p className="mt-1 text-sm text-gray-600 font-medium">
-                                {organization.name}
+                                {organization}
                             </p>
                         )}
                     </div>
 
                     {organization && (
                         <img
-                            src={organization.image || fillerImage}
-                            alt={organization.name}
-                            className="size-18 rounded object-contain border-2 border-gray-300 shadow-md rounded-md"
+                            src={organization || fillerImage}
+                            className="size-20 rounded object-contain border-2 border-gray-300 shadow-md rounded-md"
                             onError={(e) => {
                                 const target =
                                     e.currentTarget as HTMLImageElement;
@@ -182,7 +179,6 @@ const ExperienceCard = ({
                 {/* Delete Button */}
                 {rootUser && (
                     <button
-                        title="Delete"
                         className="absolute bottom-3 cursor-pointer right-3 text-black hover:text-red-600 p-1 rounded-full hover:bg-red-100 transition"
                         onClick={() => {
                             setConfirmMOpen(true);

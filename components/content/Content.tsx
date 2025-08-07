@@ -10,9 +10,10 @@ import Skills from "./sections/Skills";
 import Photos from "./sections/Photos";
 import Posts from "./sections/Posts";
 import CreateContent from "./CreateContent";
-import CreateProjectModal from "../project/create/CreateProjectModal";
+import CreateProjectModal from "./project/create/CreateProjectModal";
 import Subnavbar from "../root/Subnavbar";
-import AddExperienceModal from "../experience/create/AddExperienceModal";
+import AddExperienceModal from "./experience/create/AddExperienceModal";
+import AddEducationModal from "./education/create/AddEducationModal";
 
 type Props = {
     userData: any;
@@ -108,10 +109,17 @@ const Content = ({ userData, rootUser = false }: Props) => {
                                 label="Add education"
                                 onClick={() => setOpenModal("education")}
                             />
-                            {openModal === "education"}
+                            {openModal === "education" && (
+                                <AddEducationModal
+                                    onCloseModal={() => setOpenModal(null)}
+                                />
+                            )}
                         </>
                     )}
-                    <Education />
+                    <Education
+                        rootUser={rootUser}
+                        educations={userData.educations}
+                    />
                 </>
             )}
             {active === "skills" && (
@@ -126,7 +134,7 @@ const Content = ({ userData, rootUser = false }: Props) => {
                                 {openModal === "skill"}
                             </>
                         )}
-                        <Education />
+                        <Skills />
                     </>
                     <Skills />
                 </>
@@ -143,7 +151,7 @@ const Content = ({ userData, rootUser = false }: Props) => {
                                 {openModal === "photo"}
                             </>
                         )}
-                        <Education />
+                        <Photos />
                     </>
                     <Photos />
                 </>
@@ -160,7 +168,7 @@ const Content = ({ userData, rootUser = false }: Props) => {
                                 {openModal === "post"}
                             </>
                         )}
-                        <Education />
+                        <Posts />
                     </>
                     <Posts />
                 </>

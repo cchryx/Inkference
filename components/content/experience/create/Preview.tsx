@@ -34,7 +34,7 @@ const Preview = ({
             </div>
 
             <div>
-                <Label className="font-semibold">Experience Description</Label>
+                <Label className="font-semibold">Experience Description:</Label>
                 <div className="break-words">
                     {description || "[No Description Provided]"}
                 </div>
@@ -59,7 +59,7 @@ const Preview = ({
             </div>
 
             <div>
-                <span className="font-semibold">Start Date:</span>{" "}
+                <span className="font-semibold">Experience Start Date:</span>{" "}
                 {timeline.startDate
                     ? new Date(timeline.startDate * 1000).toLocaleDateString(
                           undefined,
@@ -74,7 +74,7 @@ const Preview = ({
 
             {timeline.status === "Complete" && (
                 <div>
-                    <span className="font-semibold">End Date:</span>{" "}
+                    <span className="font-semibold">Experience End Date:</span>{" "}
                     {timeline.endDate
                         ? new Date(timeline.endDate * 1000).toLocaleDateString(
                               undefined,

@@ -1,5 +1,6 @@
 import {
     Aperture,
+    BadgeCheck,
     Bell,
     BookUser,
     Brain,
@@ -92,6 +93,11 @@ export const PROFILE_LINKS = [
         icon: GraduationCap,
         id: "education",
         label: "Education",
+    },
+    {
+        icon: BadgeCheck,
+        id: "merits",
+        label: "Merits",
     },
     {
         icon: Brain,

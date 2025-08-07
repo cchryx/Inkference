@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Skeleton } from "../general/Skeleton";
+import { Skeleton } from "../../general/Skeleton";
 import { ChevronDown, ChevronRight, Pen, Pencil } from "lucide-react";
 import EditContributorsModal from "./edit/EditContributorsModal";
-import FallbackUserIcon from "../general/FallbackUserIcon";
+import FallbackUserIcon from "../../general/FallbackUserIcon";
 import Link from "next/link";
 
 type Props = {

@@ -7,20 +7,20 @@ import InfoTooltip from "@/components/general/InfoToolTip";
 
 type Props = {
     onChange: (dates: {
-        status: "Ongoing" | "Complete";
+        status: "In Progress" | "Complete";
         startDate: number | null;
         endDate: number | null;
     }) => void;
     initialValue?: {
-        status: "Ongoing" | "Complete";
+        status: "In Progress" | "Complete";
         startDate: number | null;
         endDate: number | null;
     };
 };
 
-const Step2 = ({ onChange, initialValue }: Props) => {
-    const [status, setStatus] = useState<"Ongoing" | "Complete">(
-        initialValue?.status || "Ongoing"
+const Step5 = ({ onChange, initialValue }: Props) => {
+    const [status, setStatus] = useState<"In Progress" | "Complete">(
+        initialValue?.status || "In Progress"
     );
 
     const toParts = (timestamp: number | null) => {
@@ -53,7 +53,7 @@ const Step2 = ({ onChange, initialValue }: Props) => {
     const [statusOpen, setStatusOpen] = useState(false);
 
     const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: currentYear - 1899 }, (_, i) =>
+    const years = Array.from({ length: currentYear - 1900 + 101 }, (_, i) =>
         (1900 + i).toString()
     ).reverse();
     const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
@@ -150,15 +150,15 @@ const Step2 = ({ onChange, initialValue }: Props) => {
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-1">
                     <Label htmlFor="status">Status</Label>
-                    <InfoTooltip text="Select experience status." />
+                    <InfoTooltip text="Select project status." />
                 </div>
                 {renderDropdown(
                     null,
                     status,
-                    ["Ongoing", "Complete"],
+                    ["In Progress", "Complete"],
                     statusOpen,
                     setStatusOpen,
-                    (val) => setStatus(val as "Ongoing" | "Complete"),
+                    (val) => setStatus(val as "In Progress" | "Complete"),
                     true
                 )}
             </div>
@@ -167,7 +167,7 @@ const Step2 = ({ onChange, initialValue }: Props) => {
             <div>
                 <div className="flex items-center gap-2">
                     <Label htmlFor="startDate">Start Date</Label>
-                    <InfoTooltip text="When did you begin this experience?" />
+                    <InfoTooltip text="When did you begin the project?" />
                 </div>
                 <div className="flex gap-2 mt-1">
                     {renderDropdown(
@@ -202,7 +202,7 @@ const Step2 = ({ onChange, initialValue }: Props) => {
                 <div>
                     <div className="flex items-center gap-2">
                         <Label htmlFor="endDate">End Date</Label>
-                        <InfoTooltip text="When did you finish this experience?" />
+                        <InfoTooltip text="When did you finish the project?" />
                     </div>
                     <div className="flex gap-2 mt-1">
                         {renderDropdown(
@@ -236,4 +236,4 @@ const Step2 = ({ onChange, initialValue }: Props) => {
     );
 };
 
-export default Step2;
+export default Step5;
