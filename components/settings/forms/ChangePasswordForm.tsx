@@ -8,8 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/general/Skeleton";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-const ChangePasswordForm = () => {
+type Props = {
+    hasPassword: boolean;
+};
+
+const ChangePasswordForm = ({ hasPassword }: Props) => {
+    const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -31,8 +37,13 @@ const ChangePasswordForm = () => {
         if (error) {
             toast.error(error);
         } else {
-            toast.success("Password changed successfully.");
+            toast.success(
+                hasPassword
+                    ? "Password changed successfully."
+                    : "Password created successfully."
+            );
             (evt.target as HTMLFormElement).reset();
+            if (hasPassword) router.refresh();
         }
 
         setIsPending(false);
@@ -42,10 +53,12 @@ const ChangePasswordForm = () => {
         return (
             <div className="w-full space-y-4 border-2 border-gray-200 p-6 rounded-md">
                 <Skeleton className="h-6 w-1/4 rounded-md" />
-                <div className="flex flex-col gap-2">
-                    <Skeleton className="h-4 w-28 rounded-md" />
-                    <Skeleton className="h-10 w-full rounded-md" />
-                </div>
+                {hasPassword && (
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-28 rounded-md" />
+                        <Skeleton className="h-10 w-full rounded-md" />
+                    </div>
+                )}
                 <div className="flex flex-col gap-2">
                     <Skeleton className="h-4 w-28 rounded-md" />
                     <Skeleton className="h-10 w-full rounded-md" />
@@ -64,19 +77,25 @@ const ChangePasswordForm = () => {
             className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
             onSubmit={handleSubmit}
         >
-            <h1 className="text-lg">Change Password</h1>
+            <h1 className="text-lg">
+                {hasPassword ? "Change Password" : "Create Password"}
+            </h1>
+
+            {hasPassword && (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <PasswordInput
+                        id="currentPassword"
+                        name="currentPassword"
+                        disabled={isPending}
+                    />
+                </div>
+            )}
 
             <div className="flex flex-col gap-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <PasswordInput
-                    id="currentPassword"
-                    name="currentPassword"
-                    disabled={isPending}
-                />
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">
+                    {hasPassword ? "New Password" : "Password"}
+                </Label>
                 <PasswordInput
                     id="newPassword"
                     name="newPassword"
@@ -99,7 +118,7 @@ const ChangePasswordForm = () => {
                 disabled={isPending}
             >
                 {isPending && <Loader size={5} color="text-white" />}
-                Change Password
+                {hasPassword ? "Change Password" : "Set Password"}
             </Button>
         </form>
     );

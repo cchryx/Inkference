@@ -1,9 +1,16 @@
 import ChangePasswordForm from "./forms/ChangePasswordForm";
+import ChangeSigninForm from "./forms/ChangeSigninForm";
 
-const Authentication = () => {
+type Props = {
+    accounts: any[];
+    hasPassword: boolean;
+};
+
+const Authentication = ({ accounts, hasPassword }: Props) => {
     return (
         <div className="space-y-5">
-            <ChangePasswordForm />
+            <ChangePasswordForm hasPassword={hasPassword} />
+            <ChangeSigninForm accounts={accounts} />
         </div>
     );
 };

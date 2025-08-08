@@ -128,7 +128,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
               day: "numeric",
               year: "numeric",
           })
-        : "TBD";
+        : "Present";
     const postedAt = project.createdAt
         ? new Date(project.createdAt).toLocaleDateString("en-US", {
               month: "long",
