@@ -12,7 +12,7 @@ export default async function Page() {
 
     return (
         <div className="flex flex-col h-full fixed relative overflow-hidden">
-            <HomeWrapper />
+            <HomeWrapper currentUserId={session.user.id} />
         </div>
     );
 }

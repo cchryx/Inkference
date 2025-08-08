@@ -63,7 +63,7 @@ export async function recommendUsers(limit = 12) {
             recommendFriendsOfFriends,
             recommendProjectContributors,
             recommendPopularUsers,
-            recommendActiveUsers,
+            recommendedHasManyProjects,
             recommendNewUsers,
             recommendRandomUsers,
         ]) {
@@ -287,7 +287,7 @@ async function recommendPopularUsers(
     );
 }
 
-async function recommendActiveUsers(
+async function recommendedHasManyProjects(
     _relationships: any,
     _userData: any,
     excludedUserIds: Set<string>,
@@ -298,6 +298,7 @@ async function recommendActiveUsers(
     const activeUsersData = await prisma.userData.findMany({
         where: {
             userId: { notIn: Array.from(excludedUserIds) },
+            projects: { some: {} }, // only users with >=1 project
         },
         orderBy: {
             projects: {
