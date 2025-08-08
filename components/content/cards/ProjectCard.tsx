@@ -4,7 +4,17 @@ import { useEffect, useState } from "react";
 import { Heart, Eye, CalendarDays, Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function ProjectCard({ project }: { project: any }) {
+type ProjectCardProps = {
+    project: any;
+    width?: string; // e.g. "w-[400px]" or "w-full" or "w-96"
+    height?: string; // e.g. "h-[400px]" or "h-96"
+};
+
+export default function ProjectCard({
+    project,
+    width = "w-full",
+    height = "h-[400px]",
+}: ProjectCardProps) {
     const router = useRouter();
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -61,7 +71,7 @@ export default function ProjectCard({ project }: { project: any }) {
     return (
         <div
             onClick={handleClick}
-            className="group relative h-[400px] bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer"
+            className={`group relative ${width} ${height} bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer`}
         >
             {/* Banner */}
             <div

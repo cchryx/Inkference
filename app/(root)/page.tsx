@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import TopbarWrapper from "@/components/home/TopbarWrapper";
+import HomeWrapper from "@/components/home/HomeWrapper";
 
 export default async function Page() {
     const session = await auth.api.getSession({
@@ -12,7 +12,7 @@ export default async function Page() {
 
     return (
         <div className="flex flex-col h-full fixed relative overflow-hidden">
-            <TopbarWrapper />
+            <HomeWrapper />
         </div>
     );
 }
