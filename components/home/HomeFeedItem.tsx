@@ -70,7 +70,7 @@ const HomeFeedItem = ({ project, currentUserId }: Props) => {
     const isSaved = saves.some((u: any) => u.userId === currentUserId);
 
     return (
-        <div className="snap-start h-full flex items-center justify-center">
+        <div className="snap-start h-full flex items-center justify-center select-none">
             <div className="flex gap-2 md:gap-4 w-full px-2 lg:w-auto">
                 <div className="flex-1 min-h-[500px]">
                     <ProjectCard

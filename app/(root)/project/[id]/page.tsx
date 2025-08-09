@@ -11,6 +11,78 @@ import { ReturnButton } from "@/components/auth/ReturnButton";
 import { getProfileData } from "@/actions/profile/getProfileData";
 import GalleryCard from "@/components/content/project/GalleryCard";
 import { getUserData } from "@/actions/content/getUserData";
+import { cache } from "react";
+import { Metadata } from "next";
+
+const getProjectData = cache(async (id: string) => {
+    const projectData = await getProjectById(id);
+
+    return projectData;
+});
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+    const { id } = await params;
+
+    const projectData: any = await getProjectData(id);
+
+    // If no project found
+    if (!projectData) {
+        return {
+            title: `Project not found`,
+            description: `The project with this ID does not exist or may have been removed.`,
+            openGraph: {
+                title: `Project not found`,
+                description: `The project with this ID does not exist or may have been removed.`,
+                url: `/project/${id}`,
+            },
+            twitter: {
+                card: "summary",
+                title: `Project not found`,
+                description: `The project with this ID does not exist or may have been removed.`,
+            },
+        };
+    }
+
+    const bannerImage =
+        projectData.bannerImage || "/assets/general/fillerImage.png";
+    const iconImage = projectData.iconImage || "/assets/general/folder.png";
+
+    return {
+        title: projectData.name,
+        description:
+            projectData.summary ||
+            "View details about this project on our platform.",
+        openGraph: {
+            title: projectData.name,
+            description:
+                projectData.summary ||
+                "View details about this project on our platform.",
+            url: `/project/${projectData.id}`,
+            images: [
+                {
+                    url: bannerImage,
+                    alt: `${projectData.name} banner`,
+                },
+                {
+                    url: iconImage,
+                    alt: `${projectData.name} icon`,
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: projectData.name,
+            description:
+                projectData.summary ||
+                "View details about this project on our platform.",
+            images: [bannerImage],
+        },
+    };
+}
 
 export default async function Page({
     params,
@@ -23,7 +95,7 @@ export default async function Page({
         headers: await headers(),
     });
 
-    const project = await getProjectById(id);
+    const project = await getProjectData(id);
     if (!project || "error" in project) {
         return (
             <div className="flex justify-center items-center h-full w-full">
@@ -40,8 +112,6 @@ export default async function Page({
     const tUserData: any = await getUserData(project.userData.userId);
     const tProjects = tUserData?.projects;
     const tFollowers = tUser.relationships?.followers;
-
-    console.log(tFollowers?.length);
 
     const isOwner = session?.user.id === project.userData.user.id;
     const hasItems = (arr: unknown) => Array.isArray(arr) && arr.length > 0;

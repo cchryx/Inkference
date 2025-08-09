@@ -9,12 +9,31 @@ export type FeedItem = {
     content: any;
 };
 
-function shuffleArray<T>(array: T[]): T[] {
+function shuffleArray<T>(
+    array: T[],
+    lastTopItems: T[] = [],
+    cooldownCount = 3
+): T[] {
     const shuffled = [...array];
+    // Fisher-Yates shuffle
     for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
+
+    // Push last top items past cooldownCount index if found in the top cooldownCount positions
+    for (let i = 0; i < cooldownCount; i++) {
+        if (!shuffled[i]) break;
+        if (lastTopItems.includes(shuffled[i])) {
+            for (let k = cooldownCount; k < shuffled.length; k++) {
+                if (!lastTopItems.includes(shuffled[k])) {
+                    [shuffled[i], shuffled[k]] = [shuffled[k], shuffled[i]];
+                    break;
+                }
+            }
+        }
+    }
+
     return shuffled;
 }
 

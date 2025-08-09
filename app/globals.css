@@ -167,6 +167,14 @@
         }
     }
 
+    .overscroll-contain {
+        overscroll-behavior: contain;
+    }
+
+    .scrollable-ios {
+        -webkit-overflow-scrolling: touch;
+    }
+
     .animate-shimmer {
         animation: shimmer 1.2s infinite linear;
     }

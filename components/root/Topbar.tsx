@@ -9,7 +9,7 @@ type LinkItem = {
 
 type TopBarProps = {
     active: string;
-    setActive: React.Dispatch<React.SetStateAction<string>>;
+    setActive: React.Dispatch<React.SetStateAction<any>>;
     links: LinkItem[];
 };
 

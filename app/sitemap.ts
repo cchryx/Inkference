@@ -1,13 +1,40 @@
+import { prisma } from "@/lib/prisma";
 import type { MetadataRoute } from "next";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-    return [
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    // Static routes
+    const staticRoutes: MetadataRoute.Sitemap = [
         {
-            url: "https://inkference.vercel.app",
+            url: `${baseUrl}/welcome`,
             lastModified: new Date(),
             changeFrequency: "weekly",
             priority: 1,
-            images: ["/icon512_rounded.png"],
         },
     ];
+
+    // Dynamic user profile routes
+    const users = await prisma.user.findMany({
+        select: { username: true, updatedAt: true },
+    });
+    const userRoutes: MetadataRoute.Sitemap = users.map((user) => ({
+        url: `${baseUrl}/${user.username}`,
+        lastModified: user.updatedAt || new Date(),
+        changeFrequency: "weekly",
+        priority: 0.7,
+    }));
+
+    // Dynamic project routes
+    const projects = await prisma.project.findMany({
+        select: { id: true, updatedAt: true },
+    });
+    const projectRoutes: MetadataRoute.Sitemap = projects.map((project) => ({
+        url: `${baseUrl}/project/${project.id}`,
+        lastModified: project.updatedAt || new Date(),
+        changeFrequency: "weekly",
+        priority: 0.7,
+    }));
+
+    return [...staticRoutes, ...userRoutes, ...projectRoutes];
 }

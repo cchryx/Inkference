@@ -10,6 +10,72 @@ import Link from "next/link";
 import Content from "@/components/content/Content";
 import RecommendedAccountsCard from "@/components/profile/RecommendedAccountsCard";
 import { getUserData } from "@/actions/content/getUserData";
+import { Metadata } from "next";
+import { cache } from "react";
+
+const getprofileData = cache(async (username: string) => {
+    const profileData = await getProfileData(username);
+
+    return profileData;
+});
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+    const { username } = await params;
+
+    const profileData = await getProfileData(username);
+
+    if (!profileData) {
+        return {
+            title: `User "${username}" not found`,
+            description: `The profile for "${username}" does not exist or may have been removed.`,
+            openGraph: {
+                title: `User "${username}" not found`,
+                description: `The profile for "${username}" does not exist or may have been removed.`,
+                url: `/user/${username}`,
+            },
+            twitter: {
+                card: "summary",
+                title: `User "${username}" not found`,
+                description: `The profile for "${username}" does not exist or may have been removed.`,
+            },
+        };
+    }
+
+    const bannerImage =
+        profileData.profile.bannerImage || "/assets/general/fillerImage.png";
+    const profileImage =
+        profileData.user.image || "/assets/general/fillerImage.png";
+
+    return {
+        title: `${profileData.user.name} (@${profileData.user.username})`,
+        description: profileData.profile.bio || "View this user's profile.",
+        openGraph: {
+            title: `${profileData.user.name} (@${profileData.user.username})`,
+            description: profileData.profile.bio || "View this user's profile.",
+            url: `/user/${profileData.user.username}`,
+            images: [
+                {
+                    url: bannerImage,
+                    alt: `${profileData.user.name}'s profile banner`,
+                },
+                {
+                    url: profileImage,
+                    alt: `${profileData.user.name}'s profile picture`,
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${profileData.user.name} (@${profileData.user.username})`,
+            description: profileData.profile.bio || "View this user's profile.",
+            images: [bannerImage],
+        },
+    };
+}
 
 export default async function Page({
     params,
@@ -40,7 +106,7 @@ export default async function Page({
         );
     }
 
-    const profileData = await getProfileData(username);
+    const profileData = await getprofileData(username);
     const userData: any = await getUserData(tUser.id);
 
     tUser = {

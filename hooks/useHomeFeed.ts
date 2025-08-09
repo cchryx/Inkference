@@ -11,7 +11,6 @@ export function useForYouFeed() {
         },
         getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
         initialPageParam: undefined,
-        refetchOnWindowFocus: false,
     });
 }
 
@@ -27,7 +26,6 @@ export function useFollowingFeed() {
         },
         getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
         initialPageParam: undefined,
-        refetchOnWindowFocus: false,
     });
 }
 
@@ -43,6 +41,5 @@ export function useFriendsFeed() {
         },
         getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
         initialPageParam: undefined,
-        refetchOnWindowFocus: false,
     });
 }
