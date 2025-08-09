@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { HOMETOP_LINKS } from "@/constants";
 import Topbar from "../root/Topbar";
 import {
@@ -19,13 +20,76 @@ type Props = {
     currentUserId: string;
 };
 
+const PULL_THRESHOLD = 80; // px needed to trigger refresh
+
 const HomeWrapper = ({ currentUserId }: Props) => {
+    const [isPending, setIsPending] = useState(false);
     const [active, setActive] = useState("for_you");
+    const [pullDistance, setPullDistance] = useState(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const startYRef = useRef<number | null>(null);
+    const isTouchingRef = useRef(false);
+    const router = useRouter();
 
     const feeds = {
         for_you: useForYouFeed(),
         following: useFollowingFeed(),
         friends: useFriendsFeed(),
+    };
+
+    // Handle touch start - only if scrollTop is zero (top)
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (isRefreshing) return;
+        const target = e.currentTarget;
+        if (target.scrollTop === 0) {
+            isTouchingRef.current = true;
+            startYRef.current = e.touches[0].clientY;
+            setPullDistance(0);
+        }
+    };
+
+    // Handle touch move - calculate pull distance if at top and pulling down
+    const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (!isTouchingRef.current || isRefreshing) return;
+
+        const currentY = e.touches[0].clientY;
+        if (startYRef.current === null) return;
+
+        const diff = currentY - startYRef.current;
+
+        if (diff > 0) {
+            e.preventDefault(); // prevent scroll to allow pull-down effect
+            // Limit pullDistance to 150 for UI
+            setPullDistance(diff > 150 ? 150 : diff);
+        }
+    };
+
+    // Handle touch end - if pulled far enough, trigger refresh
+    const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (!isTouchingRef.current || isRefreshing) return;
+
+        isTouchingRef.current = false;
+
+        if (pullDistance >= PULL_THRESHOLD) {
+            // Trigger refresh
+            setIsRefreshing(true);
+            setPullDistance(PULL_THRESHOLD); // keep indicator visible during refresh
+
+            // Reload or refresh the router
+            setIsPending(true);
+            router.refresh();
+
+            // Simulate refresh done after some delay or use effect hook to detect feed refetch
+            // Here, just set timeout to clear refreshing state after 1.5s
+            setTimeout(() => {
+                setIsRefreshing(false);
+                setPullDistance(0);
+                setIsPending(false);
+            }, 1500);
+        } else {
+            // Animate indicator back to 0 if pull not enough
+            setPullDistance(0);
+        }
     };
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>, key: FeedKey) => {
@@ -73,6 +137,9 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                     <div
                         key={key}
                         onScroll={(e) => handleScroll(e, key)}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
                         className={`flex-1 snap-y snap-mandatory no-scrollbar h-full ${
                             status === "pending"
                                 ? "overflow-y-hidden"
@@ -80,8 +147,27 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                         }`}
                         style={{ display: active === key ? "block" : "none" }}
                     >
+                        {/* Pull-to-refresh indicator */}
+                        <div
+                            style={{
+                                height: pullDistance,
+                                transition: isTouchingRef.current
+                                    ? "none"
+                                    : "height 0.3s ease",
+                            }}
+                            className="flex items-center justify-center bg-gray-200 text-gray-700 text-sm select-none"
+                        >
+                            {isRefreshing ? (
+                                <div className="animate-spin border-4 border-gray-400 border-t-gray-800 rounded-full w-6 h-6" />
+                            ) : pullDistance >= PULL_THRESHOLD ? (
+                                <span>Release to refresh</span>
+                            ) : pullDistance > 0 ? (
+                                <span>Pull to refresh</span>
+                            ) : null}
+                        </div>
+
                         {/* Loading Skeleton */}
-                        {status === "pending" && (
+                        {(status === "pending" || isPending) && (
                             <div className="snap-start h-full flex items-center justify-center">
                                 <div className="flex gap-2 w-full px-2 lg:w-auto md:gap-4">
                                     <Skeleton className="flex-1 min-h-[600px] lg:w-[500px] rounded-md" />
@@ -108,7 +194,7 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                         )}
 
                         {/* Error State */}
-                        {status === "error" && (
+                        {!isPending && status === "error" && (
                             <p className="p-4 text-center text-red-600">
                                 Error:{" "}
                                 {(error as Error)?.message ?? "Unknown error"}
@@ -116,7 +202,7 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                         )}
 
                         {/* Empty State */}
-                        {showEmpty && (
+                        {!isPending && showEmpty && (
                             <div className="flex items-center justify-center h-full text-center text-muted-foreground">
                                 {key === "friends" && (
                                     <p>
@@ -135,28 +221,31 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                         )}
 
                         {/* Project Feed */}
-                        {feedProjects.map((project, i) => (
-                            <HomeFeedItem
-                                key={i}
-                                currentUserId={currentUserId}
-                                project={project}
-                            />
-                        ))}
+                        {!isPending &&
+                            feedProjects.map((project, i) => (
+                                <HomeFeedItem
+                                    key={i}
+                                    currentUserId={currentUserId}
+                                    project={project}
+                                />
+                            ))}
 
                         {/* Loading More */}
-                        {isFetchingNextPage && (
+                        {!isPending && isFetchingNextPage && (
                             <div className="flex items-center justify-center w-full py-4">
                                 <Loader color="black" size={10} />
                             </div>
                         )}
 
                         {/* End of Feed */}
-                        {!hasNextPage && feedProjects.length > 0 && (
-                            <div className="text-center py-4 text-muted-foreground">
-                                That’s all for now. Maybe try scrolling up
-                                again?
-                            </div>
-                        )}
+                        {!isPending &&
+                            !hasNextPage &&
+                            feedProjects.length > 0 && (
+                                <div className="text-center py-4 text-muted-foreground">
+                                    That’s all for now. Maybe try scrolling up
+                                    again?
+                                </div>
+                            )}
                     </div>
                 );
             })}
