@@ -14,6 +14,7 @@ import {
     Trash,
     Trash2,
     Eye,
+    Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -24,6 +25,7 @@ import EditHeaderModal from "./edit/EditHeaderModal";
 import { likeProject } from "@/actions/content/project/likeProject";
 import { viewProject } from "@/actions/content/project/viewProject";
 import { saveProject } from "@/actions/content/project/saveProject";
+import { createPost } from "@/actions/content/post/createPost";
 
 type Props = {
     isOwner: boolean;
@@ -36,6 +38,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isPending, setIsPending] = useState(false);
     const [confirmMopen, setConfirmMOpen] = useState(false);
+    const [confirmPostOpen, setConfirmPostOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [likes, setLikes] = useState(project.likes || []);
     const [saves, setSaves] = useState(project.saves || []);
@@ -110,6 +113,28 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
             toast.success("Project deleted successfully.");
             router.refresh();
             router.push("/library");
+        }
+
+        setIsPending(false);
+    };
+
+    const handlePostProject = async () => {
+        if (!currentUserId) {
+            toast.error("You must be logged in to post projects.");
+            return;
+        }
+
+        setIsPending(true);
+
+        const { error } = await createPost({
+            type: "project",
+            dataId: project.id,
+        });
+
+        if (error) {
+            toast.error(error);
+        } else {
+            toast.success("Project posted successfully.");
         }
 
         setIsPending(false);
@@ -219,6 +244,22 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                 }}
                 onClose={() => setConfirmMOpen(false)}
             />
+
+            <ConfirmModal
+                isPending={isPending}
+                open={confirmPostOpen}
+                title="Post this project?"
+                text="It will be visible on the 'For You' page."
+                confirmText="Post"
+                cancelText="Cancel"
+                confirmVariant="default"
+                onConfirm={() => {
+                    handlePostProject();
+                    setConfirmPostOpen(false);
+                }}
+                onClose={() => setConfirmPostOpen(false)}
+            />
+
             <EditHeaderModal
                 open={editOpen}
                 onClose={() => setEditOpen(false)}
@@ -311,8 +352,17 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                                     <Share2 className="w-4 h-4" />
                                     Share Project
                                 </button>
+
                                 {isOwner && (
                                     <>
+                                        <button
+                                            onClick={() =>
+                                                setConfirmPostOpen(true)
+                                            }
+                                            className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                                        >
+                                            <Send className="w-4 h-4" />
+                                        </button>
                                         <button
                                             onClick={() => setEditOpen(true)}
                                             className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"

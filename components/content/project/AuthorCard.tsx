@@ -107,7 +107,7 @@ export const AuthorCard = ({
                             <div className="text-xs text-muted-foreground truncate">
                                 @{tUser.username}
                             </div>
-                            <div className="text-xs text-gray-700 mt-1 truncate max-w-[200px]">
+                            <div className="text-xs text-gray-700 mt-1 truncate">
                                 {tProfile.bio}
                             </div>
                         </div>
@@ -151,7 +151,7 @@ export const AuthorCard = ({
                         </div>
                     </div>
 
-                    <div className="text-sm text-gray-700 mt-2 max-w-md">
+                    <div className="text-sm text-gray-700 mt-2 max-w-md text-start overflow-auto max-h-75">
                         {tProfile.bio}
                     </div>
                     <div className="flex flex-wrap justify-center gap-2 mt-2 w-fit ">

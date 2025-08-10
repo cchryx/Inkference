@@ -10,15 +10,28 @@ import { likeProject } from "@/actions/content/project/likeProject";
 import { saveProject } from "@/actions/content/project/saveProject";
 
 type Props = {
-    project: any;
+    item: any;
     currentUserId: string;
 };
 
-const HomeFeedItem = ({ project, currentUserId }: Props) => {
-    const [likes, setLikes] = useState(project.likes || []);
-    const [saves, setSaves] = useState(project.saves || []);
+const HomeFeedItem = ({ item, currentUserId }: Props) => {
+    // Only projects have likes/saves state & handlers
+    const isProject = item.type === "project";
+    const content = item.content;
+
+    // console.log(content.data);
+
+    const [likes, setLikes] = useState(
+        isProject ? content.data?.likes || [] : []
+    );
+    const [saves, setSaves] = useState(
+        isProject ? content.data?.saves || [] : []
+    );
+
+    const author = content.data?.author || content.author || null;
 
     const handleLike = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!isProject) return; // no-op for non-projects
         e.preventDefault();
         e.stopPropagation();
 
@@ -35,7 +48,7 @@ const HomeFeedItem = ({ project, currentUserId }: Props) => {
 
         setLikes(updatedLikes);
 
-        const { error } = await likeProject(project.id, currentUserId);
+        const { error } = await likeProject(content.data.id, currentUserId);
         if (error) {
             toast.error(error);
             setLikes(likes);
@@ -43,6 +56,7 @@ const HomeFeedItem = ({ project, currentUserId }: Props) => {
     };
 
     const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!isProject) return; // no-op for non-projects
         e.preventDefault();
         e.stopPropagation();
 
@@ -59,43 +73,89 @@ const HomeFeedItem = ({ project, currentUserId }: Props) => {
 
         setSaves(updatedSaves);
 
-        const { error } = await saveProject(project.id, currentUserId);
+        const { error } = await saveProject(content.data.id, currentUserId);
         if (error) {
             toast.error(error);
-            setSaves(saves); // revert
+            setSaves(saves); // revert on error
         }
     };
 
-    const isLiked = likes.some((u: any) => u.userId === currentUserId);
-    const isSaved = saves.some((u: any) => u.userId === currentUserId);
+    const isLiked =
+        isProject && likes.some((u: any) => u.userId === currentUserId);
+    const isSaved =
+        isProject && saves.some((u: any) => u.userId === currentUserId);
+
+    // Content UI varies by type
+    let contentRender;
+    switch (item.type) {
+        case "project":
+            contentRender = (
+                <ProjectCard
+                    project={content.data}
+                    width="lg:w-[500px] w-full"
+                    height="lg:h-[600px] h-full"
+                />
+            );
+            break;
+
+        case "reel":
+            contentRender = (
+                <video
+                    src={content.data.url}
+                    controls
+                    className="w-full rounded-md"
+                    preload="metadata"
+                />
+            );
+            break;
+
+        case "note":
+            contentRender = (
+                <p className="whitespace-pre-wrap">{content.data.text}</p>
+            );
+            break;
+
+        default:
+            contentRender = (
+                <p className="text-red-600">
+                    Unknown post type: <code>{item.type}</code>
+                </p>
+            );
+            break;
+    }
 
     return (
-        <div className="snap-start h-full flex items-center justify-center select-none">
+        <div className="snap-start h-full flex flex-col items-center justify-center select-none">
             <div className="flex gap-2 md:gap-4 w-full px-2 lg:w-auto">
-                <div className="flex-1 min-h-[500px]">
-                    <ProjectCard
-                        project={project}
-                        width="lg:w-[500px] w-full"
-                        height="lg:h-[600px] h-full"
-                    />
-                </div>
+                <div className="flex-1 min-h-[500px]">{contentRender}</div>
+
+                {/* Right Sidebar: Author + Likes/Saves */}
                 <div className="flex flex-col items-center gap-4">
-                    <Link href={`/profile/${project.author.username}`}>
-                        <UserIcon
-                            image={project.author.image}
-                            size="size-10 bg-gray-700"
-                        />
-                    </Link>
+                    {author?.username && (
+                        <Link href={`/profile/${author.username}`}>
+                            <UserIcon
+                                image={author.image}
+                                size="size-10 bg-gray-700"
+                            />
+                        </Link>
+                    )}
+
                     <div className="flex flex-col items-center gap-4 mt-auto mb-2 text-gray-500 dark:text-gray-400">
                         <div className="flex flex-col items-center">
                             <button
-                                onClick={handleLike}
+                                onClick={isProject ? handleLike : undefined}
                                 className={`transition-colors cursor-pointer ${
                                     isLiked
                                         ? "text-red-500"
                                         : "hover:text-blue-500"
+                                } ${
+                                    !isProject
+                                        ? "cursor-default opacity-50"
+                                        : ""
                                 }`}
-                                aria-label="Like project"
+                                aria-label="Like post"
+                                disabled={!isProject}
+                                tabIndex={isProject ? 0 : -1}
                             >
                                 <Heart
                                     className="size-8"
@@ -117,13 +177,19 @@ const HomeFeedItem = ({ project, currentUserId }: Props) => {
 
                         <div className="flex flex-col items-center">
                             <button
-                                onClick={handleSave}
+                                onClick={isProject ? handleSave : undefined}
                                 className={`transition-colors cursor-pointer ${
                                     isSaved
                                         ? "text-yellow-500"
                                         : "hover:text-blue-500"
+                                } ${
+                                    !isProject
+                                        ? "cursor-default opacity-50"
+                                        : ""
                                 }`}
-                                aria-label="Save project"
+                                aria-label="Save post"
+                                disabled={!isProject}
+                                tabIndex={isProject ? 0 : -1}
                             >
                                 <Bookmark
                                     className="size-8"
@@ -135,6 +201,11 @@ const HomeFeedItem = ({ project, currentUserId }: Props) => {
                     </div>
                 </div>
             </div>
+            {isProject && (
+                <div className="w-auto text-left text-xs text-gray-400 select-none px-2 mt-2">
+                    PROJECT
+                </div>
+            )}
         </div>
     );
 };

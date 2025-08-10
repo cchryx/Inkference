@@ -5,8 +5,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 export type FeedItem = {
-    type: "project";
-    content: any;
+    type: string; // post type from DB
+    content: any; // raw post data + author info + related data
 };
 
 function shuffleArray<T>(
@@ -15,13 +15,12 @@ function shuffleArray<T>(
     cooldownCount = 3
 ): T[] {
     const shuffled = [...array];
-    // Fisher-Yates shuffle
     for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    // Push last top items past cooldownCount index if found in the top cooldownCount positions
+    // Prevent last top items from appearing too soon again
     for (let i = 0; i < cooldownCount; i++) {
         if (!shuffled[i]) break;
         if (lastTopItems.includes(shuffled[i])) {
@@ -37,12 +36,8 @@ function shuffleArray<T>(
     return shuffled;
 }
 
-async function fetchProjects(
-    whereClause: any,
-    take: number,
-    orderByClause: any
-) {
-    return await prisma.project.findMany({
+async function fetchPosts(whereClause: any, take: number, orderByClause: any) {
+    return await prisma.post.findMany({
         where: whereClause,
         orderBy: orderByClause,
         take,
@@ -58,9 +53,6 @@ async function fetchProjects(
                     },
                 },
             },
-            likes: { select: { userId: true } },
-            saves: { select: { userId: true } },
-            views: { select: { userId: true } },
         },
     });
 }
@@ -70,12 +62,9 @@ type FetchOptions = {
     currentUserId?: string;
 };
 
-function buildWhereClause(
-    excludedProjectIds: Set<string>,
-    cursor?: string
-): any {
+function buildWhereClause(excludedPostIds: Set<string>, cursor?: string): any {
     const where: any = {
-        id: { notIn: Array.from(excludedProjectIds) },
+        id: { notIn: Array.from(excludedPostIds) },
     };
     if (cursor) {
         where.id.lt = cursor;
@@ -83,9 +72,45 @@ function buildWhereClause(
     return where;
 }
 
-// ✅ Friends feed fetcher — only projects from friends
-async function fetchProjectsByFriends(
-    excludedProjectIds: Set<string>,
+// Helper: fetch related data by post type and dataId
+async function fetchPostData(type: string, dataId: string) {
+    switch (type) {
+        case "project":
+            return await prisma.project.findUnique({
+                where: { id: dataId },
+                include: {
+                    userData: {
+                        select: {
+                            user: {
+                                select: {
+                                    name: true,
+                                    username: true,
+                                    image: true,
+                                },
+                            },
+                        },
+                    },
+                    likes: { select: { userId: true } },
+                    saves: { select: { userId: true } },
+                    views: { select: { userId: true } },
+                },
+            });
+        // case "article":
+        //     return await prisma.article.findUnique({
+        //         where: { id: dataId },
+        //     });
+        // case "image":
+        //     return await prisma.image.findUnique({
+        //         where: { id: dataId },
+        //     });
+        // Add other types here as needed
+        default:
+            return null;
+    }
+}
+
+async function fetchPostsByFriends(
+    excludedPostIds: Set<string>,
     limit: number,
     feedItems: FeedItem[],
     opts?: FetchOptions
@@ -103,29 +128,32 @@ async function fetchProjectsByFriends(
     if (friendIds.length === 0) return;
 
     const where = {
-        ...buildWhereClause(excludedProjectIds, opts.cursor),
+        ...buildWhereClause(excludedPostIds, opts.cursor),
         userData: {
-            userId: {
-                in: friendIds,
-            },
+            userId: { in: friendIds },
         },
     };
 
-    const projects = await fetchProjects(where, limit - feedItems.length, {
+    const posts = await fetchPosts(where, limit - feedItems.length, {
         updatedAt: "desc",
     });
 
-    for (const p of projects) {
+    for (const p of posts) {
+        const relatedData = await fetchPostData(p.type, p.dataId);
         feedItems.push({
-            type: "project",
-            content: { ...p, author: p.userData?.user },
+            type: p.type,
+            content: {
+                ...p,
+                author: p.userData?.user,
+                data: relatedData,
+            },
         });
-        excludedProjectIds.add(p.id);
+        excludedPostIds.add(p.id);
     }
 }
 
-async function fetchProjectsByFollowing(
-    excludedProjectIds: Set<string>,
+async function fetchPostsByFollowing(
+    excludedPostIds: Set<string>,
     limit: number,
     feedItems: FeedItem[],
     opts?: FetchOptions
@@ -135,9 +163,7 @@ async function fetchProjectsByFollowing(
     const following = await prisma.relationships.findUnique({
         where: { userId: opts.currentUserId },
         select: {
-            following: {
-                select: { userId: true },
-            },
+            following: { select: { userId: true } },
         },
     });
 
@@ -145,93 +171,83 @@ async function fetchProjectsByFollowing(
     if (followingIds.length === 0) return;
 
     const where = {
-        ...buildWhereClause(excludedProjectIds, opts?.cursor),
+        ...buildWhereClause(excludedPostIds, opts?.cursor),
         userData: {
-            userId: {
-                in: followingIds,
-            },
+            userId: { in: followingIds },
         },
     };
 
-    const projects = await fetchProjects(where, limit - feedItems.length, {
+    const posts = await fetchPosts(where, limit - feedItems.length, {
         updatedAt: "desc",
     });
 
-    for (const p of projects) {
+    for (const p of posts) {
+        const relatedData = await fetchPostData(p.type, p.dataId);
         feedItems.push({
-            type: "project",
-            content: { ...p, author: p.userData?.user },
+            type: p.type,
+            content: {
+                ...p,
+                author: p.userData?.user,
+                data: relatedData,
+            },
         });
-        excludedProjectIds.add(p.id);
+        excludedPostIds.add(p.id);
     }
 }
 
-async function fetchPopularProjects(
-    excludedProjectIds: Set<string>,
+async function fetchRecentPosts(
+    excludedPostIds: Set<string>,
     limit: number,
     feedItems: FeedItem[],
     opts?: FetchOptions
 ) {
     if (feedItems.length >= limit) return;
 
-    const projects = await fetchProjects(
-        buildWhereClause(excludedProjectIds, opts?.cursor),
-        limit - feedItems.length,
-        { likes: { _count: "desc" } }
-    );
-
-    for (const p of projects) {
-        feedItems.push({
-            type: "project",
-            content: { ...p, author: p.userData?.user },
-        });
-        excludedProjectIds.add(p.id);
-    }
-}
-
-async function fetchRecentProjects(
-    excludedProjectIds: Set<string>,
-    limit: number,
-    feedItems: FeedItem[],
-    opts?: FetchOptions
-) {
-    if (feedItems.length >= limit) return;
-
-    const projects = await fetchProjects(
-        buildWhereClause(excludedProjectIds, opts?.cursor),
+    const posts = await fetchPosts(
+        buildWhereClause(excludedPostIds, opts?.cursor),
         limit - feedItems.length,
         { createdAt: "desc" }
     );
 
-    for (const p of projects) {
+    for (const p of posts) {
+        const relatedData = await fetchPostData(p.type, p.dataId);
         feedItems.push({
-            type: "project",
-            content: { ...p, author: p.userData?.user },
+            type: p.type,
+            content: {
+                ...p,
+                author: p.userData?.user,
+                data: relatedData,
+            },
         });
-        excludedProjectIds.add(p.id);
+        excludedPostIds.add(p.id);
     }
 }
 
-async function fetchRandomProjects(
-    excludedProjectIds: Set<string>,
+async function fetchRandomPosts(
+    excludedPostIds: Set<string>,
     limit: number,
     feedItems: FeedItem[],
     opts?: FetchOptions
 ) {
     if (feedItems.length >= limit) return;
 
-    const projects = await fetchProjects(
-        buildWhereClause(excludedProjectIds, opts?.cursor),
+    const posts = await fetchPosts(
+        buildWhereClause(excludedPostIds, opts?.cursor),
         limit - feedItems.length,
         { updatedAt: "asc" }
     );
 
-    for (const p of projects) {
+    for (const p of posts) {
+        const relatedData = await fetchPostData(p.type, p.dataId);
         feedItems.push({
-            type: "project",
-            content: { ...p, author: p.userData?.user },
+            type: p.type,
+            content: {
+                ...p,
+                author: p.userData?.user,
+                data: relatedData,
+            },
         });
-        excludedProjectIds.add(p.id);
+        excludedPostIds.add(p.id);
     }
 }
 
@@ -248,7 +264,6 @@ export async function fetchHomeFeed({
     const currentUserId = session?.user?.id;
     if (!currentUserId) throw new Error("Unauthorized.");
 
-    // Ensure user exists in related tables
     await prisma.userData.upsert({
         where: { userId: currentUserId },
         update: {},
@@ -261,20 +276,18 @@ export async function fetchHomeFeed({
         create: { userId: currentUserId },
     });
 
-    const excludedProjectIds = new Set<string>();
+    const excludedPostIds = new Set<string>();
     const feedItems: FeedItem[] = [];
 
-    // Select fetchers based on feedType
     const fetchers =
         feedType === "following"
-            ? shuffleArray([fetchProjectsByFollowing])
+            ? shuffleArray([fetchPostsByFollowing])
             : feedType === "friends"
-            ? shuffleArray([fetchProjectsByFriends])
+            ? shuffleArray([fetchPostsByFriends])
             : shuffleArray([
-                  fetchProjectsByFriends,
-                  fetchPopularProjects,
-                  fetchRecentProjects,
-                  fetchRandomProjects,
+                  fetchPostsByFriends,
+                  fetchRecentPosts,
+                  fetchRandomPosts,
               ]);
 
     let attempts = 0;
@@ -284,7 +297,7 @@ export async function fetchHomeFeed({
         const fetcher = fetchers[attempts % fetchers.length];
         const before = feedItems.length;
 
-        await fetcher(excludedProjectIds, limit, feedItems, {
+        await fetcher(excludedPostIds, limit, feedItems, {
             cursor,
             currentUserId,
         });

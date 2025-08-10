@@ -2,6 +2,7 @@ import { useState } from "react";
 import { User } from "lucide-react";
 import Modal from "../general/Modal";
 import Link from "next/link";
+import { UserIcon } from "../general/UserIcon";
 
 type FollowUser = {
     userId: string;
@@ -75,17 +76,7 @@ const FollowModal = ({
                                 href={`/profile/${user.username}`}
                                 className="flex items-center gap-3 hover:bg-gray-100 rounded-md p-1"
                             >
-                                {user.image ? (
-                                    <img
-                                        src={user.image}
-                                        alt={user.name}
-                                        className="w-10 h-10 rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center">
-                                        <User className="w-4 h-4 text-white" />
-                                    </div>
-                                )}
+                                <UserIcon size="size-10" image={user.image} />
                                 <div>
                                     <div className="font-medium">
                                         {user.name}

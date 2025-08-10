@@ -1,4 +1,4 @@
-import { deleteMerit } from "@/actions/content/experience/deleteExperience";
+import { deleteMerit } from "@/actions/content/merit/deleteMerit";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { CalendarDays, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";

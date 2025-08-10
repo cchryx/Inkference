@@ -188,9 +188,8 @@ const Content = ({ userData, rootUser = false }: Props) => {
                                 {openModal === "post"}
                             </>
                         )}
-                        <Posts />
                     </>
-                    <Posts />
+                    <Posts rootUser={rootUser} posts={userData.posts} />
                 </>
             )}
         </div>

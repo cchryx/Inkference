@@ -1,4 +1,3 @@
-// ConfirmModal.tsx
 import React from "react";
 import Modal from "./Modal";
 import { Button } from "../ui/button";
@@ -10,6 +9,21 @@ type Props = {
     text?: string;
     confirmText?: string;
     cancelText?: string;
+    confirmVariant?:
+        | "default"
+        | "destructive"
+        | "outline"
+        | "secondary"
+        | "ghost"
+        | "link";
+    cancelVariant?:
+        | "default"
+        | "destructive"
+        | "outline"
+        | "secondary"
+        | "ghost"
+        | "link";
+
     onConfirm: () => void;
     onClose: () => void;
     children?: React.ReactNode;
@@ -22,6 +36,8 @@ const ConfirmModal = ({
     text,
     confirmText = "Confirm",
     cancelText = "Cancel",
+    confirmVariant = "destructive",
+    cancelVariant = "outline",
     onConfirm,
     onClose,
     children,
@@ -40,7 +56,7 @@ const ConfirmModal = ({
                 <div className="flex justify-end gap-2 pt-2">
                     <Button
                         onClick={onClose}
-                        variant="outline"
+                        variant={cancelVariant}
                         className="cursor-pointer"
                         disabled={isPending}
                     >
@@ -48,9 +64,9 @@ const ConfirmModal = ({
                     </Button>
                     <Button
                         onClick={onConfirm}
+                        variant={confirmVariant}
                         className="cursor-pointer"
                         disabled={isPending}
-                        variant="destructive"
                     >
                         {confirmText}
                     </Button>

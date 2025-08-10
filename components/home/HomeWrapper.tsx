@@ -139,12 +139,9 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                 const feedItems = data
                     ? data.pages.flatMap((page: any) => page.items)
                     : [];
-                const feedProjects = feedItems
-                    .filter((item: any) => item.type === "project")
-                    .map((item: any) => ({ ...item.content }));
 
                 const showEmpty =
-                    feedProjects.length === 0 && status === "success";
+                    feedItems.length === 0 && status === "success";
 
                 const isLoading =
                     status === "pending" || isRefreshing || isRefetching;
@@ -219,7 +216,7 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                                     <p className="p-4 text-center text-red-600">
                                         Error:{" "}
                                         {(error as Error)?.message ??
-                                            "Unknown error"}
+                                            "Unknown error."}
                                     </p>
                                 )}
 
@@ -239,17 +236,17 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                                             </p>
                                         )}
                                         {key === "for_you" && (
-                                            <p>No projects found</p>
+                                            <p>No posts found</p>
                                         )}
                                     </div>
                                 )}
 
-                                {/* Project Feed */}
-                                {feedProjects.map((project, i) => (
+                                {/* Feed Items */}
+                                {feedItems.map((item: any, i: number) => (
                                     <HomeFeedItem
                                         key={i}
                                         currentUserId={currentUserId}
-                                        project={project}
+                                        item={item}
                                     />
                                 ))}
 
@@ -261,7 +258,7 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                                 )}
 
                                 {/* End of Feed */}
-                                {!hasNextPage && feedProjects.length > 0 && (
+                                {!hasNextPage && feedItems.length > 0 && (
                                     <div className="text-center py-4 text-muted-foreground">
                                         That’s all for now. Maybe try scrolling
                                         up again?

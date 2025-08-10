@@ -117,6 +117,7 @@ export default async function Page({
         experiences: userData.experiences,
         educations: userData.educations,
         merits: userData.merits,
+        posts: userData.posts,
     };
 
     return (
