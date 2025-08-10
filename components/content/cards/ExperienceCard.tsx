@@ -79,7 +79,7 @@ const ExperienceCard = ({
             ? "bg-yellow-100 text-yellow-800"
             : "bg-green-100 text-green-800";
 
-    const fillerImage = "/assets/general/fillerImage.png";
+    const fillerImage = "/assets/general/fillers/experience.png";
 
     const handleDeleteExperience = async () => {
         setIsPending(true);

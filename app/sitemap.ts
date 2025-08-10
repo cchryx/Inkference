@@ -9,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         {
             url: `${baseUrl}/welcome`,
             lastModified: new Date(),
-            changeFrequency: "weekly",
+            changeFrequency: "always",
             priority: 1,
         },
     ];
@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const userRoutes: MetadataRoute.Sitemap = users.map((user) => ({
         url: `${baseUrl}/${user.username}`,
         lastModified: user.updatedAt || new Date(),
-        changeFrequency: "weekly",
+        changeFrequency: "always",
         priority: 0.7,
     }));
 
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const projectRoutes: MetadataRoute.Sitemap = projects.map((project) => ({
         url: `${baseUrl}/project/${project.id}`,
         lastModified: project.updatedAt || new Date(),
-        changeFrequency: "weekly",
+        changeFrequency: "always",
         priority: 0.7,
     }));
 

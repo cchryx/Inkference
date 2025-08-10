@@ -49,7 +49,8 @@ export async function generateMetadata({
 
     const bannerImage =
         projectData.bannerImage || "/assets/general/fillerImage.png";
-    const iconImage = projectData.iconImage || "/assets/general/folder.png";
+    const iconImage =
+        projectData.iconImage || "/assets/general/fillers/project.png";
 
     return {
         title: projectData.name,

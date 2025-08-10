@@ -14,6 +14,8 @@ import CreateProjectModal from "./project/create/CreateProjectModal";
 import Subnavbar from "../root/Subnavbar";
 import AddExperienceModal from "./experience/create/AddExperienceModal";
 import AddEducationModal from "./education/create/AddEducationModal";
+import AddMeritModal from "./merit/create/AddMeritModal";
+import Merits from "./sections/Merit";
 
 type Props = {
     userData: any;
@@ -120,6 +122,24 @@ const Content = ({ userData, rootUser = false }: Props) => {
                         rootUser={rootUser}
                         educations={userData.educations}
                     />
+                </>
+            )}
+            {active === "merits" && (
+                <>
+                    {rootUser && (
+                        <>
+                            <CreateContent
+                                label="Add Merit"
+                                onClick={() => setOpenModal("merits")}
+                            />
+                            {openModal === "merits" && (
+                                <AddMeritModal
+                                    onCloseModal={() => setOpenModal(null)}
+                                />
+                            )}
+                        </>
+                    )}
+                    <Merits rootUser={rootUser} merits={userData.merits} />
                 </>
             )}
             {active === "skills" && (

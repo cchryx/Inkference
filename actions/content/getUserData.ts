@@ -48,6 +48,20 @@ export async function getUserData(userId?: string) {
         updatedAt: true,
     };
 
+    // New merit select block:
+    const meritSelect = {
+        id: true,
+        title: true,
+        issuer: true,
+        meritType: true,
+        summary: true,
+        issueDate: true,
+        expiryDate: true,
+        image: true,
+        createdAt: true,
+        updatedAt: true,
+    };
+
     const orderByDur: any = [
         { status: "asc" },
         { endDate: { sort: "desc", nulls: "last" } },
@@ -85,6 +99,10 @@ export async function getUserData(userId?: string) {
                     select: educationSelect,
                     orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
                 },
+                merits: {
+                    select: meritSelect,
+                    orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
+                },
             },
         });
         if (!userData) return { error: "User data not found." };
@@ -118,6 +136,10 @@ export async function getUserData(userId?: string) {
                 select: educationSelect,
                 orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
             },
+            merits: {
+                select: meritSelect,
+                orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
+            },
         },
     });
 
@@ -141,6 +163,10 @@ export async function getUserData(userId?: string) {
                 educations: {
                     select: educationSelect,
                     orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
+                },
+                merits: {
+                    select: meritSelect,
+                    orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
                 },
             },
         });

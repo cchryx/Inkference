@@ -138,6 +138,7 @@ model UserData {
 
   experiences Experience[]
   educations  Education[]
+  merits      Merit[]
 
   @@map("userData")
 }
@@ -267,4 +268,26 @@ model Education {
 
   @@index([userDataId, updatedAt])
   @@map("educations")
+}
+
+model Merit {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userDataId String
+  userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+
+  title     String @db.VarChar(100)
+  issuer    String @db.VarChar(100)
+  meritType String @db.VarChar(50)
+  summary   String @db.Text
+
+  issueDate  DateTime?
+  expiryDate DateTime?
+
+  image String @db.VarChar(255)
+
+  @@index([userDataId, updatedAt])
+  @@map("merits")
 }

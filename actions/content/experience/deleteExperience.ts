@@ -3,10 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
 
-export async function deleteExperience(experienceId: string) {
+export async function deleteMerit(meritId: string) {
     try {
-        await prisma.experience.delete({
-            where: { id: experienceId },
+        await prisma.merit.delete({
+            where: { id: meritId },
         });
 
         return { error: null };

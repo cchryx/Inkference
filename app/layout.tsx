@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/context/QueryProvider";
+import { prisma } from "@/lib/prisma";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -15,11 +16,35 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-    title: "Inkference",
-    description:
-        "Share your life with the world. Inkference is a platform for sharing your thoughts, ideas, and experiences.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const userCount = await prisma.user.count();
+    const projectCount = await prisma.project.count();
+
+    return {
+        title: `Inkference`,
+        description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
+        openGraph: {
+            title: `Inkference — ${userCount} users & ${projectCount} projects`,
+            description: `Showcase your work and connect with creators.`,
+            url: "https://inkference.space",
+            siteName: "Inkference",
+            images: [
+                {
+                    url: "/icon512_maskable.png",
+                    alt: "Inkference Icon",
+                },
+            ],
+            locale: "en_US",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `Inkference — ${userCount} users & ${projectCount} projects`,
+            description: `Showcase your work and connect with creators.`,
+            images: ["/assets/welcome/welcomeBg.jpg"],
+        },
+    };
+}
 
 export const viewport: Viewport = {
     width: "device-width",

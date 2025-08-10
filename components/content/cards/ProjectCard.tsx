@@ -26,7 +26,7 @@ export default function ProjectCard({
     }, []);
 
     const bannerUrl = project.bannerImage || "/assets/general/fillerImage.png";
-    const iconUrl = project.iconImage || "/assets/general/folder.png";
+    const iconUrl = project.iconImage || "/assets/general/fillers/project.png";
     const name = project.name;
     const summary = project.summary || "No summary provided.";
     const status =

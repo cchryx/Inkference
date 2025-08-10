@@ -63,7 +63,7 @@ const EducationCard = ({
         endDate ? new Date(endDate) : new Date()
     );
 
-    const fillerImage = "/assets/general/fillerImage.png";
+    const fillerImage = "/assets/general/fillers/education.png";
 
     const handleDeleteEducation = async () => {
         setIsPending(true);
@@ -109,7 +109,7 @@ const EducationCard = ({
 
                     <img
                         src={school || fillerImage}
-                        className="size-16 rounded object-contain border-2 border-gray-300 shadow-sm"
+                        className="size-20 rounded object-contain border-2 border-gray-300 shadow-sm"
                         onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             if (target.src !== fillerImage) {

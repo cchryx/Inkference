@@ -1,13 +1,11 @@
-import { GetStartedButton } from "@/components/auth/GetStartedButton";
+import WelcomeWrapper from "@/components/welcome/WelcomeWrapper";
+import { prisma } from "@/lib/prisma";
 
-export default function Page() {
-    return (
-        <div className="flex items-center justify-center w-full h-dvh">
-            <div className="flex justify-center gap-8 flex-col items-center">
-                <h1 className="text-6xl font-bold">Inkference</h1>
+export default async function WelcomePage() {
+    const [userCount, projectCount] = await Promise.all([
+        prisma.user.count(),
+        prisma.project.count(),
+    ]);
 
-                <GetStartedButton />
-            </div>
-        </div>
-    );
+    return <WelcomeWrapper userCount={userCount} projectCount={projectCount} />;
 }

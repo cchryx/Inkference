@@ -254,7 +254,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                         <img
                             src={
                                 project.iconImage ??
-                                "/assets/general/folder.png"
+                                "/assets/general/fillers/project.png"
                             }
                             alt={`${project.name} icon`}
                             className="w-full h-full object-cover bg-gray-800/50"
