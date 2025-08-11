@@ -23,7 +23,7 @@ export default function PostPreviewCard({
     type,
     content,
     width = "w-full",
-    height = "h-[400px]",
+    height = "h-[200px]",
 }: PostPreviewCardProps) {
     const router = useRouter();
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);
@@ -58,13 +58,15 @@ export default function PostPreviewCard({
     const getTypeIcon = () => {
         switch (type) {
             case "project":
-                return <Folder className="w-6 h-6 text-white" />;
+                return <Folder className="size-4 md:size-6 text-white" />;
             case "experience":
-                return <Briefcase className="w-6 h-6 text-white" />;
+                return <Briefcase className="size-4 md:size-6 text-white" />;
             case "education":
-                return <GraduationCap className="w-6 h-6 text-white" />;
+                return (
+                    <GraduationCap className="size-4 md:size-6 text-white" />
+                );
             default:
-                return <Folder className="w-6 h-6 text-white" />;
+                return <Folder className="size-4 md:size-6 text-white" />;
         }
     };
 
@@ -88,7 +90,7 @@ export default function PostPreviewCard({
             }}
         >
             {/* Icon image top left, original spot (left-4 top-[5rem]) */}
-            <div className="absolute left-4 bottom-[7.5rem] z-11">
+            <div className="absolute left-4 bottom-[2.5rem] z-11">
                 <img
                     src={iconUrl}
                     alt={`${name} icon`}
@@ -102,14 +104,10 @@ export default function PostPreviewCard({
             </div>
 
             {/* Frosted glass panel for text at bottom with original height ~same as before */}
-            <div
-                className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-white/70 backdrop-blur-sm rounded-b-xl h-[8rem]"
-                style={{ minHeight: "7rem" }}
-            >
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">
+            <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-black/50 backdrop-blur-sm rounded-b-xl h-[3rem]">
+                <h2 className="text-sm md:text-md text-white line-clamp-1 truncate">
                     {name}
                 </h2>
-                <p className="text-xs text-gray-800 line-clamp-4">{summary}</p>
             </div>
 
             {/* Overlay with stats on hover, above all other elements */}
@@ -120,11 +118,11 @@ export default function PostPreviewCard({
                         : "opacity-0 group-hover:opacity-100"
                 } transition-opacity duration-300 flex flex-col justify-between p-4 text-sm pointer-events-none`}
             >
-                <div className="text-xs bg-white/10 px-2 py-1 rounded-md font-medium w-fit text-white shadow-sm">
+                <div className="text-[0.5rem] md:text-xs bg-white/10 px-2 py-1 rounded-md font-medium w-fit text-white shadow-sm">
                     Click to view {type}
                 </div>
 
-                <div className="flex flex-col gap-1 text-sm">
+                <div className="flex flex-col gap-1 text-xs">
                     <div className="flex items-center gap-2 drop-shadow-sm">
                         <Eye className="w-4 h-4" /> {views} Views
                     </div>

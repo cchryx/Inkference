@@ -14,6 +14,7 @@ import {
     Home,
     Inbox,
     KeySquare,
+    Layers,
     Library,
     LogOut,
     Mail,
@@ -39,9 +40,14 @@ export const NAVBARLEFT_LINKS = [
         label: "Explore",
     },
     {
+        icon: Layers,
+        route: "/portfolio",
+        label: "Portfolio",
+    },
+    {
         icon: Library,
-        route: "/library",
-        label: "Library",
+        route: "/drive",
+        label: "Drive",
     },
     {
         icon: BookUser,
