@@ -134,11 +134,12 @@ const EducationCard = ({
                         {formattedStart} – {formattedEnd} ({durationMonths}{" "}
                         months)
                     </p>
-                    <p>
-                        <GraduationCap className="inline w-4 h-4 mr-1" />
-                        {degree}
-                    </p>
-                </div>
+                    {degree && (
+    <p>
+        <GraduationCap className="inline w-4 h-4 mr-1" />
+        {degree}
+    </p>
+)}
 
                 {/* Delete Button */}
                 {rootUser && (
