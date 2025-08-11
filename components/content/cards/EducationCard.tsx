@@ -140,7 +140,7 @@ const EducationCard = ({
         {degree}
     </p>
 )}
-
+</div>
                 {/* Delete Button */}
                 {rootUser && (
                     <button
