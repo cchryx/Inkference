@@ -101,9 +101,7 @@ const EducationCard = ({
                             {school}
                         </h2>
                         <p className="text-sm text-gray-700 mt-0.5">
-                            {degree && fieldOfStudy
-                                ? `${degree} · ${fieldOfStudy}`
-                                : degree || fieldOfStudy || ""}
+                            {fieldOfStudy || ""}
                         </p>
                     </div>
 
@@ -135,6 +133,10 @@ const EducationCard = ({
                         <CalendarDays className="inline w-4 h-4 mr-1" />
                         {formattedStart} – {formattedEnd} ({durationMonths}{" "}
                         months)
+                    </p>
+                    <p>
+                        <GraduationCap className="inline w-4 h-4 mr-1" />
+                        {degree}
                     </p>
                 </div>
 
