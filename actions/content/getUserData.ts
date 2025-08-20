@@ -61,6 +61,20 @@ export async function getUserData(userId?: string) {
         updatedAt: true,
     };
 
+    const skillSelect = {
+        id: true,
+        name: true,
+        iconImage: true,
+        createdAt: true,
+        updatedAt: true,
+        projects: {
+            select: { id: true, name: true },
+        },
+        experiences: {
+            select: { id: true, title: true },
+        },
+    };
+
     const orderByDur: any = [
         { status: "asc" },
         { endDate: { sort: "desc", nulls: "last" } },
@@ -78,40 +92,33 @@ export async function getUserData(userId?: string) {
                             select: projectSelect,
                         });
                         break;
-
                     case "experience":
                         details = await prisma.experience.findUnique({
                             where: { id: post.dataId },
                             select: experienceSelect,
                         });
                         break;
-
                     case "education":
                         details = await prisma.education.findUnique({
                             where: { id: post.dataId },
                             select: educationSelect,
                         });
                         break;
-
                     case "merit":
                         details = await prisma.merit.findUnique({
                             where: { id: post.dataId },
                             select: meritSelect,
                         });
                         break;
-
-                    // Add more post types if needed
                     default:
                         details = null;
                 }
-
                 return {
                     ...post,
                     data: details,
                 };
             })
         );
-
         return detailedPosts;
     }
 
@@ -123,27 +130,16 @@ export async function getUserData(userId?: string) {
             select: {
                 id: true,
                 userId: true,
-                projects: {
-                    select: projectSelect,
-                    orderBy: orderByDur,
-                },
+                skills: { select: skillSelect, orderBy: { name: "asc" } },
+                projects: { select: projectSelect, orderBy: orderByDur },
                 projectsContributedTo: {
                     select: projectSelect,
                     orderBy: orderByDur,
                 },
-                projectsLiked: {
-                    select: projectSelect,
-                },
-                projectsViewed: {
-                    select: projectSelect,
-                },
-                projectsSaved: {
-                    select: projectSelect,
-                },
-                experiences: {
-                    select: experienceSelect,
-                    orderBy: orderByDur,
-                },
+                projectsLiked: { select: projectSelect },
+                projectsViewed: { select: projectSelect },
+                projectsSaved: { select: projectSelect },
+                experiences: { select: experienceSelect, orderBy: orderByDur },
                 educations: {
                     select: educationSelect,
                     orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
@@ -177,6 +173,7 @@ export async function getUserData(userId?: string) {
             select: {
                 id: true,
                 userId: true,
+                skills: { select: skillSelect, orderBy: { name: "asc" } },
                 projects: { select: projectSelect, orderBy: orderByDur },
                 projectsContributedTo: {
                     select: projectSelect,
@@ -185,10 +182,7 @@ export async function getUserData(userId?: string) {
                 projectsLiked: { select: projectSelect },
                 projectsViewed: { select: projectSelect },
                 projectsSaved: { select: projectSelect },
-                experiences: {
-                    select: experienceSelect,
-                    orderBy: orderByDur,
-                },
+                experiences: { select: experienceSelect, orderBy: orderByDur },
                 educations: {
                     select: educationSelect,
                     orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
@@ -216,10 +210,9 @@ export async function getUserData(userId?: string) {
                 select: {
                     id: true,
                     userId: true,
+                    skills: { select: skillSelect },
                     projects: { select: projectSelect },
-                    projectsContributedTo: {
-                        select: projectSelect,
-                    },
+                    projectsContributedTo: { select: projectSelect },
                     projectsLiked: { select: projectSelect },
                     projectsViewed: { select: projectSelect },
                     projectsSaved: { select: projectSelect },

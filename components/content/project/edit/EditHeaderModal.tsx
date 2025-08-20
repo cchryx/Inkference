@@ -111,9 +111,23 @@ const EditHeaderModal = ({
         setIsPending(false);
     };
 
+    const handleClose = () => {
+        setName(initialName);
+        setSummary(initialSummary);
+        setDescription(initialDescription);
+        setProjectLinks(initialLinks);
+        setLinkInput("");
+        setShowLinkInput(false);
+        setIconImage(initialIconImage);
+        setBannerImage(initialBannerImage);
+        setTimeline(initialTimeline);
+
+        onClose();
+    };
+
     return (
         <Modal open={open} onClose={onClose}>
-            <div className="flex flex-col max-h-[90vh]">
+            <div className="flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw] bg-gray-100 rounded-xl shadow-xl">
                 {/* Header */}
                 <div className="flex justify-between items-start p-5 border-b">
                     <h2 className="text-xl font-bold">Edit Project Header</h2>
@@ -184,7 +198,7 @@ const EditHeaderModal = ({
                 <div className="flex justify-end items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl gap-2">
                     <Button
                         variant="outline"
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="cursor-pointer"
                         disabled={isPending}
                     >

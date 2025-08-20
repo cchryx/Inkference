@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "../../general/Skeleton";
 import { ChevronDown, ChevronRight, Pencil, X } from "lucide-react";
 import EditGalleryModal from "./edit/EditGalleryModal";
+import Modal from "@/components/general/Modal";
+import Img from "@/components/general/Img";
 
 type Props = {
     isOwner: boolean;
@@ -94,9 +96,10 @@ const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
                                     onClick={() => setSelectedImage(img)}
                                     className="rounded-md overflow-hidden cursor-pointer bg-gray-300 hover:brightness-90 transition"
                                 >
-                                    <img
+                                    <Img
                                         src={img.image}
-                                        alt=""
+                                        fallbackSrc="/assets/general/fillers/merit.png"
+                                        alt={`Gallery image ${index + 1}`}
                                         className="w-full h-[240px] object-cover"
                                     />
                                     <div className="text-xs p-2 text-gray-800 truncate">
@@ -109,25 +112,20 @@ const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
                 )}
                 {/* Modal */}
                 {selectedImage && (
-                    <div
-                        className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-                        onClick={closeModal}
-                    >
-                        <div
-                            className="w-full max-w-6xl flex flex-col md:flex-row gap-4"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                    <Modal open={true} onClose={closeModal}>
+                        <div className="max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[70vw] flex flex-col md:flex-row gap-4 flex justify-center">
                             {/* Image Box (90%) */}
-                            <div className="bg-gray-300 dark:bg-gray-800 w-full md:w-[70%] rounded-md shadow-lg p-4 flex items-center justify-center">
-                                <img
+                            <div className="bg-gray-300 w-full md:w-auto overflow-hidden rounded-md shadow-lg flex items-center justify-center p-0 md:p-4">
+                                <Img
                                     src={selectedImage.image}
-                                    alt=""
-                                    className="w-full h-auto object-contain max-h-[80vh]"
+                                    fallbackSrc="/assets/general/fillers/merit.png"
+                                    alt="Gallery image"
+                                    className="w-full h-auto object-contain max-h-[90vh] md:max-h-[80vh] rounded-md"
                                 />
                             </div>
 
                             {/* Description Box (10%) */}
-                            <div className="bg-gray-300 dark:bg-gray-800 w-full md:w-[30%] rounded-md shadow-lg p-4 flex flex-col justify-between gap-4">
+                            <div className="bg-gray-300 w-full md:w-[20vw] rounded-md shadow-lg p-4 flex flex-col justify-between gap-4">
                                 <div className="flex-1 overflow-y-auto max-h-[70vh] pr-2">
                                     <p className="break-words whitespace-pre-wrap text-xs text-gray-800 dark:text-gray-100">
                                         {selectedImage.description}
@@ -141,7 +139,7 @@ const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </Modal>
                 )}
             </div>
         </>

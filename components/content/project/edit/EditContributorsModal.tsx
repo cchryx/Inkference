@@ -13,6 +13,7 @@ import InfoTooltip from "@/components/general/InfoToolTip";
 import { useSearchUsers } from "@/hooks/useUserSearch";
 import { editProject } from "@/actions/content/project/editProject";
 import FallbackUserIcon from "@/components/general/FallbackUserIcon";
+import { UserIcon } from "@/components/general/UserIcon";
 
 type Props = {
     open: boolean;
@@ -91,9 +92,14 @@ const EditContributorsModal = ({
         );
     }, [data, contributors, ownerId]);
 
+    const handleClose = () => {
+        setContributors(initialContributors);
+        onClose();
+    };
+
     return (
         <Modal open={open} onClose={onClose}>
-            <div className="flex flex-col max-h-[90vh]">
+            <div className="flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw] bg-gray-100 rounded-xl shadow-xl">
                 {/* Header */}
                 <div className="flex justify-between items-start p-5 border-b">
                     <h2 className="text-xl font-bold">Edit Contributors</h2>
@@ -163,15 +169,10 @@ const EditContributorsModal = ({
                                                 }
                                                 className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer"
                                             >
-                                                {user.image ? (
-                                                    <img
-                                                        src={user.image}
-                                                        alt={user.name}
-                                                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                                                    />
-                                                ) : (
-                                                    <FallbackUserIcon size="size-8" />
-                                                )}
+                                                <UserIcon
+                                                    size="size-8"
+                                                    image={user.image}
+                                                />
                                                 <div className="flex flex-col min-w-0 flex-grow">
                                                     <p className="font-medium truncate">
                                                         {user.name}
@@ -246,7 +247,7 @@ const EditContributorsModal = ({
                 <div className="flex justify-end items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl gap-2">
                     <Button
                         variant="outline"
-                        onClick={onClose}
+                        onClick={handleClose}
                         disabled={isPending}
                         className="cursor-pointer"
                     >

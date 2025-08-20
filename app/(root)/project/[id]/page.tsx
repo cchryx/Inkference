@@ -145,7 +145,8 @@ export default async function Page({
                 <div className="px-[2%]">
                     <SkillsCard
                         isOwner={isOwner}
-                        skills={(project.skills as string[]) ?? []}
+                        skills={project.skills}
+                        projectId={project.id}
                     />
                 </div>
             )}

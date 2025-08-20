@@ -89,9 +89,14 @@ const EditGalleryModal = ({
 
     const showPreview = useMemo(() => imageUrl.trim().length > 0, [imageUrl]);
 
+    const handleClose = () => {
+        setGallery(initialGallery);
+        onClose();
+    };
+
     return (
         <Modal open={open} onClose={onClose}>
-            <div className="flex flex-col max-h-[90vh]">
+            <div className="flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw] bg-gray-100 rounded-xl shadow-xl">
                 {/* Header */}
                 <div className="flex justify-between items-start p-5 border-b">
                     <h2 className="text-xl font-bold">Edit Project Gallery</h2>
@@ -265,7 +270,7 @@ const EditGalleryModal = ({
                 <div className="flex justify-end items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl gap-2">
                     <Button
                         variant="outline"
-                        onClick={onClose}
+                        onClick={handleClose}
                         disabled={isPending}
                         className="cursor-pointer"
                     >

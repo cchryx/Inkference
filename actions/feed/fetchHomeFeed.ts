@@ -90,6 +90,13 @@ async function fetchPostData(type: string, dataId: string) {
                             },
                         },
                     },
+                    skills: {
+                        select: {
+                            iconImage: true,
+                            name: true,
+                            id: true,
+                        },
+                    },
                     likes: { select: { userId: true } },
                     saves: { select: { userId: true } },
                     views: { select: { userId: true } },

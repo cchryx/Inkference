@@ -27,7 +27,7 @@ export default function ProjectCard({
 
     const bannerUrl = project.bannerImage || "/assets/general/fillerImage.png";
     const iconUrl = project.iconImage || "/assets/general/fillers/project.png";
-    const name = project.name;
+    const name = project.name || "Unnamed Project";
     const summary = project.summary || "No summary provided.";
     const status =
         project.status === "IN_PROGRESS" ? "In Progress" : "Complete";
@@ -38,7 +38,6 @@ export default function ProjectCard({
               year: "numeric",
           })
         : "";
-
     const endDate = project.endDate
         ? new Date(project.endDate).toLocaleDateString("en-US", {
               month: "short",
@@ -46,14 +45,18 @@ export default function ProjectCard({
               year: "numeric",
           })
         : "Present";
-    const skills = project.skills ?? [];
+
+    const skills = Array.isArray(project.skills) ? project.skills : [];
     const likes = Array.isArray(project.likes) ? project.likes.length : 0;
     const views = Array.isArray(project.views) ? project.views.length : 0;
     const saves = Array.isArray(project.saves) ? project.saves.length : 0;
+
     const postedAt = project.createdAt
         ? new Date(project.createdAt).toISOString()
         : "";
-    const formattedDate = new Date(postedAt).toLocaleDateString("en-GB");
+    const formattedDate = postedAt
+        ? new Date(postedAt).toLocaleDateString("en-GB")
+        : "";
 
     const handleClick = () => {
         if (!isTouchDevice) {
@@ -118,12 +121,12 @@ export default function ProjectCard({
                 </div>
 
                 <div className="mt-3 overflow-hidden max-h-[3.2rem] flex flex-wrap gap-1">
-                    {skills.map((skill: string, idx: number) => (
+                    {skills.map((skill: any, idx: number) => (
                         <span
-                            key={idx}
-                            className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full"
+                            key={skill.id ?? idx}
+                            className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full truncate"
                         >
-                            {skill}
+                            {skill.name}
                         </span>
                     ))}
                 </div>

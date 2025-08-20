@@ -249,7 +249,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                 isPending={isPending}
                 open={confirmPostOpen}
                 title="Post this project?"
-                text="It will be visible on the 'For You' page."
+                text="This project will be shared as a post."
                 confirmText="Post"
                 cancelText="Cancel"
                 confirmVariant="default"
@@ -279,7 +279,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                     endDate: project.endDate / 1000 || null,
                 }}
             />
-            <div className="rounded-md overflow-hidden shadow-md w-full h-full">
+            <div className="rounded-md bg-gray-200 overflow-hidden shadow-md w-full h-full">
                 <div className="relative">
                     <div
                         className="w-full h-[200px] md:h-[350px] bg-center bg-cover"

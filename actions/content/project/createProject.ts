@@ -14,7 +14,7 @@ export async function createProject(data: {
     status: "IN_PROGRESS" | "COMPLETE";
     startDate: number;
     endDate?: number | null;
-    skills: string[];
+    skills: any[];
     contributorIds: string[];
 }) {
     const userData = await getUserData();
@@ -36,7 +36,12 @@ export async function createProject(data: {
             status: data.status === "IN_PROGRESS" ? "IN_PROGRESS" : "COMPLETE",
             startDate: new Date(data.startDate * 1000),
             endDate: data.endDate ? new Date(data.endDate * 1000) : null,
-            skills: data.skills,
+            skills: {
+                connectOrCreate: data.skills.map((skill) => ({
+                    where: { name: skill.name ?? "" },
+                    create: { name: skill.name },
+                })),
+            },
             contributors: {
                 connect: data.contributorIds.map((id) => ({ id })),
             },

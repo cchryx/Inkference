@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
 import { User } from "lucide-react";
 import Link from "next/link";
+import { UserIcon } from "@/components/general/UserIcon";
 
 type Props = {
     isOwner: boolean;
@@ -87,19 +88,11 @@ export const AuthorCard = ({
 
                 {/* Mobile layout (horizontal) */}
                 <div className="flex flex-col lg:hidden gap-4">
-                    <div></div>
                     <div className="flex gap-4 items-start">
-                        {tUser?.image ? (
-                            <img
-                                src={tUser.image}
-                                className="w-16 h-16 rounded-full object-cover"
-                                alt={`${tUser.name}'s profile picture`}
-                            />
-                        ) : (
-                            <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center">
-                                <User className="text-gray-300 w-6 h-6" />
-                            </div>
-                        )}
+                        <UserIcon
+                            image={tUser?.image || undefined}
+                            size="w-16 h-16 flex-shrink-0"
+                        />
                         <div className="flex flex-col min-w-0">
                             <div className="font-semibold text-base truncate">
                                 {tUser.name}
@@ -125,16 +118,10 @@ export const AuthorCard = ({
 
                 {/* Desktop layout (vertical) */}
                 <div className="hidden lg:flex flex-col items-center text-center">
-                    <div className="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center">
-                        {tUser?.image ? (
-                            <img
-                                src={tUser.image}
-                                className="size-full rounded-full object-cover"
-                            />
-                        ) : (
-                            <User className="text-gray-300 size-15" />
-                        )}
-                    </div>
+                    <UserIcon
+                        size="size-32"
+                        image={tUser?.image || undefined}
+                    />
 
                     <div className="mt-4 max-w-full">
                         <div

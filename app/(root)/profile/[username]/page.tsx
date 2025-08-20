@@ -118,6 +118,7 @@ export default async function Page({
         educations: userData.educations,
         merits: userData.merits,
         posts: userData.posts,
+        skills: userData.skills,
     };
 
     return (

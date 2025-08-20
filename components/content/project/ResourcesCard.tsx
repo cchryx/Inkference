@@ -55,7 +55,7 @@ const ResourcesCard = ({ isOwner, projectId, resources }: Props) => {
                         {isOwner && (
                             <button
                                 onClick={() => setEditOpen(true)}
-                                className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                                className="flex cursor-pointer items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
                             >
                                 <Pencil className="w-4 h-4" />
                             </button>

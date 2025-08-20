@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Pen, Pencil } from "lucide-react";
 import EditContributorsModal from "./edit/EditContributorsModal";
 import FallbackUserIcon from "../../general/FallbackUserIcon";
 import Link from "next/link";
+import { UserIcon } from "@/components/general/UserIcon";
 
 type Props = {
     isOwner: boolean;
@@ -106,15 +107,10 @@ const ContributorsCard = ({
                                     href={`/profile/${user.username}`}
                                     className="w-[16rem] mb-3 flex-shrink-0 flex items-center gap-3 bg-gray-300 p-3 rounded-md hover:brightness-95 transition"
                                 >
-                                    {user.image ? (
-                                        <img
-                                            src={user.image}
-                                            className="w-12 h-12 rounded-full object-cover shrink-0"
-                                            alt={user.name}
-                                        />
-                                    ) : (
-                                        <FallbackUserIcon size="size-12" />
-                                    )}
+                                    <UserIcon
+                                        size="size-12"
+                                        image={user.image}
+                                    />
 
                                     <div className="flex flex-col justify-center text-gray-800 min-w-0">
                                         <div

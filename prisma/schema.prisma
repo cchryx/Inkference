@@ -140,6 +140,7 @@ model UserData {
   educations  Education[]
   merits      Merit[]
   posts       Post[]
+  skills      Skill[]      @relation("UserSkills")
 
   @@map("userData")
 }
@@ -182,8 +183,6 @@ model Project {
   startDate DateTime?
   endDate   DateTime?
 
-  skills String[] @db.VarChar(50)
-
   contributors UserData[] @relation("ProjectContributors")
 
   views UserData[] @relation("ProjectViews")
@@ -194,6 +193,7 @@ model Project {
 
   userDataId String
   userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+  skills     Skill[]  @relation("ProjectSkills")
 
   @@index([userDataId, updatedAt])
   @@map("projects")
@@ -246,6 +246,7 @@ model Experience {
 
   userDataId String
   userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+  skills     Skill[]  @relation("ExperienceSkills")
 
   @@index([userDataId, updatedAt])
   @@map("experiences")
@@ -306,4 +307,19 @@ model Post {
 
   @@index([userDataId, updatedAt])
   @@map("posts")
+}
+
+model Skill {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       UserData[]   @relation("UserSkills")
+  projects    Project[]    @relation("ProjectSkills")
+  experiences Experience[] @relation("ExperienceSkills")
+
+  name      String  @unique @db.VarChar(60)
+  iconImage String?
+
+  @@map("skills")
 }

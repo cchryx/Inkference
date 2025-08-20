@@ -19,8 +19,6 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     const isProject = item.type === "project";
     const content = item.content;
 
-    // console.log(content.data);
-
     const [likes, setLikes] = useState(
         isProject ? content.data?.likes || [] : []
     );
@@ -92,8 +90,8 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
             contentRender = (
                 <ProjectCard
                     project={content.data}
-                    width="lg:w-[500px] w-full"
-                    height="lg:h-[600px] h-full"
+                    width="lg:w-[50vh] w-full"
+                    height="h-[60vh]"
                 />
             );
             break;
@@ -127,7 +125,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     return (
         <div className="snap-start h-full flex flex-col items-center justify-center select-none">
             <div className="flex gap-2 md:gap-4 w-full px-2 lg:w-auto">
-                <div className="flex-1 min-h-[500px]">{contentRender}</div>
+                <div className="flex-1">{contentRender}</div>
 
                 {/* Right Sidebar: Author + Likes/Saves */}
                 <div className="flex flex-col items-center gap-4">

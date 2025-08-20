@@ -1,5 +1,7 @@
 import { deleteMerit } from "@/actions/content/merit/deleteMerit";
 import ConfirmModal from "@/components/general/ConfirmModal";
+import Img from "@/components/general/Img";
+import Modal from "@/components/general/Modal";
 import { CalendarDays, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -35,6 +37,7 @@ const MeritCard = ({
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [confirmMopen, setConfirmMOpen] = useState(false);
+    const [imageModalOpen, setImageModalOpen] = useState(false);
 
     const {
         id,
@@ -61,6 +64,7 @@ const MeritCard = ({
 
     return (
         <>
+            {/* Confirm deletion modal */}
             <ConfirmModal
                 isPending={isPending}
                 open={confirmMopen}
@@ -74,7 +78,20 @@ const MeritCard = ({
                 }}
                 onClose={() => setConfirmMOpen(false)}
             />
-            <div className="relative bg-gray-100 rounded-xl shadow-md hover:shadow-lg transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.01] duration-300 overflow-hidden flex flex-col p-4 max-w-md">
+
+            {/* Image modal */}
+            <Modal
+                open={imageModalOpen}
+                onClose={() => setImageModalOpen(false)}
+            >
+                <Img
+                    src={image}
+                    fallbackSrc="/assets/general/fillers/merit.png"
+                    className="max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[70vw] rounded-md"
+                />
+            </Modal>
+
+            <div className="relative bg-gray-200 cursor-pointer rounded-xl shadow-md hover:shadow-lg transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.01] duration-300 overflow-hidden flex flex-col p-4 max-w-md">
                 {/* Top: Title and Issuer */}
                 <div className="flex justify-between items-start mb-2">
                     <div className="max-w-[75%]">
@@ -105,11 +122,13 @@ const MeritCard = ({
 
                 {/* New image section below summary */}
                 {image && (
-                    <div className="w-full h-50 mb-4 rounded-md overflow-hidden border border-gray-300 shadow">
+                    <div
+                        className="w-full h-50 mb-4 rounded-md overflow-hidden border border-gray-300 shadow cursor-pointer"
+                        onClick={() => setImageModalOpen(true)}
+                    >
                         <img
                             src={image}
-                            alt={`${title} merit image`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover hover:opacity-90 transition"
                             onError={(e) => {
                                 const target =
                                     e.currentTarget as HTMLImageElement;
@@ -139,7 +158,6 @@ const MeritCard = ({
                     <button
                         className="absolute cursor-pointer bottom-3 right-3 text-black hover:text-red-600 p-1 rounded-full hover:bg-red-100 transition"
                         onClick={() => setConfirmMOpen(true)}
-                        aria-label="Delete Merit"
                     >
                         <Trash className="w-5 h-5" />
                     </button>

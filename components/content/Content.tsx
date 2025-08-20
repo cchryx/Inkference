@@ -15,7 +15,8 @@ import Subnavbar from "../root/Subnavbar";
 import AddExperienceModal from "./experience/create/AddExperienceModal";
 import AddEducationModal from "./education/create/AddEducationModal";
 import AddMeritModal from "./merit/create/AddMeritModal";
-import Merits from "./sections/Merit";
+import Merits from "./sections/Merits";
+import AddSkillModal from "./skill/create/AddSkillModal";
 
 type Props = {
     userData: any;
@@ -37,20 +38,25 @@ const Content = ({ userData, rootUser = false }: Props) => {
                 <>
                     {rootUser && (
                         <>
-                            <Subnavbar
-                                categories={[
-                                    { key: "myProjects", label: "My Projects" },
-                                    {
-                                        key: "contributedTo",
-                                        label: "Contributed To",
-                                    },
-                                    { key: "saved", label: "Saved" },
-                                    { key: "liked", label: "Liked" },
-                                    { key: "viewed", label: "Viewed" },
-                                ]}
-                                active={projectView}
-                                setActive={setProjectView}
-                            />
+                            <div className="mt-4">
+                                <Subnavbar
+                                    categories={[
+                                        {
+                                            key: "myProjects",
+                                            label: "My Projects",
+                                        },
+                                        {
+                                            key: "contributedTo",
+                                            label: "Contributed To",
+                                        },
+                                        { key: "saved", label: "Saved" },
+                                        { key: "liked", label: "Liked" },
+                                        { key: "viewed", label: "Viewed" },
+                                    ]}
+                                    active={projectView}
+                                    setActive={setProjectView}
+                                />
+                            </div>
 
                             <CreateContent
                                 label="Create/add a new project"
@@ -144,19 +150,20 @@ const Content = ({ userData, rootUser = false }: Props) => {
             )}
             {active === "skills" && (
                 <>
-                    <>
-                        {rootUser && (
-                            <>
-                                <CreateContent
-                                    label="Add a skill"
-                                    onClick={() => setOpenModal("skill")}
+                    {rootUser && (
+                        <>
+                            <CreateContent
+                                label="Add a skill"
+                                onClick={() => setOpenModal("skills")}
+                            />
+                            {openModal === "skills" && (
+                                <AddSkillModal
+                                    onCloseModal={() => setOpenModal(null)}
                                 />
-                                {openModal === "skill"}
-                            </>
-                        )}
-                        <Skills />
-                    </>
-                    <Skills />
+                            )}
+                        </>
+                    )}
+                    <Skills rootUser={rootUser} skills={userData.skills} />
                 </>
             )}
             {active === "photos" && (

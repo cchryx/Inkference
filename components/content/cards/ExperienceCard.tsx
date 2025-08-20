@@ -108,7 +108,7 @@ const ExperienceCard = ({
                 }}
                 onClose={() => setConfirmMOpen(false)}
             />
-            <div className="relative h-[300px] bg-gray-200 rounded-xl shadow-md hover:shadow-lg transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.01] duration-300 overflow-hidden flex flex-col p-4">
+            <div className="relative cursor-pointer h-[300px] bg-gray-200 rounded-xl shadow-md hover:shadow-lg transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.01] duration-300 overflow-hidden flex flex-col p-4">
                 {/* Top section with flex: text left, image right */}
                 <div className="flex justify-between items-start">
                     <div className="max-w-[70%]">
@@ -129,7 +129,7 @@ const ExperienceCard = ({
                     {organization && (
                         <img
                             src={organization || fillerImage}
-                            className="size-20 rounded object-contain border-2 border-gray-300 shadow-md rounded-md"
+                            className="size-20 rounded-md object-contain border-2 border-gray-300 shadow-md"
                             onError={(e) => {
                                 const target =
                                     e.currentTarget as HTMLImageElement;

@@ -14,6 +14,13 @@ export async function getProjectById(projectId: string) {
             saves: true,
             views: true,
             galleryImages: true,
+            skills: {
+                select: {
+                    iconImage: true,
+                    name: true,
+                    id: true,
+                },
+            },
         },
     });
 

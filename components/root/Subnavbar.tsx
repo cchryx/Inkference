@@ -45,7 +45,7 @@ const Subnavbar = <T extends string>({
     }, []);
 
     return (
-        <div className={`relative my-4 select-none ${className}`}>
+        <div className={`relative select-none ${className}`}>
             {/* Left Fade */}
             {showLeftFade && (
                 <div className="pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-white/90 to-transparent z-10" />

@@ -44,7 +44,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
     return (
         <div className="relative overflow-hidden fixed w-full pt-2 pb-5 bg-gray-200 border-t border-gray-300">
             {/* Menu bar */}
-            <div className="flex justify-around items-center h-full">
+            <div className="flex justify-around items-center h-full mx-2">
                 {/* User Icon on left */}
                 <div
                     ref={avatarRef}
@@ -87,7 +87,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
             {showUserMenu && (
                 <div
                     ref={userMenuRef}
-                    className="fixed bottom-[80px] left-2 z-50 w-48 bg-gray-300 rounded shadow-lg overflow-hidden"
+                    className="fixed bottom-[80px] left-2 z-50 w-48 bg-gray-300 rounded-lg shadow-lg overflow-hidden"
                 >
                     <ul className="flex flex-col py-1">
                         {NAVBARLEFT_SUB_LINKS.map(

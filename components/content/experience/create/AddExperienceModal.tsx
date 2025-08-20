@@ -127,7 +127,7 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
 
     return (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <div className="bg-gray-100 rounded-xl w-full md:w-[70%] lg:w-[50%] shadow-lg flex flex-col max-h-[90vh]">
+            <div className="bg-gray-100 rounded-xl w-full md:w-[70%] lg:w-[40%] shadow-lg flex flex-col max-h-[90vh]">
                 {/* Top Header */}
                 <div className="flex justify-between items-start p-5 border-b">
                     <h2 className="text-xl font-bold">Add Experience</h2>

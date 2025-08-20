@@ -74,7 +74,7 @@ const ContentsBar = ({
 
                                     {/* Mobile tooltip bubble label */}
                                     {isLabelVisible && (
-                                        <div className="sm:hidden absolute top-full mt-2 px-2 py-1 text-xs bg-black text-white rounded-full whitespace-nowrap shadow-lg animate-fade-in-out z-50">
+                                        <div className="sm:hidden absolute top-full mt-2 px-2 py-1 text-xs bg-gray-200 rounded-full whitespace-nowrap shadow-lg animate-fade-in-out z-50">
                                             {link.label}
                                         </div>
                                     )}

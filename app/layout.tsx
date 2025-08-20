@@ -22,6 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
     return {
         title: `Inkference`,
+        icons: {
+            icon: "/favicon.ico",
+        },
         description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
         openGraph: {
             title: `Inkference — ${userCount} users & ${projectCount} projects`,

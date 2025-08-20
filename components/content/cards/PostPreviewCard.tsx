@@ -82,32 +82,16 @@ export default function PostPreviewCard({
     return (
         <div
             onClick={handleClick}
-            className={`group relative ${width} ${height} rounded-xl shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer`}
+            className={`group relative ${width} ${height} rounded-md shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer`}
             style={{
                 backgroundImage: `url('${bannerUrl}')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
             }}
         >
-            {/* Icon image top left, original spot (left-4 top-[5rem]) */}
-            <div className="absolute left-4 bottom-[2.5rem] z-11">
-                <img
-                    src={iconUrl}
-                    alt={`${name} icon`}
-                    className="w-14 h-14 rounded-md border-2 border-white shadow-md object-cover bg-gray-800/50"
-                />
-            </div>
-
             {/* Post type icon stack top right */}
             <div className="absolute right-4 top-4 z-21 flex flex-col space-y-2">
                 {getTypeIcon()}
-            </div>
-
-            {/* Frosted glass panel for text at bottom with original height ~same as before */}
-            <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-black/50 backdrop-blur-sm rounded-b-xl h-[3rem]">
-                <h2 className="text-sm md:text-md text-white line-clamp-1 truncate">
-                    {name}
-                </h2>
             </div>
 
             {/* Overlay with stats on hover, above all other elements */}
@@ -119,21 +103,21 @@ export default function PostPreviewCard({
                 } transition-opacity duration-300 flex flex-col justify-between p-4 text-sm pointer-events-none`}
             >
                 <div className="text-[0.5rem] md:text-xs bg-white/10 px-2 py-1 rounded-md font-medium w-fit text-white shadow-sm">
-                    Click to view {type}
+                    Click to view
                 </div>
 
-                <div className="flex flex-col gap-1 text-xs">
+                <div className="flex flex-col gap-0.5 text-xs md:text-md">
                     <div className="flex items-center gap-2 drop-shadow-sm">
-                        <Eye className="w-4 h-4" /> {views} Views
+                        <Eye className="size-3 md:size-4" /> {views}
                     </div>
                     <div className="flex items-center gap-2 drop-shadow-sm">
-                        <Heart className="w-4 h-4" /> {likes} Likes
+                        <Heart className="size-3 md:size-4" /> {likes}
                     </div>
                     <div className="flex items-center gap-2 drop-shadow-sm">
-                        <Bookmark className="w-4 h-4" /> {saves} Saves
+                        <Bookmark className="size-3 md:size-4" /> {saves}
                     </div>
                     <div className="flex items-center gap-2 drop-shadow-sm">
-                        <CalendarDays className="w-4 h-4" /> Posted:{" "}
+                        <CalendarDays className="size-3 md:size-4" />
                         {formattedDate}
                     </div>
                 </div>
