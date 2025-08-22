@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getUserData } from "../../users/getUserData";
 
-export async function createPost(input: { type: string; dataId: string }) {
+export async function createGallery(input: { name: string; photos: string[] }) {
     const userData = await getUserData();
 
     if (!userData || "error" in userData || !userData.userId) {
@@ -11,16 +11,19 @@ export async function createPost(input: { type: string; dataId: string }) {
     }
 
     try {
-        const post = await prisma.post.create({
+        await prisma.gallery.create({
             data: {
-                type: input.type,
+                name: input.name,
                 userDataId: userData.id,
-                dataId: input.dataId,
+                photos: {
+                    create: input.photos.map((url) => ({ image: url })),
+                },
             },
         });
 
         return { error: null };
     } catch (error) {
-        return { error: "Failed to create post." };
+        console.error(error);
+        return { error: "Failed to create gallery." };
     }
 }

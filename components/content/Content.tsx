@@ -17,6 +17,7 @@ import AddEducationModal from "./education/create/AddEducationModal";
 import AddMeritModal from "./merit/create/AddMeritModal";
 import Merits from "./sections/Merits";
 import AddSkillModal from "./skill/create/AddSkillModal";
+import AddPhotosModal from "./photos/create/AddPhotosModal";
 
 type Props = {
     userData: any;
@@ -158,6 +159,7 @@ const Content = ({ userData, rootUser = false }: Props) => {
                             />
                             {openModal === "skills" && (
                                 <AddSkillModal
+                                    skills={userData.skills}
                                     onCloseModal={() => setOpenModal(null)}
                                 />
                             )}
@@ -168,19 +170,25 @@ const Content = ({ userData, rootUser = false }: Props) => {
             )}
             {active === "photos" && (
                 <>
-                    <>
-                        {rootUser && (
-                            <>
-                                <CreateContent
-                                    label="Upload photos"
-                                    onClick={() => setOpenModal("photo")}
+                    {rootUser && (
+                        <>
+                            <CreateContent
+                                label="Add photos"
+                                onClick={() => setOpenModal("photos")}
+                            />
+                            {openModal === "photos" && (
+                                <AddPhotosModal
+                                    currentUserId={userData.userId}
+                                    onCloseModal={() => setOpenModal(null)}
                                 />
-                                {openModal === "photo"}
-                            </>
-                        )}
-                        <Photos />
-                    </>
-                    <Photos />
+                            )}
+                            {openModal === "photos"}
+                        </>
+                    )}
+                    <Photos
+                        rootUser={rootUser}
+                        galleries={userData.galleries}
+                    />
                 </>
             )}
             {active === "posts" && (

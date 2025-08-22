@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import Content from "@/components/content/Content";
-import { getUserData } from "@/actions/content/getUserData";
+import { getUserData } from "@/actions/users/getUserData";
 
 export default async function Page() {
     const session = await auth.api.getSession({

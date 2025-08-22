@@ -208,15 +208,10 @@ const EditContributorsModal = ({
                                         className="flex items-center justify-between gap-3 border rounded-xl px-3 py-2"
                                     >
                                         <div className="flex items-center gap-3 min-w-0">
-                                            {contributor.image ? (
-                                                <img
-                                                    src={contributor.image}
-                                                    alt={contributor.name}
-                                                    className="w-9 h-9 rounded-full object-cover shrink-0"
-                                                />
-                                            ) : (
-                                                <FallbackUserIcon size="size-9" />
-                                            )}
+                                            <UserIcon
+                                                size="size-9"
+                                                image={contributor.image}
+                                            />
                                             <div className="min-w-0">
                                                 <p className="text-sm font-medium truncate">
                                                     {contributor.name}

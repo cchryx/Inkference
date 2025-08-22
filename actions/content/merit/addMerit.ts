@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "../getUserData";
+import { getUserData } from "../../users/getUserData";
 
 export async function addMerit(data: {
     title: string;

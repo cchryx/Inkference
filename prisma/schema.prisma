@@ -141,6 +141,7 @@ model UserData {
   merits      Merit[]
   posts       Post[]
   skills      Skill[]      @relation("UserSkills")
+  galleries   Gallery[]
 
   @@map("userData")
 }
@@ -322,4 +323,31 @@ model Skill {
   iconImage String?
 
   @@map("skills")
+}
+
+model Gallery {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String   @db.VarChar(100)
+
+  userDataId String
+  userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+
+  photos Photo[]
+
+  @@map("galleries")
+}
+
+model Photo {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  galleryId String
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  image String
+
+  @@map("photos")
 }

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Content from "@/components/content/Content";
 import RecommendedAccountsCard from "@/components/profile/RecommendedAccountsCard";
-import { getUserData } from "@/actions/content/getUserData";
+import { getUserData } from "@/actions/users/getUserData";
 import { Metadata } from "next";
 import { cache } from "react";
 
@@ -119,6 +119,7 @@ export default async function Page({
         merits: userData.merits,
         posts: userData.posts,
         skills: userData.skills,
+        galleries: userData.galleries,
     };
 
     return (

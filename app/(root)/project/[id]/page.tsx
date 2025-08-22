@@ -10,7 +10,7 @@ import { getProjectById } from "@/actions/content/project/getProject";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { getProfileData } from "@/actions/profile/getProfileData";
 import GalleryCard from "@/components/content/project/GalleryCard";
-import { getUserData } from "@/actions/content/getUserData";
+import { getUserData } from "@/actions/users/getUserData";
 import { cache } from "react";
 import { Metadata } from "next";
 

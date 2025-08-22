@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "../getUserData";
+import { getUserData } from "../../users/getUserData";
 
 export async function deleteSkill(skillId: string, projectId?: string) {
     const userData = await getUserData();

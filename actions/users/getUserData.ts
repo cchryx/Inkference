@@ -67,11 +67,22 @@ export async function getUserData(userId?: string) {
         iconImage: true,
         createdAt: true,
         updatedAt: true,
-        projects: {
-            select: { id: true, name: true },
-        },
-        experiences: {
-            select: { id: true, title: true },
+        projects: { select: { id: true, name: true } },
+        experiences: { select: { id: true, title: true } },
+    };
+
+    const gallerySelect = {
+        id: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        photos: {
+            select: {
+                id: true,
+                image: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         },
     };
 
@@ -113,10 +124,7 @@ export async function getUserData(userId?: string) {
                     default:
                         details = null;
                 }
-                return {
-                    ...post,
-                    data: details,
-                };
+                return { ...post, data: details };
             })
         );
         return detailedPosts;
@@ -158,13 +166,16 @@ export async function getUserData(userId?: string) {
                     },
                     orderBy: { updatedAt: "desc" },
                 },
+                galleries: {
+                    select: gallerySelect,
+                    orderBy: { createdAt: "desc" },
+                },
             },
         });
+
         if (!userData) return { error: "User data not found." };
     } else {
-        const session = await auth.api.getSession({
-            headers: await headers(),
-        });
+        const session = await auth.api.getSession({ headers: await headers() });
         const sessionUserId = session?.user?.id;
         if (!sessionUserId) return { error: "Unauthorized." };
 
@@ -200,6 +211,10 @@ export async function getUserData(userId?: string) {
                         updatedAt: true,
                     },
                     orderBy: { updatedAt: "desc" },
+                },
+                galleries: {
+                    select: gallerySelect,
+                    orderBy: { createdAt: "desc" },
                 },
             },
         });
@@ -237,6 +252,10 @@ export async function getUserData(userId?: string) {
                             updatedAt: true,
                         },
                         orderBy: { updatedAt: "desc" },
+                    },
+                    galleries: {
+                        select: gallerySelect,
+                        orderBy: { createdAt: "desc" },
                     },
                 },
             });

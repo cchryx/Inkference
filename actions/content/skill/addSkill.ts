@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserData } from "@/actions/content/getUserData";
+import { getUserData } from "@/actions/users/getUserData";
 import { prisma } from "@/lib/prisma";
 
 export async function addSkill(data: { name: string }, projectId?: string) {
