@@ -61,16 +61,6 @@ export async function getUserData(userId?: string) {
         updatedAt: true,
     };
 
-    const skillSelect = {
-        id: true,
-        name: true,
-        iconImage: true,
-        createdAt: true,
-        updatedAt: true,
-        projects: { select: { id: true, name: true } },
-        experiences: { select: { id: true, title: true } },
-    };
-
     const gallerySelect = {
         id: true,
         name: true,
@@ -130,139 +120,117 @@ export async function getUserData(userId?: string) {
         return detailedPosts;
     }
 
-    let userData;
-
-    if (userId) {
-        userData = await prisma.userData.findUnique({
-            where: { userId },
-            select: {
-                id: true,
-                userId: true,
-                skills: { select: skillSelect, orderBy: { name: "asc" } },
-                projects: { select: projectSelect, orderBy: orderByDur },
-                projectsContributedTo: {
-                    select: projectSelect,
-                    orderBy: orderByDur,
-                },
-                projectsLiked: { select: projectSelect },
-                projectsViewed: { select: projectSelect },
-                projectsSaved: { select: projectSelect },
-                experiences: { select: experienceSelect, orderBy: orderByDur },
-                educations: {
-                    select: educationSelect,
-                    orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
-                },
-                merits: {
-                    select: meritSelect,
-                    orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
-                },
-                posts: {
-                    select: {
-                        id: true,
-                        type: true,
-                        dataId: true,
-                        createdAt: true,
-                        updatedAt: true,
-                    },
-                    orderBy: { updatedAt: "desc" },
-                },
-                galleries: {
-                    select: gallerySelect,
-                    orderBy: { createdAt: "desc" },
-                },
-            },
-        });
-
-        if (!userData) return { error: "User data not found." };
-    } else {
+    // Determine the target user ID
+    let targetUserId = userId;
+    if (!targetUserId) {
         const session = await auth.api.getSession({ headers: await headers() });
-        const sessionUserId = session?.user?.id;
-        if (!sessionUserId) return { error: "Unauthorized." };
-
-        userData = await prisma.userData.findUnique({
-            where: { userId: sessionUserId },
-            select: {
-                id: true,
-                userId: true,
-                skills: { select: skillSelect, orderBy: { name: "asc" } },
-                projects: { select: projectSelect, orderBy: orderByDur },
-                projectsContributedTo: {
-                    select: projectSelect,
-                    orderBy: orderByDur,
-                },
-                projectsLiked: { select: projectSelect },
-                projectsViewed: { select: projectSelect },
-                projectsSaved: { select: projectSelect },
-                experiences: { select: experienceSelect, orderBy: orderByDur },
-                educations: {
-                    select: educationSelect,
-                    orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
-                },
-                merits: {
-                    select: meritSelect,
-                    orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
-                },
-                posts: {
-                    select: {
-                        id: true,
-                        type: true,
-                        dataId: true,
-                        createdAt: true,
-                        updatedAt: true,
-                    },
-                    orderBy: { updatedAt: "desc" },
-                },
-                galleries: {
-                    select: gallerySelect,
-                    orderBy: { createdAt: "desc" },
-                },
-            },
-        });
-
-        if (!userData) {
-            userData = await prisma.userData.create({
-                data: { userId: sessionUserId },
-                select: {
-                    id: true,
-                    userId: true,
-                    skills: { select: skillSelect },
-                    projects: { select: projectSelect },
-                    projectsContributedTo: { select: projectSelect },
-                    projectsLiked: { select: projectSelect },
-                    projectsViewed: { select: projectSelect },
-                    projectsSaved: { select: projectSelect },
-                    experiences: {
-                        select: experienceSelect,
-                        orderBy: orderByDur,
-                    },
-                    educations: {
-                        select: educationSelect,
-                        orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
-                    },
-                    merits: {
-                        select: meritSelect,
-                        orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
-                    },
-                    posts: {
-                        select: {
-                            id: true,
-                            type: true,
-                            dataId: true,
-                            createdAt: true,
-                            updatedAt: true,
-                        },
-                        orderBy: { updatedAt: "desc" },
-                    },
-                    galleries: {
-                        select: gallerySelect,
-                        orderBy: { createdAt: "desc" },
-                    },
-                },
-            });
-        }
+        if (!session?.user?.id) return { error: "Unauthorized." };
+        targetUserId = session.user.id;
     }
 
-    if (userData?.posts?.length) {
+    // Fetch main user data **without skills**
+    let userData = await prisma.userData.findUnique({
+        where: { userId: targetUserId },
+        select: {
+            id: true,
+            userId: true,
+            projects: { select: projectSelect, orderBy: orderByDur },
+            projectsContributedTo: {
+                select: projectSelect,
+                orderBy: orderByDur,
+            },
+            projectsLiked: { select: projectSelect },
+            projectsViewed: { select: projectSelect },
+            projectsSaved: { select: projectSelect },
+            experiences: { select: experienceSelect, orderBy: orderByDur },
+            educations: {
+                select: educationSelect,
+                orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
+            },
+            merits: {
+                select: meritSelect,
+                orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
+            },
+            posts: {
+                select: {
+                    id: true,
+                    type: true,
+                    dataId: true,
+                    createdAt: true,
+                    updatedAt: true,
+                },
+                orderBy: { updatedAt: "desc" },
+            },
+            galleries: {
+                select: gallerySelect,
+                orderBy: { createdAt: "desc" },
+            },
+        },
+    });
+
+    if (!userData) {
+        userData = await prisma.userData.create({
+            data: { userId: targetUserId },
+            select: {
+                id: true,
+                userId: true,
+                projects: { select: projectSelect },
+                projectsContributedTo: { select: projectSelect },
+                projectsLiked: { select: projectSelect },
+                projectsViewed: { select: projectSelect },
+                projectsSaved: { select: projectSelect },
+                experiences: { select: experienceSelect, orderBy: orderByDur },
+                educations: {
+                    select: educationSelect,
+                    orderBy: [{ endDate: "desc" }, { startDate: "desc" }],
+                },
+                merits: {
+                    select: meritSelect,
+                    orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
+                },
+                posts: {
+                    select: {
+                        id: true,
+                        type: true,
+                        dataId: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                    orderBy: { updatedAt: "desc" },
+                },
+                galleries: {
+                    select: gallerySelect,
+                    orderBy: { createdAt: "desc" },
+                },
+            },
+        });
+    }
+
+    // Fetch the skills **separately**
+    const skills = await prisma.skill.findMany({
+        where: { users: { some: { id: userData.id } } },
+        select: {
+            id: true,
+            name: true,
+            iconImage: true,
+            createdAt: true,
+            updatedAt: true,
+            projects: {
+                where: { userDataId: userData.id },
+                select: { id: true, name: true },
+            },
+            experiences: {
+                where: { userDataId: userData.id },
+                select: { id: true, title: true },
+            },
+        },
+    });
+
+    // Attach skills to the userData object
+    (userData as any).skills = skills;
+
+    // Hydrate posts
+    if (userData.posts?.length) {
         userData.posts = await fetchPostDetails(userData.posts);
     }
 

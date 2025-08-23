@@ -54,18 +54,18 @@ export default function GalleryCard({ gallery }: Props) {
                 </div>
 
                 {/* Gallery info. */}
-                <div className="flex-1 flex flex-col justify-center">
+                <div className="flex-1 flex flex-col justify-center min-w-0">
                     <h3 className="font-semibold text-lg truncate">
                         {gallery.name}
                     </h3>
-                    <span className="text-sm text-gray-500 mt-1">
+                    <span className="text-sm text-gray-500 mt-1 truncate">
                         {gallery.photos.length > 0
                             ? `${gallery.photos.length} Image${
                                   gallery.photos.length !== 1 ? "s" : ""
                               }`
                             : "Empty"}
                     </span>
-                    <span className="text-xs text-gray-400 mt-0.5">
+                    <span className="text-xs text-gray-400 mt-0.5 truncate">
                         Updated{" "}
                         {new Date(gallery.updatedAt).toLocaleDateString(
                             undefined,

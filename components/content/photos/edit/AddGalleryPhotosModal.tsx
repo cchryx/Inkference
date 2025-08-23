@@ -4,35 +4,36 @@ import { useState, DragEvent } from "react";
 import { X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Img from "@/components/general/Img";
-import InfoTooltip from "@/components/general/InfoToolTip";
-import { Label } from "@radix-ui/react-label";
 import { uploadPhotos } from "@/actions/content/photos/uploadPhotos";
-import { createGallery } from "@/actions/content/photos/createGallery";
+import { addGalleryPhotos } from "@/actions/content/photos/addGalleryPhotos";
 import { useRouter } from "next/navigation";
 
 type Props = {
     onCloseModal: () => void;
     currentUserId: string;
+    galleryId: string;
 };
 
 const MAX_SIZE_MB = 5;
 const MAX_IMAGES = 100;
 
-export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
+export default function AddGalleryPhotosModal({
+    onCloseModal,
+    currentUserId,
+    galleryId,
+}: Props) {
     const router = useRouter();
     const [photos, setPhotos] = useState<File[]>([]);
-    const [galleryName, setGalleryName] = useState("");
     const [isPending, setIsPending] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const [processingPhotos, setProcessingPhotos] = useState<number[]>([]); // indices of photos being processed
+    const [processingPhotos, setProcessingPhotos] = useState<number[]>([]); // track indices being processed
 
     const imagesLeft = MAX_IMAGES - photos.length;
 
-    // Convert HEIC to JPEG
     const convertHeicToJpeg = async (file: File): Promise<File> => {
         if (file.type === "image/heic" || file.name.endsWith(".heic")) {
+            // Import dynamically to avoid SSR
             const heic2any = (await import("heic2any")).default;
             const blob: any = await heic2any({
                 blob: file,
@@ -47,45 +48,37 @@ export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
     };
 
     const addFiles = async (files: File[]) => {
+        let skipped = 0;
         const startIndex = photos.length;
         const indices = files.map((_, i) => startIndex + i);
         setProcessingPhotos((prev) => [...prev, ...indices]);
 
-        try {
-            const convertedFiles = await Promise.all(
-                files.map(convertHeicToJpeg)
-            );
+        const convertedFiles = await Promise.all(files.map(convertHeicToJpeg));
 
-            let skipped = 0;
-            const validImages = convertedFiles.filter((file) => {
-                const isImage = file.type.startsWith("image/");
-                const isWithinLimit = file.size <= MAX_SIZE_MB * 1024 * 1024;
-                if (!isImage || !isWithinLimit) {
-                    skipped++;
-                    return false;
-                }
-                return true;
-            });
+        const validImages = convertedFiles.filter((file) => {
+            const isImage = file.type.startsWith("image/");
+            const isWithinLimit = file.size <= MAX_SIZE_MB * 1024 * 1024;
+            if (!isImage || !isWithinLimit) {
+                skipped++;
+                return false;
+            }
+            return true;
+        });
 
-            setPhotos((prev) => {
-                const availableSlots = MAX_IMAGES - prev.length;
-                const accepted = validImages.slice(0, availableSlots);
-                if (skipped > 0 || validImages.length > accepted.length) {
-                    const overLimit = validImages.length - accepted.length;
-                    const totalSkipped =
-                        skipped + (overLimit > 0 ? overLimit : 0);
-                    toast.error(
-                        `${totalSkipped} image(s) were not added (max ${MAX_IMAGES} images, ≤ ${MAX_SIZE_MB}MB each).`
-                    );
-                }
-                return [...prev, ...accepted];
-            });
-        } catch (err) {
-            console.error(err);
-            toast.error("Error processing images.");
-        }
+        setPhotos((prev) => {
+            const availableSlots = MAX_IMAGES - prev.length;
+            const accepted = validImages.slice(0, availableSlots);
+            if (skipped > 0 || validImages.length > accepted.length) {
+                const overLimit = validImages.length - accepted.length;
+                const totalSkipped = skipped + (overLimit > 0 ? overLimit : 0);
+                toast.error(
+                    `${totalSkipped} image(s) were not added (max ${MAX_IMAGES} images, ≤ ${MAX_SIZE_MB}MB each).`
+                );
+            }
+            return [...prev, ...accepted];
+        });
 
-        // Remove processed indices
+        // remove processed indices
         setProcessingPhotos((prev) => prev.filter((i) => !indices.includes(i)));
     };
 
@@ -105,10 +98,6 @@ export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
     };
 
     const handleUpload = async () => {
-        if (!galleryName.trim()) {
-            toast.error("Please enter a gallery name.");
-            return;
-        }
         if (photos.length === 0) {
             toast.error("Please upload at least one photo.");
             return;
@@ -125,38 +114,36 @@ export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
             const uploadedUrls = results
                 .filter((r) => r.url)
                 .map((r) => r.url!) as string[];
-
             if (uploadedUrls.length === 0) {
-                toast.error("No photos were uploaded, cannot create gallery.");
+                toast.error("No photos were uploaded.");
                 setIsPending(false);
                 return;
             }
 
-            const galleryRes = await createGallery({
-                name: galleryName,
+            const galleryRes = await addGalleryPhotos({
+                galleryId,
                 photos: uploadedUrls,
             });
-
             if ("error" in galleryRes && galleryRes.error) {
-                toast.error("Failed to create gallery.");
+                toast.error("Failed to add photos to gallery.");
                 setIsPending(false);
                 return;
             }
 
-            toast.success("Gallery created successfully.");
+            toast.success("Photos added to gallery successfully.");
             onCloseModal();
             router.refresh();
         } catch (err) {
             console.error(err);
-            toast.error("Failed to upload photos or create gallery.");
+            toast.error("Failed to upload photos.");
         }
+
         setIsPending(false);
     };
 
     return (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
             <div className="bg-gray-100 rounded-xl shadow-lg flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw]">
-                {/* Header */}
                 <div className="flex justify-between items-start p-5 border-b">
                     <h2 className="text-xl font-bold">Add Photos</h2>
                     <button
@@ -168,28 +155,7 @@ export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-                    {/* Gallery Name */}
-                    <div className="flex flex-col w-full gap-1">
-                        <div className="flex items-center gap-1">
-                            <Label>Gallery Name</Label>
-                            <InfoTooltip text="Enter the name of the gallery (max 60 chars)" />
-                        </div>
-                        <Input
-                            placeholder="Enter a gallery name..."
-                            value={galleryName}
-                            disabled={isPending}
-                            onChange={(e) =>
-                                setGalleryName(e.target.value.slice(0, 60))
-                            }
-                        />
-                        <span className="text-xs text-gray-500">
-                            {60 - galleryName.length} characters left
-                        </span>
-                    </div>
-
-                    {/* Drag & Drop + Preview Grid */}
                     <div
                         onDragOver={(e) => {
                             e.preventDefault();
@@ -254,7 +220,7 @@ export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
                                         <button
                                             type="button"
                                             disabled={isPending}
-                                            className="absolute cursor-pointer top-1 right-1 bg-black/60 text-white rounded-full p-1"
+                                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 cursor-pointer"
                                             onClick={() =>
                                                 handleRemovePhoto(index)
                                             }
@@ -268,7 +234,6 @@ export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
                     )}
                 </div>
 
-                {/* Footer */}
                 <div className="flex items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl gap-2">
                     <div className="flex flex-1 items-center gap-1 text-sm text-gray-700">
                         {processingPhotos.length > 0 && (
@@ -304,7 +269,7 @@ export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
                         disabled={isPending || processingPhotos.length > 0}
                         className="cursor-pointer justify-end"
                     >
-                        {isPending ? "Uploading..." : "Create Gallery"}
+                        {isPending ? "Uploading..." : "Upload"}
                     </Button>
                 </div>
             </div>

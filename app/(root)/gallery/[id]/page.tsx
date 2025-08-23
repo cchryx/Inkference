@@ -10,6 +10,8 @@ import { cache } from "react";
 import { Metadata } from "next";
 import { getGalleryById } from "@/actions/content/photos/getGallery";
 import { UserIcon } from "@/components/general/UserIcon";
+import { Pencil, Trash2, UploadIcon } from "lucide-react";
+import HeaderCard from "@/components/content/photos/HeaderCard";
 
 const getGalleryData = cache(async (id: string) => {
     return await getGalleryById(id);
@@ -86,83 +88,67 @@ export default async function Page({
     const topPhotos = gallery.photos.slice(0, 4);
 
     return (
-        <div className="w-full flex flex-col gap-5 my-5 px-[2%]">
-            <div className="flex flex-col gap-5 lg:flex-row">
-                {/* --- HEADER CARD --- */}
-                <div className="bg-gray-200 shadow-md rounded-xl p-6 flex flex-col md:flex-row gap-4 flex-1">
-                    {/* Left: Collage and Gallery Name */}
-                    <div className="flex flex-1 items-center gap-5 min-w-0">
-                        {/* Collage Preview (first 4 images) */}
-                        <div className="grid grid-cols-2 grid-rows-2 gap-1 w-20 h-20 flex-shrink-0">
-                            {topPhotos.map((photo, index) => (
-                                <div
-                                    key={index}
-                                    className="rounded-sm overflow-hidden relative w-full h-full aspect-square"
-                                >
-                                    {photo.image && (
-                                        <Img
-                                            src={photo.image}
-                                            fallbackSrc="/assets/general/fillers/skill.png"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+        <>
+            <div className="w-full flex flex-col gap-5 my-5 px-[2%]">
+                <div className="flex flex-col gap-5 lg:flex-row">
+                    {/* --- HEADER CARD --- */}
+                    <HeaderCard
+                        galleryId={gallery.id}
+                        galleryName={gallery.name}
+                        topPhotos={topPhotos}
+                        isOwner={isOwner}
+                    />
 
-                        {/* Gallery Name */}
-                        <h1 className="text-2xl font-bold truncate">
-                            {gallery.name}
-                        </h1>
-                    </div>
-                </div>
-                {/* --- OWNER BOX --- */}
-                <div className="bg-gray-200 shadow-md rounded-xl p-4 flex items-center gap-3 overflow-hidden lg:w-[20rem]">
-                    <div className="flex-shrink-0">
-                        <UserIcon
-                            size="size-12"
-                            image={gallery.userData.user.image}
-                        />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-500 mb-1 font-medium truncate">
-                            Author
-                        </p>
-                        <h2 className="font-semibold truncate">
-                            {gallery.userData.user.name}
-                        </h2>
-                        <p className="text-gray-500 text-sm truncate">
-                            @{gallery.userData.user.username}
-                        </p>
-                    </div>
-                    <Link href={`/profile/${gallery.userData.user.username}`}>
-                        <Button
-                            variant="default"
-                            className="ml-auto whitespace-nowrap cursor-pointer"
-                        >
-                            View Profile
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-            {/* --- GALLERY IMAGES (Masonry Layout) --- */}
-            <div className="w-full columns-2 md:columns-4 lg:columns-5 gap-4 space-y-4">
-                {gallery.photos.map((photo) => (
-                    <div
-                        key={photo.id}
-                        className="break-inside-avoid rounded-lg overflow-hidden bg-gray-200"
-                    >
-                        {photo.image && (
-                            <Img
-                                src={photo.image}
-                                fallbackSrc="/assets/general/fillers/skill.png"
-                                alt="Gallery image"
-                                className="w-full h-auto object-cover rounded-lg"
+                    {/* --- OWNER BOX --- */}
+                    <div className="bg-gray-200 shadow-md rounded-xl p-4 flex items-center gap-3 overflow-hidden lg:w-[20rem]">
+                        <div className="flex-shrink-0">
+                            <UserIcon
+                                size="size-12"
+                                image={gallery.userData.user.image}
                             />
-                        )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm text-gray-500 mb-1 font-medium truncate">
+                                Author
+                            </p>
+                            <h2 className="font-semibold truncate">
+                                {gallery.userData.user.name}
+                            </h2>
+                            <p className="text-gray-500 text-sm truncate">
+                                @{gallery.userData.user.username}
+                            </p>
+                        </div>
+                        <Link
+                            href={`/profile/${gallery.userData.user.username}`}
+                        >
+                            <Button
+                                variant="default"
+                                className="ml-auto whitespace-nowrap cursor-pointer"
+                            >
+                                View Profile
+                            </Button>
+                        </Link>
                     </div>
-                ))}
+                </div>
+                {/* --- GALLERY IMAGES (Masonry Layout) --- */}
+                <div className="w-full columns-2 md:columns-4 lg:columns-5 gap-4 space-y-4">
+                    {gallery.photos.map((photo) => (
+                        <div
+                            key={photo.id}
+                            className="break-inside-avoid rounded-lg overflow-hidden bg-gray-200"
+                        >
+                            {photo.image && (
+                                <Img
+                                    src={photo.image}
+                                    fallbackSrc="/assets/general/fillers/skill.png"
+                                    alt="Gallery image"
+                                    className="w-full h-auto object-cover rounded-lg"
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
             </div>
-        </div>
+        </>
     );
 }

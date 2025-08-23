@@ -112,7 +112,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
         } else {
             toast.success("Project deleted successfully.");
             router.refresh();
-            router.push("/library");
+            router.push("/portfolio");
         }
 
         setIsPending(false);
