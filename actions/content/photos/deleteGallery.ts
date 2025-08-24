@@ -37,8 +37,6 @@ export async function deleteGallery(galleryId: string) {
 
         // Delete photos from Cloudinary
         for (const photo of gallery.photos) {
-            console.log(photo.image);
-            console.log(gallery.userDataId);
             if (photo.image) {
                 // Extract public ID from URL (assuming default Cloudinary URL format)
                 const parts = photo.image.split("/");
