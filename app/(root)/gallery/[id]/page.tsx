@@ -10,7 +10,7 @@ import { Metadata } from "next";
 import { getGalleryById } from "@/actions/content/photos/getGallery";
 import { UserIcon } from "@/components/general/UserIcon";
 import HeaderCard from "@/components/content/photos/HeaderCard";
-import GalleryImage from "@/components/content/photos/GalleryImage";
+import { GalleryWrapper } from "@/components/content/photos/GalleryWrapper"; // updated import
 
 const getGalleryData = cache(async (id: string) => {
     return await getGalleryById(id);
@@ -81,76 +81,59 @@ export default async function Page({
     }
 
     const tUser = await getProfileData(gallery.userData.user.username);
-    const tProfile = tUser.profile;
     const isOwner = session?.user.id === gallery.userData.user.id;
 
     const topPhotos = gallery.photos.slice(0, 4);
 
     return (
-        <>
-            <div className="w-full flex flex-col gap-5 my-5 px-[2%]">
-                <div className="flex flex-col gap-5 lg:flex-row">
-                    {/* --- HEADER CARD --- */}
-                    <HeaderCard
-                        galleryId={gallery.id}
-                        galleryName={gallery.name}
-                        topPhotos={topPhotos}
-                        isOwner={isOwner}
-                        numOfPhotos={gallery.photos.length}
-                        currentUserId={tUser.user.id}
-                    />
+        <div className="w-full flex flex-col gap-5 my-5 px-[2%]">
+            <div className="flex flex-col gap-5 lg:flex-row">
+                {/* --- HEADER CARD --- */}
+                <HeaderCard
+                    galleryId={gallery.id}
+                    galleryName={gallery.name}
+                    topPhotos={topPhotos}
+                    isOwner={isOwner}
+                    numOfPhotos={gallery.photos.length}
+                    currentUserId={tUser.user.id}
+                />
 
-                    {/* --- OWNER BOX --- */}
-                    <div className="bg-gray-200 shadow-md rounded-xl p-4 flex items-center gap-3 overflow-hidden lg:w-[20rem]">
-                        <div className="flex-shrink-0">
-                            <UserIcon
-                                size="size-12"
-                                image={gallery.userData.user.image}
-                            />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-500 mb-1 font-medium truncate">
-                                Author
-                            </p>
-                            <h2 className="font-semibold truncate">
-                                {gallery.userData.user.name}
-                            </h2>
-                            <p className="text-gray-500 text-sm truncate">
-                                @{gallery.userData.user.username}
-                            </p>
-                        </div>
-                        <Link
-                            href={`/profile/${gallery.userData.user.username}`}
-                        >
-                            <Button
-                                variant="default"
-                                className="ml-auto whitespace-nowrap cursor-pointer"
-                            >
-                                View Profile
-                            </Button>
-                        </Link>
+                {/* --- OWNER BOX --- */}
+                <div className="bg-gray-200 shadow-md rounded-xl p-4 flex items-center gap-3 overflow-hidden lg:w-[20rem]">
+                    <div className="flex-shrink-0">
+                        <UserIcon
+                            size="size-12"
+                            image={gallery.userData.user.image}
+                        />
                     </div>
-                </div>
-                <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {Array.from({ length: 5 }).map((_, colIndex) => (
-                        <div key={colIndex} className="grid gap-4">
-                            {gallery.photos
-                                .filter((_, i) => i % 5 === colIndex) // distribute images into 5 columns
-                                .map((photo, index) => (
-                                    <GalleryImage
-                                        key={photo.id}
-                                        photo={photo}
-                                        galleryImages={gallery.photos}
-                                        currentIndex={gallery.photos.indexOf(
-                                            photo
-                                        )}
-                                        isOwner={isOwner}
-                                    />
-                                ))}
-                        </div>
-                    ))}
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-500 mb-1 font-medium truncate">
+                            Author
+                        </p>
+                        <h2 className="font-semibold truncate">
+                            {gallery.userData.user.name}
+                        </h2>
+                        <p className="text-gray-500 text-sm truncate">
+                            @{gallery.userData.user.username}
+                        </p>
+                    </div>
+                    <Link href={`/profile/${gallery.userData.user.username}`}>
+                        <Button
+                            variant="default"
+                            className="ml-auto whitespace-nowrap cursor-pointer"
+                        >
+                            View Profile
+                        </Button>
+                    </Link>
                 </div>
             </div>
-        </>
+
+            {/* --- GALLERY WRAPPER --- */}
+            <GalleryWrapper
+                photos={gallery.photos}
+                galleryImages={gallery.photos}
+                isOwner={isOwner}
+            />
+        </div>
     );
 }
