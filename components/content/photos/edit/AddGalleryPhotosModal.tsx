@@ -106,6 +106,7 @@ export default function AddGalleryPhotosModal({
         setIsPending(true);
 
         try {
+            console.log(currentUserId);
             const results = await uploadPhotos(photos, currentUserId);
             const failed = results.filter((r) => r.error);
             if (failed.length > 0)

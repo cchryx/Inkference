@@ -14,7 +14,11 @@ export async function getGalleryById(galleryId: string) {
                     user: true,
                 },
             },
-            photos: true,
+            photos: {
+                orderBy: {
+                    createdAt: "desc",
+                },
+            },
         },
     });
 

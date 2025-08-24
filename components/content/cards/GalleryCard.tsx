@@ -60,7 +60,7 @@ export default function GalleryCard({ gallery }: Props) {
                     </h3>
                     <span className="text-sm text-gray-500 mt-1 truncate">
                         {gallery.photos.length > 0
-                            ? `${gallery.photos.length} Image${
+                            ? `${gallery.photos.length} Photo${
                                   gallery.photos.length !== 1 ? "s" : ""
                               }`
                             : "Empty"}

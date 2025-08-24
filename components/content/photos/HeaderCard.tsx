@@ -19,7 +19,8 @@ type Props = {
     galleryName: string;
     topPhotos: Photo[];
     isOwner: boolean;
-    numOfPhotos: number; // new prop
+    numOfPhotos: number;
+    currentUserId: string;
 };
 
 const HeaderCard = ({
@@ -28,6 +29,7 @@ const HeaderCard = ({
     topPhotos,
     isOwner,
     numOfPhotos,
+    currentUserId,
 }: Props) => {
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [addPhotosOpen, setAddPhotosOpen] = useState(false);
@@ -70,7 +72,7 @@ const HeaderCard = ({
             {addPhotosOpen && (
                 <AddGalleryPhotosModal
                     onCloseModal={() => setAddPhotosOpen(false)}
-                    currentUserId={""}
+                    currentUserId={currentUserId}
                     galleryId={galleryId}
                 />
             )}
@@ -103,12 +105,12 @@ const HeaderCard = ({
 
                     {/* Gallery Name and number of photos */}
                     <div className="min-w-0">
-                        <h1 className="text-2xl font-bold leading-snug break-words">
+                        <h1 className="text-2xl font-bold leading-snug break-words line-clamp-2">
                             {galleryName}
                         </h1>
                         <span className="text-sm text-gray-600 mt-1 block">
                             {numOfPhotos}{" "}
-                            {numOfPhotos === 1 ? "photo" : "photos"}
+                            {numOfPhotos === 1 ? "Photo" : "Photos"}
                         </span>
                     </div>
                 </div>

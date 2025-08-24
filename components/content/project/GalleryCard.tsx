@@ -113,30 +113,74 @@ const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
                 {/* Modal */}
                 {selectedImage && (
                     <Modal open={true} onClose={closeModal}>
-                        <div className="max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[70vw] flex flex-col md:flex-row gap-4 flex justify-center">
-                            {/* Image Box (90%) */}
-                            <div className="bg-gray-300 w-full md:w-auto overflow-hidden rounded-md shadow-lg flex items-center justify-center p-0 md:p-4">
+                        <div className="max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[70vw] flex flex-col md:flex-row gap-4 justify-center">
+                            {/* Image Box */}
+                            <div className="bg-gray-300 w-full md:flex-1 overflow-hidden rounded-md shadow-lg flex items-center justify-center p-0 md:p-4">
                                 <Img
                                     src={selectedImage.image}
                                     fallbackSrc="/assets/general/fillers/merit.png"
                                     alt="Gallery image"
-                                    className="w-full h-auto object-contain max-h-[90vh] md:max-h-[80vh] rounded-md"
+                                    className="w-full h-full object-contain rounded-md"
                                 />
                             </div>
 
-                            {/* Description Box (10%) */}
-                            <div className="bg-gray-300 w-full md:w-[20vw] rounded-md shadow-lg p-4 flex flex-col justify-between gap-4">
+                            {/* Description Box */}
+                            <div className="bg-gray-300 w-full md:w-[25%] rounded-md shadow-lg p-4 flex flex-col justify-between gap-4">
                                 <div className="flex-1 overflow-y-auto max-h-[70vh] pr-2">
-                                    <p className="break-words whitespace-pre-wrap text-xs text-gray-800 dark:text-gray-100">
+                                    <p className="break-words whitespace-pre-wrap text-xs md:text-base text-gray-800">
                                         {selectedImage.description}
                                     </p>
                                 </div>
-                                <button
-                                    onClick={closeModal}
-                                    className="self-end text-gray-600 hover:text-black dark:hover:text-white cursor-pointer"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
+
+                                {/* Controls + Close */}
+                                <div className="flex justify-end items-center gap-2">
+                                    <div className="flex-1 flex gap-2">
+                                        {/* Previous Button */}
+                                        {galleryImages.indexOf(selectedImage) >
+                                            0 && (
+                                            <button
+                                                onClick={() =>
+                                                    setSelectedImage(
+                                                        galleryImages[
+                                                            galleryImages.indexOf(
+                                                                selectedImage
+                                                            ) - 1
+                                                        ]
+                                                    )
+                                                }
+                                                className="px-3 py-1 cursor-pointer bg-gray-200 dark:bg-gray-800 rounded hover:bg-gray-300 transition text-gray-800"
+                                            >
+                                                &lt;
+                                            </button>
+                                        )}
+                                        {/* Next Button */}
+                                        {galleryImages.indexOf(selectedImage) <
+                                            galleryImages.length - 1 && (
+                                            <button
+                                                onClick={() =>
+                                                    setSelectedImage(
+                                                        galleryImages[
+                                                            galleryImages.indexOf(
+                                                                selectedImage
+                                                            ) + 1
+                                                        ]
+                                                    )
+                                                }
+                                                className="px-3 py-1 cursor-pointer bg-gray-200 dark:bg-gray-800 rounded hover:bg-gray-300 transition text-gray-800"
+                                            >
+                                                &gt;
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Close Button */}
+                                    <button
+                                        onClick={closeModal}
+                                        className="text-gray-600 hover:text-black dark:hover:text-white cursor-pointer"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </Modal>

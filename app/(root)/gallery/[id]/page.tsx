@@ -4,7 +4,6 @@ import { headers } from "next/headers";
 import { getProfileData } from "@/actions/profile/getProfileData";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { Button } from "@/components/ui/button";
-import Img from "@/components/general/Img";
 import Link from "next/link";
 import { cache } from "react";
 import { Metadata } from "next";
@@ -98,6 +97,7 @@ export default async function Page({
                         topPhotos={topPhotos}
                         isOwner={isOwner}
                         numOfPhotos={gallery.photos.length}
+                        currentUserId={tUser.user.id}
                     />
 
                     {/* --- OWNER BOX --- */}
@@ -131,14 +131,23 @@ export default async function Page({
                         </Link>
                     </div>
                 </div>
-                {/* --- GALLERY IMAGES (Masonry Layout) --- */}
-                <div className="w-full columns-2 md:columns-4 lg:columns-5 gap-4 space-y-4">
-                    {gallery.photos.map((photo) => (
-                        <GalleryImage
-                            photo={photo}
-                            key={photo.id}
-                            isOwner={isOwner}
-                        />
+                <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {Array.from({ length: 5 }).map((_, colIndex) => (
+                        <div key={colIndex} className="grid gap-4">
+                            {gallery.photos
+                                .filter((_, i) => i % 5 === colIndex) // distribute images into 5 columns
+                                .map((photo, index) => (
+                                    <GalleryImage
+                                        key={photo.id}
+                                        photo={photo}
+                                        galleryImages={gallery.photos}
+                                        currentIndex={gallery.photos.indexOf(
+                                            photo
+                                        )}
+                                        isOwner={isOwner}
+                                    />
+                                ))}
+                        </div>
                     ))}
                 </div>
             </div>
