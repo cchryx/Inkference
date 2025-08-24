@@ -178,4 +178,14 @@
     .animate-shimmer {
         animation: shimmer 1.2s infinite linear;
     }
+
+    /* Masonry fix for Safari / iOS */
+    .masonry-item {
+        break-inside: avoid;
+        break-inside: avoid-column;
+        -webkit-column-break-inside: avoid;
+        page-break-inside: avoid;
+        display: inline-block; /* helps Safari align to top */
+        width: 100%;
+    }
 }

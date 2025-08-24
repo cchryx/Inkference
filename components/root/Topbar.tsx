@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 type LinkItem = {
     id: string;
     label: string;

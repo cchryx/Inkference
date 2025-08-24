@@ -10,7 +10,6 @@ import { cache } from "react";
 import { Metadata } from "next";
 import { getGalleryById } from "@/actions/content/photos/getGallery";
 import { UserIcon } from "@/components/general/UserIcon";
-import { Pencil, Trash2, UploadIcon } from "lucide-react";
 import HeaderCard from "@/components/content/photos/HeaderCard";
 
 const getGalleryData = cache(async (id: string) => {
@@ -135,7 +134,7 @@ export default async function Page({
                     {gallery.photos.map((photo) => (
                         <div
                             key={photo.id}
-                            className="break-inside-avoid rounded-lg overflow-hidden bg-gray-200"
+                            className="masonry-item rounded-lg overflow-hidden bg-gray-200"
                         >
                             {photo.image && (
                                 <Img

@@ -36,7 +36,7 @@ const HeaderCard = ({ galleryId, galleryName, topPhotos, isOwner }: Props) => {
         } else {
             toast.success("Gallery deleted successfully.");
             router.refresh();
-            router.push("/portfolio");
+            router.push("/portfolio?section=photos");
         }
 
         setIsPending(false);
