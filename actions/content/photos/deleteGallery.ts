@@ -48,10 +48,9 @@ export async function deleteGallery(galleryId: string) {
                 try {
                     await cloudinary.uploader.destroy(publicId);
                 } catch (err) {
-                    console.error(
-                        `Failed to delete image from Cloudinary: ${photo.image}`,
-                        err
-                    );
+                    return {
+                        error: `Failed to delete image from Cloudinary: ${photo.image}`,
+                    };
                 }
             }
         }

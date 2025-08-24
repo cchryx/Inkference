@@ -19,11 +19,18 @@ type Props = {
     galleryName: string;
     topPhotos: Photo[];
     isOwner: boolean;
+    numOfPhotos: number; // new prop
 };
 
-const HeaderCard = ({ galleryId, galleryName, topPhotos, isOwner }: Props) => {
+const HeaderCard = ({
+    galleryId,
+    galleryName,
+    topPhotos,
+    isOwner,
+    numOfPhotos,
+}: Props) => {
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-    const [addPhotosOpen, setAddPhotosOpen] = useState(false); // modal state
+    const [addPhotosOpen, setAddPhotosOpen] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const router = useRouter();
 
@@ -63,15 +70,15 @@ const HeaderCard = ({ galleryId, galleryName, topPhotos, isOwner }: Props) => {
             {addPhotosOpen && (
                 <AddGalleryPhotosModal
                     onCloseModal={() => setAddPhotosOpen(false)}
-                    currentUserId={""} // replace with actual userId from session/context
-                    galleryId={galleryId} // pass galleryId to modal
+                    currentUserId={""}
+                    galleryId={galleryId}
                 />
             )}
 
             <div className="bg-gray-200 shadow-md rounded-xl p-6 flex flex-col md:flex-row gap-4 flex-1 justify-between">
                 {/* Left: Collage and Gallery Name */}
                 <div className="flex flex-1 gap-5 min-w-0">
-                    {/* Collage Preview (first 4 images) */}
+                    {/* Collage Preview */}
                     <div className="grid grid-cols-2 grid-rows-2 gap-1 size-25 flex-shrink-0">
                         {[0, 1, 2, 3].map((i) => {
                             const photo = topPhotos[i];
@@ -94,10 +101,16 @@ const HeaderCard = ({ galleryId, galleryName, topPhotos, isOwner }: Props) => {
                         })}
                     </div>
 
-                    {/* Gallery Name */}
-                    <h1 className="text-2xl font-bold truncate">
-                        {galleryName}
-                    </h1>
+                    {/* Gallery Name and number of photos */}
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold leading-snug break-words">
+                            {galleryName}
+                        </h1>
+                        <span className="text-sm text-gray-600 mt-1 block">
+                            {numOfPhotos}{" "}
+                            {numOfPhotos === 1 ? "photo" : "photos"}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Right: Action Buttons (Owner only) */}

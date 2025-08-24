@@ -11,6 +11,7 @@ import { Metadata } from "next";
 import { getGalleryById } from "@/actions/content/photos/getGallery";
 import { UserIcon } from "@/components/general/UserIcon";
 import HeaderCard from "@/components/content/photos/HeaderCard";
+import GalleryImage from "@/components/content/photos/GalleryImage";
 
 const getGalleryData = cache(async (id: string) => {
     return await getGalleryById(id);
@@ -96,6 +97,7 @@ export default async function Page({
                         galleryName={gallery.name}
                         topPhotos={topPhotos}
                         isOwner={isOwner}
+                        numOfPhotos={gallery.photos.length}
                     />
 
                     {/* --- OWNER BOX --- */}
@@ -132,19 +134,11 @@ export default async function Page({
                 {/* --- GALLERY IMAGES (Masonry Layout) --- */}
                 <div className="w-full columns-2 md:columns-4 lg:columns-5 gap-4 space-y-4">
                     {gallery.photos.map((photo) => (
-                        <div
+                        <GalleryImage
+                            photo={photo}
                             key={photo.id}
-                            className="masonry-item rounded-lg overflow-hidden bg-gray-200"
-                        >
-                            {photo.image && (
-                                <Img
-                                    src={photo.image}
-                                    fallbackSrc="/assets/general/fillers/skill.png"
-                                    alt="Gallery image"
-                                    className="w-full h-auto object-cover rounded-lg"
-                                />
-                            )}
-                        </div>
+                            isOwner={isOwner}
+                        />
                     ))}
                 </div>
             </div>
