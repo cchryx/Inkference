@@ -350,7 +350,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                                     className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
                                 >
                                     <Share2 className="w-4 h-4" />
-                                    Share Project
+                                    Share
                                 </button>
 
                                 {isOwner && (

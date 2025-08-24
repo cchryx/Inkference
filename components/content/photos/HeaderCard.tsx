@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Img from "@/components/general/Img";
-import { Pencil, Trash2, UploadIcon } from "lucide-react";
+import { Pencil, Share2, Trash2, UploadIcon } from "lucide-react";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { deleteGallery } from "@/actions/content/photos/deleteGallery";
 import { useRouter } from "next/navigation";
@@ -115,30 +115,45 @@ const HeaderCard = ({
                     </div>
                 </div>
 
-                {/* Right: Action Buttons (Owner only) */}
-                {isOwner && (
-                    <div className="flex lg:flex-col gap-2 flex-wrap lg:items-end justify-center lg:justify-start">
-                        <button
-                            onClick={() => setAddPhotosOpen(true)}
-                            className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
-                        >
-                            <UploadIcon className="w-4 h-4" /> Upload Photos
-                        </button>
+                <div className="flex lg:flex-col gap-2 flex-wrap lg:items-end justify-center lg:justify-start">
+                    {/* Right: Action Buttons (Owner only) */}
+                    <button
+                        onClick={() => {
+                            const link = `${window.location.origin}/gallery/${galleryId}`;
+                            navigator.clipboard.writeText(link);
+                            toast.success("Gallery link copied.");
+                        }}
+                        className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                    >
+                        <Share2 className="w-4 h-4" />
+                        Share
+                    </button>
 
-                        <div className="flex gap-2">
-                            <button className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
-                                <Pencil className="w-4 h-4" />
-                            </button>
-
+                    {/* Owner-only Buttons */}
+                    {isOwner && (
+                        <>
                             <button
-                                onClick={() => setConfirmDeleteOpen(true)}
+                                onClick={() => setAddPhotosOpen(true)}
                                 className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
                             >
-                                <Trash2 className="w-4 h-4" />
+                                <UploadIcon className="w-4 h-4" /> Upload Photos
                             </button>
-                        </div>
-                    </div>
-                )}
+
+                            <div className="flex gap-2">
+                                <button className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
+                                    <Pencil className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                    onClick={() => setConfirmDeleteOpen(true)}
+                                    className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </>
     );
