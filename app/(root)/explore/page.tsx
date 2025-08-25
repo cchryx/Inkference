@@ -4,21 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import Subnavbar from "@/components/root/Subnavbar";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useSearchProjects, useSearchUsers } from "@/hooks/useSearch";
+import UserSearchResult from "@/components/explore/UserSearchResult";
+import ProjectSearchResult from "@/components/explore/ProjectSearchResult";
 
 const categories = [
+    { key: "top", label: "Top" },
     { key: "posts", label: "Posts" },
     { key: "projects", label: "Projects" },
     { key: "users", label: "Users" },
-];
-
-const dummySuggestions = [
-    "Next.js Guide",
-    "React Project",
-    "User123",
-    "Portfolio Website",
-    "Posts about AI",
-    "Cool Robotics Project",
-    "Chris Chen",
 ];
 
 const isIOS =
@@ -28,7 +22,7 @@ const isIOS =
 const PULL_THRESHOLD = isIOS ? 60 : 80;
 
 export default function Page() {
-    const [active, setActive] = useState("posts");
+    const [active, setActive] = useState("top");
     const [search, setSearch] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -38,12 +32,26 @@ export default function Page() {
     const isTouchingRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Filtered suggestions
-    const filtered = search
-        ? dummySuggestions.filter((s) =>
-              s.toLowerCase().includes(search.toLowerCase())
-          )
-        : [];
+    // 🔎 Hooks for searching users and projects
+    const {
+        data: usersData,
+        fetchNextPage: fetchNextUsers,
+        hasNextPage: hasNextUsers,
+        isFetchingNextPage: isFetchingNextUsers,
+        isLoading: isUsersLoading,
+    } = useSearchUsers(search);
+
+    const {
+        data: projectsData,
+        fetchNextPage: fetchNextProjects,
+        hasNextPage: hasNextProjects,
+        isFetchingNextPage: isFetchingNextProjects,
+        isLoading: isProjectsLoading,
+    } = useSearchProjects(search);
+
+    // Flatten results from infinite queries
+    const users = usersData?.pages.flatMap((p) => p.users) ?? [];
+    const projects = projectsData?.pages.flatMap((p) => p.projects) ?? [];
 
     useEffect(() => {
         const el = containerRef.current;
@@ -118,30 +126,6 @@ export default function Page() {
                         />
                     </div>
 
-                    {/* Suggestions dropdown */}
-                    {showSuggestions && (
-                        <div className="absolute left-0 right-0 mt-1 bg-gray-100 md:rounded shadow-lg z-30 max-h-60 overflow-y-auto md:max-w-xl md:mx-auto">
-                            {search && filtered.length > 0 ? (
-                                filtered.map((s, i) => (
-                                    <div
-                                        key={i}
-                                        className="px-3 py-2 cursor-pointer hover:bg-gray-100"
-                                        onClick={() => {
-                                            setSearch(s);
-                                            setShowSuggestions(false);
-                                        }}
-                                    >
-                                        {s}
-                                    </div>
-                                ))
-                            ) : search ? (
-                                <div className="px-3 py-2 text-gray-500">
-                                    No suggestions
-                                </div>
-                            ) : null}
-                        </div>
-                    )}
-
                     {/* Subnavbar */}
                     <Subnavbar
                         categories={categories}
@@ -177,54 +161,51 @@ export default function Page() {
                     ) : null}
                 </div>
 
-                {/* Main Content (scrolls as one) */}
+                {/* Main Content */}
                 <div className="p-4">
+                    {active === "top" && (
+                        <div>
+                            <h2 className="text-xl font-semibold mb-2">Top</h2>
+                            <p className="text-gray-500">
+                                Top results section (coming soon)...
+                            </p>
+                        </div>
+                    )}
+
                     {active === "posts" && (
                         <div>
                             <h2 className="text-xl font-semibold mb-2">
                                 Posts
                             </h2>
-                            {[...Array(20)].map((_, i) => (
-                                <p
-                                    key={i}
-                                    className="py-2 border-b border-gray-300"
-                                >
-                                    Post #{i + 1}
-                                </p>
-                            ))}
+                            <p className="text-gray-500">
+                                Posts results section (coming soon)...
+                            </p>
                         </div>
                     )}
 
+                    {/* ✅ Projects tab now uses ProjectSearchResult */}
                     {active === "projects" && (
-                        <div>
-                            <h2 className="text-xl font-semibold mb-2">
-                                Projects
-                            </h2>
-                            {[...Array(20)].map((_, i) => (
-                                <p
-                                    key={i}
-                                    className="py-2 border-b border-gray-300"
-                                >
-                                    Project #{i + 1}
-                                </p>
-                            ))}
-                        </div>
+                        <ProjectSearchResult
+                            active={active}
+                            search={search}
+                            projects={projects}
+                            isProjectsLoading={isProjectsLoading}
+                            hasNextPage={!!hasNextProjects}
+                            isFetchingNextPage={isFetchingNextProjects}
+                            fetchNextPage={fetchNextProjects}
+                        />
                     )}
 
                     {active === "users" && (
-                        <div>
-                            <h2 className="text-xl font-semibold mb-2">
-                                Users
-                            </h2>
-                            {[...Array(20)].map((_, i) => (
-                                <p
-                                    key={i}
-                                    className="py-2 border-b border-gray-300"
-                                >
-                                    User #{i + 1}
-                                </p>
-                            ))}
-                        </div>
+                        <UserSearchResult
+                            active={active}
+                            users={users}
+                            search={search}
+                            isUsersLoading={isUsersLoading}
+                            hasNextPage={hasNextUsers}
+                            isFetchingNextPage={isFetchingNextUsers}
+                            fetchNextPage={fetchNextUsers}
+                        />
                     )}
                 </div>
             </div>

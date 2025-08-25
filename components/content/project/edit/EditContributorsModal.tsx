@@ -10,7 +10,7 @@ import Modal from "@/components/general/Modal";
 import Loader from "@/components/general/Loader";
 import { Label } from "@radix-ui/react-label";
 import InfoTooltip from "@/components/general/InfoToolTip";
-import { useSearchUsers } from "@/hooks/useUserSearch";
+import { useSearchUsers } from "@/hooks/useSearch";
 import { editProject } from "@/actions/content/project/editProject";
 import FallbackUserIcon from "@/components/general/FallbackUserIcon";
 import { UserIcon } from "@/components/general/UserIcon";

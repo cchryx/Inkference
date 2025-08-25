@@ -79,7 +79,6 @@ const MeritCard = ({
                 onClose={() => setConfirmMOpen(false)}
             />
 
-            {/* Image modal */}
             <Modal
                 open={imageModalOpen}
                 onClose={() => setImageModalOpen(false)}
@@ -87,7 +86,7 @@ const MeritCard = ({
                 <Img
                     src={image}
                     fallbackSrc="/assets/general/fillers/merit.png"
-                    className="max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[70vw] rounded-md"
+                    className="w-[95vw] md:w-[80vw] lg:w-[60vw] object-conver rounded-md"
                 />
             </Modal>
 

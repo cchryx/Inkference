@@ -143,6 +143,10 @@ model UserData {
   skills      Skill[]      @relation("UserSkills")
   galleries   Gallery[]
 
+  postsLiked  Post[] @relation("PostLikes")
+  postsViewed Post[] @relation("PostViews")
+  postsSaved  Post[] @relation("PostSaves")
+
   @@map("userData")
 }
 
@@ -305,6 +309,16 @@ model Post {
 
   type   String @db.VarChar(50)
   dataId String
+
+  content     String[]
+  description String?  @db.VarChar(2200)
+  location    String?
+  mentions    String[]
+  tags        String[]
+
+  views UserData[] @relation("PostViews")
+  likes UserData[] @relation("PostLikes")
+  saves UserData[] @relation("PostSaves")
 
   @@index([userDataId, updatedAt])
   @@map("posts")
