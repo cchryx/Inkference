@@ -10,7 +10,7 @@ import { Metadata } from "next";
 import { getGalleryById } from "@/actions/content/photos/getGallery";
 import { UserIcon } from "@/components/general/UserIcon";
 import HeaderCard from "@/components/content/photos/HeaderCard";
-import { GalleryWrapper } from "@/components/content/photos/GalleryWrapper"; // updated import
+import { GalleryWrapper } from "@/components/content/photos/GalleryWrapper";
 
 const getGalleryData = cache(async (id: string) => {
     return await getGalleryById(id);
@@ -31,27 +31,38 @@ export async function generateMetadata({
         };
     }
 
-    const previewImage =
-        galleryData?.photos?.[0]?.url || "/assets/general/fillerImage.png";
+    const previewImages = (galleryData.photos || [])
+        .slice(0, 4)
+        .map((photo: any, index: number) => ({
+            url: photo.url,
+            alt: `${galleryData.user?.name ?? "User"}'s gallery photo #${
+                index + 1
+            }`,
+        }));
+
+    if (previewImages.length === 0) {
+        previewImages.push({
+            url: "/assets/general/fillerImage.png",
+            alt: "Gallery preview image",
+        });
+    }
+
+    const userDisplay = `${galleryData.user?.name ?? "a user"}${
+        galleryData.user?.username ? ` (@${galleryData.user.username})` : ""
+    }`.trim();
 
     return {
-        description: `A gallery created by ${
-            galleryData.user?.name ?? "a user"
-        }`,
+        description: `A gallery created by ${userDisplay}`,
         openGraph: {
             title: galleryData.name,
-            description: `A gallery created by ${
-                galleryData.user?.name ?? "a user"
-            }`,
-            images: [previewImage],
+            description: `A gallery created by ${userDisplay}`,
+            images: previewImages,
         },
         twitter: {
             card: "summary_large_image",
             title: galleryData.name,
-            description: `A gallery created by ${
-                galleryData.user?.name ?? "a user"
-            }`,
-            images: [previewImage],
+            description: `A gallery created by ${userDisplay}`,
+            images: previewImages,
         },
     };
 }

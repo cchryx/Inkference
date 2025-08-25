@@ -11,7 +11,14 @@ export async function getGalleryById(galleryId: string) {
             userData: {
                 include: {
                     galleries: true,
-                    user: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            username: true,
+                            image: true,
+                        },
+                    },
                 },
             },
             photos: {
