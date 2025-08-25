@@ -143,7 +143,7 @@ const GalleryImage = ({
             />
 
             <Modal open={viewModalOpen} onClose={() => setViewModalOpen(false)}>
-                <div className="relative bg-black rounded-lg shadow-lg flex items-center justify-center max-h-[90vh] w-full overflow-hidden group">
+                <div className="relative rounded-lg flex items-center justify-center max-h-[90vh] w-full overflow-hidden group">
                     {/* Previous Button (Desktop Only) */}
                     {selectedIndex > 0 && (
                         <button
