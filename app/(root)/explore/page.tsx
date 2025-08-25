@@ -106,7 +106,7 @@ export default function Page() {
     }, [isRefreshing, pullDistance]);
 
     return (
-        <div className="h-screen flex flex-col">
+        <div className="h-full flex flex-col">
             {/* Sticky Search + Menu */}
             <div className="sticky top-0 z-20 bg-white shadow-sm">
                 <div className="p-4 relative">

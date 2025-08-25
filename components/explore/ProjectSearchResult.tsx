@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import ProjectCard from "../content/cards/ProjectCard";
 import Loader from "../general/Loader";
 
@@ -22,14 +23,40 @@ const ProjectSearchResult = ({
     isFetchingNextPage,
     fetchNextPage,
 }: Props) => {
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!hasNextPage || !loadMoreRef.current) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            { rootMargin: "150px" }
+        );
+
+        observer.observe(loadMoreRef.current);
+
+        return () => {
+            if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
     if (active !== "projects") return null;
 
     return (
-        <div className="flex flex-col items-center justify-center">
-            {isProjectsLoading && <Loader size={10} color="black" />}
+        <div className="flex flex-col items-center justify-center overflow-y-scroll no-scrollbar">
+            {/* Initial loading */}
+            {isProjectsLoading && projects.length === 0 && (
+                <div className="flex justify-center mt-10">
+                    <Loader size={10} color="black" />
+                </div>
+            )}
 
             {/* When search is empty */}
-            {!search && (
+            {!search && !isProjectsLoading && (
                 <div className="flex flex-col items-center justify-center mt-20 text-center text-gray-500">
                     <img
                         src="/assets/icons/searchBear.png"
@@ -57,9 +84,9 @@ const ProjectSearchResult = ({
             {/* Results */}
             {projects.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
-                    {projects.map((project) => (
+                    {projects.map((project, index) => (
                         <ProjectCard
-                            key={project.id}
+                            key={index}
                             project={project}
                             width="w-full"
                             height="h-[400px]"
@@ -68,15 +95,18 @@ const ProjectSearchResult = ({
                 </div>
             )}
 
-            {/* Load More */}
-            {hasNextPage && projects.length > 0 && (
-                <button
-                    disabled={isFetchingNextPage}
-                    onClick={fetchNextPage}
-                    className="mt-6 px-4 py-2 bg-gray-200 rounded"
-                >
-                    {isFetchingNextPage ? "Loading more..." : "Load more"}
-                </button>
+            {/* Loader + sentinel for infinite scroll */}
+            {(isFetchingNextPage || hasNextPage) && (
+                <div ref={loadMoreRef} className="flex justify-center py-6">
+                    {isFetchingNextPage && <Loader size={10} color="black" />}
+                </div>
+            )}
+
+            {/* End of results */}
+            {!hasNextPage && projects.length > 0 && (
+                <div className="text-center py-6 text-gray-400">
+                    That’s all the projects we found.
+                </div>
             )}
         </div>
     );

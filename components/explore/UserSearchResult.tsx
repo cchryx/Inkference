@@ -1,6 +1,6 @@
-// components/UserSearchResult.jsx
 "use client";
 
+import { useEffect, useRef } from "react";
 import UserCard from "../content/cards/UserCard";
 import Loader from "../general/Loader";
 
@@ -23,14 +23,40 @@ const UserSearchResult = ({
     isFetchingNextPage,
     fetchNextPage,
 }: Props) => {
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!hasNextPage || !loadMoreRef.current) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            { rootMargin: "150px" }
+        );
+
+        observer.observe(loadMoreRef.current);
+
+        return () => {
+            if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
     if (active !== "users") return null;
 
     return (
         <div className="flex flex-col items-center justify-center">
-            {isUsersLoading && <Loader size={10} color="black" />}
+            {/* Initial loading */}
+            {isUsersLoading && users.length === 0 && (
+                <div className="flex justify-center mt-10">
+                    <Loader size={10} color="black" />
+                </div>
+            )}
 
             {/* When search is empty */}
-            {!search && (
+            {!search && !isUsersLoading && (
                 <div className="flex flex-col items-center justify-center mt-20 text-center text-gray-500">
                     <img
                         src="/assets/icons/searchBear.png"
@@ -70,15 +96,18 @@ const UserSearchResult = ({
                 </div>
             )}
 
-            {/* Load More */}
-            {hasNextPage && users.length > 0 && (
-                <button
-                    disabled={isFetchingNextPage}
-                    onClick={fetchNextPage}
-                    className="mt-6 px-4 py-2 bg-gray-200 rounded"
-                >
-                    {isFetchingNextPage ? "Loading more..." : "Load more"}
-                </button>
+            {/* Loader + sentinel */}
+            {(isFetchingNextPage || hasNextPage) && (
+                <div ref={loadMoreRef} className="flex justify-center py-6">
+                    {isFetchingNextPage && <Loader size={10} color="black" />}
+                </div>
+            )}
+
+            {/* End of results */}
+            {!hasNextPage && users.length > 0 && (
+                <div className="text-center py-4 text-gray-400">
+                    That’s all the users we found.
+                </div>
             )}
         </div>
     );
