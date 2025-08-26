@@ -104,7 +104,7 @@ const PostCard = ({ post, description, location }: Props) => {
                 onTouchEnd={handleDragEnd}
             >
                 <div
-                    className="flex h-full transition-transform duration-150 ease-out"
+                    className="flex w-full h-full transition-transform duration-150 ease-out"
                     style={{ transform: `translateX(${translateX}%)` }}
                 >
                     {images.map((img: any, idx: number) => (
