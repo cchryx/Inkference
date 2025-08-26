@@ -140,18 +140,17 @@ const PostCard = ({ post, description, location }: Props) => {
                 onTouchEnd={handleDragEnd}
             >
                 <div
-                    className="flex w-full h-full transition-transform duration-150 ease-out"
+                    className="flex w-full transition-transform duration-150 ease-out"
                     style={{ transform: `translateX(${translateX}%)` }}
                 >
                     {images.map((img: any, idx: number) => (
                         <div
                             key={idx}
-                            className="flex-shrink-0 w-full h-full flex items-center justify-center"
-                            style={{ minWidth: "100%" }} // ensures full width on iOS
+                            className="flex-shrink-0 w-full flex items-center justify-center"
                         >
                             <Img
                                 src={img}
-                                className="w-full h-full object-contain select-none pointer-events-none"
+                                className="w-full object-contain select-none pointer-events-none"
                             />
                         </div>
                     ))}

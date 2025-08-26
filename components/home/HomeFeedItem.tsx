@@ -22,8 +22,6 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     const isPost = item.type === "post";
     const content = item.content;
 
-    console.log(content);
-
     const [likes, setLikes] = useState(
         isProject
             ? content.data?.likes || []
@@ -154,7 +152,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
             )}
 
             <div className="flex gap-2 md:gap-4 w-full px-2 lg:w-auto justify-center">
-                <div className="lg:flex-1">{contentRender}</div>
+                <div className="lg:flex-1 w-full">{contentRender}</div>
 
                 {/* Right Sidebar (desktop only) */}
                 <div className="hidden md:flex flex-col items-center gap-4">
