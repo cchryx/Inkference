@@ -18,6 +18,7 @@ import AddMeritModal from "./merit/create/AddMeritModal";
 import Merits from "./sections/Merits";
 import AddSkillModal from "./skill/create/AddSkillModal";
 import AddPhotosModal from "./photos/create/AddPhotosModal";
+import CreatePostModal from "./post/create/CreatePostModal";
 
 type Props = {
     userData: any;
@@ -200,7 +201,12 @@ const Content = ({ userData, rootUser = false }: Props) => {
                                     label="Create a post"
                                     onClick={() => setOpenModal("post")}
                                 />
-                                {openModal === "post"}
+                                {openModal === "post" && (
+                                    <CreatePostModal
+                                        currentUserId={userData.userId}
+                                        onCloseModal={() => setOpenModal(null)}
+                                    />
+                                )}
                             </>
                         )}
                     </>

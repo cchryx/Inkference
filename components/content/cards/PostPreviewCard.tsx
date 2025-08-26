@@ -9,11 +9,12 @@ import {
     Folder,
     Briefcase,
     GraduationCap,
+    Send,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type PostPreviewCardProps = {
-    type: string; // "project", "experience", "education", etc.
+    type: string; // "project", "experience", "education", "post", etc.
     content: any;
     width?: string;
     height?: string;
@@ -35,18 +36,27 @@ export default function PostPreviewCard({
         }
     }, []);
 
-    const bannerUrl = content.bannerImage || "/assets/general/fillerImage.png";
-    const iconUrl = content.iconImage || "/assets/general/fillers/project.png";
-    const name = content.name || "No Name";
-    const summary = content.summary || "No summary provided.";
+    console.log(content);
 
-    // Handle click navigation
+    const thumbnailUrl =
+        content.bannerImage ||
+        (content.content && content.content[0]) ||
+        "/assets/general/fillerImage.png";
+
     const handleClick = () => {
         if (!isTouchDevice) {
-            router.push(`/project/${content.id}`);
+            if (type === "project") {
+                router.push(`/project/${content.id}`);
+            } else if (type === "experience") {
+                router.push(`/experience/${content.id}`);
+            } else if (type === "education") {
+                router.push(`/education/${content.id}`);
+            } else {
+                router.push(`/post/${content.id}`);
+            }
         } else {
             if (isOverlayVisible) {
-                router.push(`/project/${content.id}`);
+                router.push(`/post/${content.id}`);
             } else {
                 setIsOverlayVisible(true);
                 setTimeout(() => setIsOverlayVisible(false), 3000);
@@ -54,7 +64,6 @@ export default function PostPreviewCard({
         }
     };
 
-    // Get post type icon component based on type
     const getTypeIcon = () => {
         switch (type) {
             case "project":
@@ -65,12 +74,12 @@ export default function PostPreviewCard({
                 return (
                     <GraduationCap className="size-4 md:size-6 text-white" />
                 );
-            default:
-                return <Folder className="size-4 md:size-6 text-white" />;
+            case "post":
+                return <Send className="size-4 md:size-6 text-white" />;
         }
     };
 
-    // Dummy stats for now (replace with actual if available)
+    // Stats
     const likes = Array.isArray(content.likes) ? content.likes.length : 0;
     const views = Array.isArray(content.views) ? content.views.length : 0;
     const saves = Array.isArray(content.saves) ? content.saves.length : 0;
@@ -84,17 +93,17 @@ export default function PostPreviewCard({
             onClick={handleClick}
             className={`group relative ${width} ${height} rounded-md shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer`}
             style={{
-                backgroundImage: `url('${bannerUrl}')`,
+                backgroundImage: `url('${thumbnailUrl}')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
             }}
         >
-            {/* Post type icon stack top right */}
+            {/* Post type icon top right */}
             <div className="absolute right-4 top-4 z-21 flex flex-col space-y-2">
                 {getTypeIcon()}
             </div>
 
-            {/* Overlay with stats on hover, above all other elements */}
+            {/* Overlay with stats */}
             <div
                 className={`absolute inset-0 z-20 bg-black/50 backdrop-blur-[1px] text-white ${
                     isOverlayVisible

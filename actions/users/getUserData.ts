@@ -85,7 +85,8 @@ export async function getUserData(userId?: string) {
     async function fetchPostDetails(posts: any[]) {
         const detailedPosts = await Promise.all(
             posts.map(async (post) => {
-                let details = null;
+                let details: any = null;
+
                 switch (post.type) {
                     case "project":
                         details = await prisma.project.findUnique({
@@ -112,11 +113,23 @@ export async function getUserData(userId?: string) {
                         });
                         break;
                     default:
-                        details = null;
+                        details = {
+                            content: (post as any).content ?? null,
+                            description: (post as any).description ?? null,
+                            location: (post as any).location ?? null,
+                            tags: (post as any).tags ?? [],
+                            mentions: (post as any).mentions ?? [],
+                            images: (post as any).images ?? [],
+                            createdAt: post.createdAt,
+                            updatedAt: post.updatedAt,
+                        };
+                        break;
                 }
+
                 return { ...post, data: details };
             })
         );
+
         return detailedPosts;
     }
 
@@ -158,6 +171,11 @@ export async function getUserData(userId?: string) {
                     dataId: true,
                     createdAt: true,
                     updatedAt: true,
+                    description: true,
+                    content: true,
+                    location: true,
+                    tags: true,
+                    mentions: true,
                 },
                 orderBy: { updatedAt: "desc" },
             },
@@ -195,6 +213,11 @@ export async function getUserData(userId?: string) {
                         dataId: true,
                         createdAt: true,
                         updatedAt: true,
+                        description: true,
+                        content: true,
+                        location: true,
+                        tags: true,
+                        mentions: true,
                     },
                     orderBy: { updatedAt: "desc" },
                 },

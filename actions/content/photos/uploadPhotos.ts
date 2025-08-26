@@ -16,7 +16,8 @@ cloudinary.config({
 
 export async function uploadPhotos(
     files: File[],
-    currentUserId: string
+    currentUserId: string,
+    folder?: string
 ): Promise<UploadResult[]> {
     const results: UploadResult[] = [];
 
@@ -27,7 +28,11 @@ export async function uploadPhotos(
 
             const uploadResult: any = await new Promise((resolve, reject) => {
                 const stream = cloudinary.uploader.upload_stream(
-                    { folder: `${currentUserId}/photos` },
+                    {
+                        folder: folder
+                            ? `${currentUserId}/photos/${folder}`
+                            : `${currentUserId}/photos`,
+                    },
                     (error, result) => {
                         if (error) reject(error);
                         else resolve(result);

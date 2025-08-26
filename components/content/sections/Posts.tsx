@@ -8,6 +8,7 @@ type Props = {
 };
 
 const Posts = ({ posts, rootUser = false }: Props) => {
+    console.log(posts);
     if (!posts || posts.length === 0) {
         return (
             <div className="my-8 select-none flex items-center justify-center bg-gray-200 p-12 rounded-md text-center text-muted-foreground">
