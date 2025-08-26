@@ -183,29 +183,76 @@ const HomeWrapper = ({ currentUserId }: Props) => {
 
                         {/* Loading Skeleton */}
                         {isLoading && (
-                            <div className="snap-start h-full flex items-center justify-center">
-                                <div className="flex gap-2 w-full px-2 lg:w-auto md:gap-4">
-                                    <Skeleton className="flex-1 h-[500px] lg:h-[600px] lg:w-[500px] rounded-md" />
-                                    <div className="flex flex-col items-center gap-4">
-                                        <Skeleton className="w-10 h-10 rounded-full" />
-                                        <div className="flex flex-col items-center gap-4 mt-auto mb-2">
-                                            {[
-                                                Heart,
-                                                MessageCircle,
-                                                Bookmark,
-                                            ].map((Icon, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="flex flex-col items-center"
-                                                >
-                                                    <Icon className="size-8" />
-                                                    <Skeleton className="w-6 h-4 mt-1 rounded" />
-                                                </div>
-                                            ))}
+                            <>
+                                {/* Desktop Skeleton */}
+                                <div className="hidden md:flex snap-start h-full items-center justify-center">
+                                    <div className="flex gap-2 w-full px-2 lg:w-auto md:gap-4">
+                                        <Skeleton className="flex-1 h-[500px] lg:h-[90vh] lg:w-[500px] rounded-md" />
+                                        <div className="flex flex-col items-center gap-4">
+                                            <Skeleton className="w-10 h-10 rounded-full" />
+                                            <div className="flex flex-col items-center gap-4 mt-auto mb-2">
+                                                {[
+                                                    Heart,
+                                                    MessageCircle,
+                                                    Bookmark,
+                                                ].map((Icon, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="flex flex-col items-center"
+                                                    >
+                                                        <Icon className="size-8" />
+                                                        <Skeleton className="w-6 h-4 mt-1 rounded" />
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+
+                                {/* Mobile Skeleton */}
+                                <div className="flex md:hidden snap-start h-full items-center justify-center w-full">
+                                    <div className="flex gap-2 w-full flex-col">
+                                        <div className="flex justify-between items-center w-full px-4 py-2 bg-gray-100 rounded-md">
+                                            {/* Left: User info */}
+                                            <div className="flex items-center gap-3">
+                                                {/* Avatar skeleton */}
+                                                <Skeleton className="w-10 h-10 rounded-full" />
+
+                                                {/* Name & username skeleton */}
+                                                <div className="flex flex-col gap-1">
+                                                    <Skeleton className="w-20 h-3 rounded" />
+                                                    {/* Name */}
+                                                    <Skeleton className="w-16 h-2 rounded" />
+                                                    {/* Username */}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Main Image Skeleton */}
+                                        <div className="px-2">
+                                            <Skeleton className="w-full h-[70vh] rounded-md" />
+                                        </div>
+                                        {/* Bottom Bar Skeleton */}
+                                        <div className="flex justify-between items-center w-full px-4 py-2 bg-gray-100 rounded-md">
+                                            {/* Left actions (like + comments) */}
+                                            <div className="flex items-center gap-6">
+                                                <div className="flex items-center">
+                                                    <Heart className="size-7 text-gray-400" />
+                                                </div>
+
+                                                <div className="flex items-center">
+                                                    <MessageCircle className="size-7 text-gray-400" />
+                                                </div>
+                                            </div>
+
+                                            {/* Right action (save) */}
+                                            <div className="flex items-center">
+                                                <Bookmark className="size-7 text-gray-400" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
                         )}
 
                         {/* Show feed content only when NOT loading */}

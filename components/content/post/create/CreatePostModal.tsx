@@ -84,6 +84,11 @@ export default function CreatePostModal({
 
     const handleNextClick = async () => {
         if (step === 0) {
+            if (!images.length) {
+                toast.error("Please upload at least one image.");
+                return;
+            }
+
             const previews: string[] = [];
 
             for (const img of images) {
@@ -127,13 +132,6 @@ export default function CreatePostModal({
             }
 
             setCroppedPreviews(previews);
-        } else if (step === 1) {
-            if (!description.trim() && !images.length) {
-                toast.error(
-                    "Please provide a description or upload at least one image."
-                );
-                return;
-            }
         }
 
         if (step < totalSteps - 1) setStep(step + 1);

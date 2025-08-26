@@ -41,7 +41,20 @@ async function fetchPosts(whereClause: any, take: number, orderByClause: any) {
         where: whereClause,
         orderBy: orderByClause,
         take,
-        include: {
+        select: {
+            id: true,
+            dataId: true,
+            type: true,
+            description: true,
+            content: true,
+            location: true,
+            tags: true,
+            mentions: true,
+            views: true,
+            likes: true,
+            saves: true,
+            createdAt: true,
+            updatedAt: true,
             userData: {
                 select: {
                     user: {

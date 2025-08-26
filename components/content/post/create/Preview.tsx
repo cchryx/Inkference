@@ -27,7 +27,7 @@ const Preview = ({ images, description, location }: Props) => {
     return (
         <div className="space-y-4 text-sm text-gray-800">
             {/* Images */}
-            <div className="relative w-full bg-gray-100 rounded flex items-center justify-center overflow-hidden h-[60vh]">
+            <div className="relative w-full bg-gray-100 rounded flex items-center justify-center overflow-hidden h-[40vh] lg:h-[60vh]">
                 {images.length > 0 ? (
                     <>
                         {/* Previous Button */}

@@ -79,6 +79,8 @@ export default function PostPreviewCard({
         }
     };
 
+    console.log(content);
+
     // Stats
     const likes = Array.isArray(content.likes) ? content.likes.length : 0;
     const views = Array.isArray(content.views) ? content.views.length : 0;
