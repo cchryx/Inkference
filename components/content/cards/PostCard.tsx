@@ -22,6 +22,7 @@ const PostCard = ({ post, description, location }: Props) => {
     const startX = useRef(0);
     const isDragging = useRef(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const startTouchY = useRef(0);
 
     // Drag functions
     const prevImage = () => {
@@ -89,6 +90,41 @@ const PostCard = ({ post, description, location }: Props) => {
         };
     }, [showFullDescription, description]);
 
+    // Prevent scroll propagation
+    const handleWheel = (e: React.WheelEvent) => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = el;
+        const delta = e.deltaY;
+
+        if (
+            (delta < 0 && scrollTop === 0) ||
+            (delta > 0 && scrollTop + clientHeight >= scrollHeight)
+        ) {
+            e.stopPropagation();
+        }
+    };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        startTouchY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        const currentY = e.touches[0].clientY;
+        const deltaY = startTouchY.current - currentY;
+
+        if (
+            (deltaY < 0 && el.scrollTop === 0) ||
+            (deltaY > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight)
+        ) {
+            e.stopPropagation();
+        }
+    };
+
     return (
         <div className="relative select-none w-full h-[70vh] md:w-[50vw] lg:w-[30vw] lg:h-[90vh] bg-gray-200 rounded-lg overflow-hidden flex flex-col">
             {/* Image Carousel */}
@@ -111,10 +147,11 @@ const PostCard = ({ post, description, location }: Props) => {
                         <div
                             key={idx}
                             className="flex-shrink-0 w-full h-full flex items-center justify-center"
+                            style={{ minWidth: "100%" }} // ensures full width on iOS
                         >
                             <Img
                                 src={img}
-                                className="w-full object-contain select-none pointer-events-none"
+                                className="w-full h-full object-contain select-none pointer-events-none"
                             />
                         </div>
                     ))}
@@ -168,6 +205,9 @@ const PostCard = ({ post, description, location }: Props) => {
                             <div
                                 ref={scrollRef}
                                 className="overflow-y-auto scrollbar-none whitespace-pre-wrap text-sm h-full no-scrollbar"
+                                onWheel={handleWheel}
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
                             >
                                 {description}
                             </div>
