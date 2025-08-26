@@ -148,10 +148,10 @@ const PostCard = ({ post, description, location }: Props) => {
                             key={idx}
                             className="flex-shrink-0 w-full flex items-center justify-center"
                         >
-                            <Img
+                            {/* <Img
                                 src={img}
-                                className="w-full object-contain select-none pointer-events-none"
-                            />
+                                className="w-full object-cover select-none pointer-events-none"
+                            /> */}
                         </div>
                     ))}
                 </div>
