@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import ProjectCard from "../content/cards/ProjectCard";
 import PostCard from "../content/cards/PostCard";
-import { Bookmark, Heart, MessageCircle } from "lucide-react";
+import {
+    Bookmark,
+    Heart,
+    MessageCircle,
+    Trash2,
+    Pen,
+    MoreVertical,
+} from "lucide-react";
 import { UserIcon } from "../general/UserIcon";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -37,9 +44,46 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
             : []
     );
 
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const menuButtonRef = useRef<HTMLButtonElement>(null);
+
     const author = content.data?.author || content.author || null;
 
-    // Unified Like handler
+    // Close menu when clicking outside or pressing Escape
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                menuRef.current &&
+                !menuRef.current.contains(e.target as Node) &&
+                menuButtonRef.current &&
+                !menuButtonRef.current.contains(e.target as Node)
+            ) {
+                setMenuOpen(false);
+            }
+        };
+
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setMenuOpen(false);
+            }
+        };
+
+        if (menuOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("keydown", handleEscape);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [menuOpen]);
+
+    // Like handler
     const handleLike = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
@@ -67,7 +111,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
         }
     };
 
-    // Unified Save handler
+    // Save handler
     const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
@@ -102,7 +146,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
         (isProject || isPost) &&
         saves.some((u: any) => u.userId === currentUserId);
 
-    // Render content by type
+    // Render content
     const contentRender = isProject ? (
         <ProjectCard
             project={content.data}
@@ -122,65 +166,105 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     );
 
     return (
-        <div className="snap-start h-full flex flex-col items-center justify-center select-none w-full">
-            {/* Author info */}
+        <div className="snap-start h-full flex flex-col w-full">
+            {/* Author info (mobile top bar) */}
             {author?.username && (
-                <div className="flex items-center gap-2 w-full px-3 py-2 mb-2 md:hidden bg-gray-100">
-                    <Link href={`/profile/${author.username}`}>
-                        <UserIcon
-                            image={author.image}
-                            size="size-8 bg-gray-700"
-                        />
-                    </Link>
-                    <div className="flex flex-col">
-                        {author.name && (
-                            <Link
-                                href={`/profile/${author.username}`}
-                                className="text-sm font-medium leading-tight"
-                            >
-                                {author.name}
-                            </Link>
-                        )}
-                        <Link
-                            href={`/profile/${author.username}`}
-                            className="text-xs text-gray-500 dark:text-gray-400"
-                        >
-                            @{author.username}
-                        </Link>
-                    </div>
-                </div>
-            )}
-
-            <div className="flex gap-2 md:gap-4 w-full px-2 lg:w-auto justify-center">
-                <div className="lg:flex-1 w-full">{contentRender}</div>
-
-                {/* Right Sidebar (desktop only) */}
-                <div className="hidden md:flex flex-col items-center gap-4">
-                    {author?.username && (
+                <div className="flex items-center justify-between w-full p-3 md:hidden bg-gray-100 relative">
+                    {/* Left side user info */}
+                    <div className="flex items-center gap-2">
                         <Link href={`/profile/${author.username}`}>
                             <UserIcon
                                 image={author.image}
-                                size="size-10 bg-gray-700"
+                                size="size-8 bg-gray-700"
                             />
                         </Link>
-                    )}
+                        <div className="flex flex-col">
+                            {author.name && (
+                                <Link
+                                    href={`/profile/${author.username}`}
+                                    className="text-sm font-medium leading-tight"
+                                >
+                                    {author.name}
+                                </Link>
+                            )}
+                            <Link
+                                href={`/profile/${author.username}`}
+                                className="text-xs text-gray-500 dark:text-gray-400"
+                            >
+                                @{author.username}
+                            </Link>
+                        </div>
+                    </div>
 
-                    <div className="flex flex-col items-center gap-4 mt-auto mb-2 text-gray-500 dark:text-gray-400">
-                        <ActionButtons
-                            isProject={isProject || isPost} // allow posts
-                            isLiked={isLiked}
-                            likes={likes}
-                            isSaved={isSaved}
-                            saves={saves}
-                            handleLike={handleLike}
-                            handleSave={handleSave}
-                        />
+                    {/* 3-dot menu button */}
+                    <button
+                        ref={menuButtonRef}
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        className="p-1 hover:bg-gray-200 rounded-full"
+                    >
+                        <MoreVertical className="size-5 text-gray-600" />
+                    </button>
+
+                    {/* Dropdown menu */}
+                    {menuOpen && (
+                        <div
+                            ref={menuRef}
+                            className="absolute right-4 top-12 bg-gray-200 border rounded-lg shadow-lg flex flex-col w-32 z-20"
+                        >
+                            <button
+                                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                <Pen className="size-4" />
+                                Edit
+                            </button>
+                            <button
+                                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                <Trash2 className="size-4" />
+                                Delete
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Main content area */}
+            <div className="flex w-full h-full justify-center items-center">
+                <div className="flex gap-2">
+                    <div>{contentRender}</div>
+
+                    {/* Right Sidebar (desktop only) */}
+                    <div className="hidden md:flex flex-col justify-between items-center">
+                        {/* Top: User Icon */}
+                        {author?.username && (
+                            <Link href={`/profile/${author.username}`}>
+                                <UserIcon
+                                    image={author.image}
+                                    size="size-10 bg-gray-700"
+                                />
+                            </Link>
+                        )}
+
+                        {/* Bottom: Action Buttons */}
+                        <div className="flex flex-col items-center text-gray-500 dark:text-gray-400">
+                            <ActionButtons
+                                isProject={isProject || isPost}
+                                isLiked={isLiked}
+                                likes={likes}
+                                isSaved={isSaved}
+                                saves={saves}
+                                handleLike={handleLike}
+                                handleSave={handleSave}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Bottom bar (mobile only) */}
-            <div className="flex md:hidden justify-around w-full py-2 text-gray-500 dark:text-gray-400">
+            <div className="md:hidden w-full mt-auto">
                 <ActionButtons
                     isProject={isProject || isPost}
                     isLiked={isLiked}
@@ -206,7 +290,7 @@ const ActionButtons = ({
 }: any) => (
     <>
         {/* Mobile bottom bar */}
-        <div className="flex md:hidden justify-between items-center w-full px-4 py-2 text-black bg-gray-100">
+        <div className="flex md:hidden justify-between items-center w-full p-3 text-black bg-gray-100">
             <div className="flex items-center gap-6">
                 {/* Like */}
                 <div className="flex items-center gap-1">
@@ -242,7 +326,6 @@ const ActionButtons = ({
             {/* Save */}
             <div className="flex items-center gap-1">
                 <span className="text-sm">{saves.length}</span>{" "}
-                {/* Moved count to left */}
                 <button
                     onClick={isProject ? handleSave : undefined}
                     className={`transition-colors cursor-pointer ${
