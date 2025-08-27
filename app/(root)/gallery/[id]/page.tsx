@@ -49,8 +49,6 @@ export async function generateMetadata({
         });
     }
 
-    console.log(previewImages);
-
     const userDisplay = `${galleryData.user?.name ?? "a user"}${
         galleryData.user?.username ? ` (@${galleryData.user.username})` : ""
     }`.trim();

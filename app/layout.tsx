@@ -16,14 +16,35 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL!),
-    title: "Inkference",
-    description: "Showcase your work and connect with creators.",
-    icons: {
-        icon: "/favicon.ico",
-    },
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const userCount = await prisma.user.count();
+    const projectCount = await prisma.project.count();
+
+    return {
+        metadataBase: new URL(process.env.HOST_URL!),
+        title: `Inkference — ${userCount} users & ${projectCount} projects`,
+        description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
+        openGraph: {
+            title: `Inkference — ${userCount} users & ${projectCount} projects`,
+            description: `Showcase your work and connect with creators.`,
+            siteName: "Inkference",
+            images: [
+                {
+                    url: "/icon512_maskable.png",
+                    alt: "Inkference Icon",
+                },
+            ],
+            locale: "en_US",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `Inkference — ${userCount} users & ${projectCount} projects`,
+            description: `Showcase your work and connect with creators.`,
+            images: ["/assets/welcome/welcomeBg.jpg"],
+        },
+    };
+}
 
 export const viewport: Viewport = {
     width: "device-width",
