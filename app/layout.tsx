@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     return {
         metadataBase: new URL(process.env.HOST_URL!),
-        title: `Inkference — ${userCount} users & ${projectCount} projects`,
+        title: `Inkference`,
         description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
         openGraph: {
             title: `Inkference — ${userCount} users & ${projectCount} projects`,
