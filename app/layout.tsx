@@ -16,14 +16,8 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-// ✅ Root-level metadataBase (Next.js reads this at build time)
-const appUrl =
-    process.env.PORT || // works on Render automatically
-    process.env.NEXT_PUBLIC_SITE_URL || // fallback for other hosts
-    "http://localhost:3000";
-
 export const metadata: Metadata = {
-    metadataBase: new URL(appUrl),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL!),
     title: "Inkference",
     description: "Showcase your work and connect with creators.",
     icons: {
