@@ -150,7 +150,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     const contentRender = isProject ? (
         <ProjectCard
             project={content.data}
-            width="lg:w-[50vh] w-full"
+            width="lg:w-[50vh] md:w-[50vh] w-[95vw]"
             height="h-[60vh]"
         />
     ) : isPost ? (
@@ -209,17 +209,18 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                     {menuOpen && (
                         <div
                             ref={menuRef}
-                            className="absolute right-4 top-12 bg-gray-200 border rounded-lg shadow-lg flex flex-col w-32 z-20"
+                            className="absolute text-sm right-4 top-12 bg-gray-200 rounded-md shadow-lg flex flex-col w-32 z-20"
                         >
                             <button
-                                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md"
                                 onClick={() => setMenuOpen(false)}
                             >
                                 <Pen className="size-4" />
                                 Edit
                             </button>
+
                             <button
-                                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-red-600"
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-red-600 rounded-md"
                                 onClick={() => setMenuOpen(false)}
                             >
                                 <Trash2 className="size-4" />
