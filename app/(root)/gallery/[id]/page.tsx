@@ -31,8 +31,6 @@ export async function generateMetadata({
         };
     }
 
-    console.log(galleryData);
-
     const previewImages = (galleryData.photos || [])
         .slice(0, 4)
         .map((photo: any, index: number) => ({

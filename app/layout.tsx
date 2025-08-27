@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const projectCount = await prisma.project.count();
 
     return {
+        metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL!),
         title: `Inkference`,
         description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
         openGraph: {
