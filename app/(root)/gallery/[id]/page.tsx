@@ -31,10 +31,12 @@ export async function generateMetadata({
         };
     }
 
+    console.log(galleryData);
+
     const previewImages = (galleryData.photos || [])
         .slice(0, 4)
         .map((photo: any, index: number) => ({
-            url: photo.url,
+            url: photo.image,
             alt: `${galleryData.user?.name ?? "User"}'s gallery photo #${
                 index + 1
             }`,

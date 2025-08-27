@@ -16,38 +16,20 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-    const userCount = await prisma.user.count();
-    const projectCount = await prisma.project.count();
+// ✅ Root-level metadataBase (Next.js reads this at build time)
+const appUrl =
+    process.env.PORT || // works on Render automatically
+    process.env.NEXT_PUBLIC_SITE_URL || // fallback for other hosts
+    "http://localhost:3000";
 
-    return {
-        title: `Inkference`,
-        icons: {
-            icon: "/favicon.ico",
-        },
-        description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
-        openGraph: {
-            title: `Inkference — ${userCount} users & ${projectCount} projects`,
-            description: `Showcase your work and connect with creators.`,
-            url: "https://inkference.space",
-            siteName: "Inkference",
-            images: [
-                {
-                    url: "/icon512_maskable.png",
-                    alt: "Inkference Icon",
-                },
-            ],
-            locale: "en_US",
-            type: "website",
-        },
-        twitter: {
-            card: "summary_large_image",
-            title: `Inkference — ${userCount} users & ${projectCount} projects`,
-            description: `Showcase your work and connect with creators.`,
-            images: ["/assets/welcome/welcomeBg.jpg"],
-        },
-    };
-}
+export const metadata: Metadata = {
+    metadataBase: new URL(appUrl),
+    title: "Inkference",
+    description: "Showcase your work and connect with creators.",
+    icons: {
+        icon: "/favicon.ico",
+    },
+};
 
 export const viewport: Viewport = {
     width: "device-width",
@@ -58,9 +40,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
     children,
-}: Readonly<{
+}: {
     children: React.ReactNode;
-}>) {
+}) {
     return (
         <html lang="en">
             <body
