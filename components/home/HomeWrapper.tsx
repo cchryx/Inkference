@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { HOMETOP_LINKS } from "@/constants";
 import Topbar from "../root/Topbar";
 import {
