@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Img from "@/components/general/Img";
 
 type Props = {
-    images: string[]; // cropped previews
+    images: string[];
     description: string;
     location: string;
 };
@@ -15,13 +15,15 @@ const Preview = ({ images, description, location }: Props) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const prevImage = () => {
-        if (images.length === 0) return;
-        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+        if (currentIndex > 0) {
+            setCurrentIndex((prev) => prev - 1);
+        }
     };
 
     const nextImage = () => {
-        if (images.length === 0) return;
-        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+        if (currentIndex < images.length - 1) {
+            setCurrentIndex((prev) => prev + 1);
+        }
     };
 
     return (
@@ -31,14 +33,16 @@ const Preview = ({ images, description, location }: Props) => {
                 {images.length > 0 ? (
                     <>
                         {/* Previous Button */}
-                        <button
-                            onClick={prevImage}
-                            className="absolute left-2 p-2 bg-black/30 text-white rounded-full hover:bg-black/50"
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
+                        {images.length > 1 && currentIndex > 0 && (
+                            <button
+                                onClick={prevImage}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full text-white bg-black/30 hover:bg-black/50 z-10"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                        )}
 
-                        {/* Image Container */}
+                        {/* Image */}
                         <div className="h-full flex items-center justify-center">
                             <Img
                                 src={images[currentIndex]}
@@ -48,12 +52,15 @@ const Preview = ({ images, description, location }: Props) => {
                         </div>
 
                         {/* Next Button */}
-                        <button
-                            onClick={nextImage}
-                            className="absolute right-2 p-2 bg-black/30 text-white rounded-full hover:bg-black/50"
-                        >
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
+                        {images.length > 1 &&
+                            currentIndex < images.length - 1 && (
+                                <button
+                                    onClick={nextImage}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full text-white bg-black/30 hover:bg-black/50 z-10"
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            )}
                     </>
                 ) : (
                     <div className="flex items-center justify-center w-full h-[60vh] bg-gray-100 rounded-lg text-gray-500 text-lg font-medium">
@@ -62,7 +69,7 @@ const Preview = ({ images, description, location }: Props) => {
                 )}
             </div>
 
-            {/* Dots for images */}
+            {/* Dots */}
             <div className="flex gap-2 justify-center">
                 {images.map((_, i) => (
                     <div

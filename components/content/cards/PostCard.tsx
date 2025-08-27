@@ -66,7 +66,7 @@ const PostCard = ({ post, description }: Props) => {
         (dragOffset / (containerRef.current?.offsetWidth || 1)) * 100;
 
     return (
-        <div className="relative select-none w-full h-[70vh] md:w-[50vw] xl:w-[35vw] lg:h-[90vh] bg-gray-100 rounded-lg overflow-hidden flex flex-col">
+        <div className="relative select-none w-full h-[70vh] md:w-[50vw] xl:w-[35vw] lg:h-[90vh] bg-gray-100 lg:rounded-lg overflow-hidden flex flex-col">
             {/* Image Carousel */}
             <div
                 ref={containerRef}
