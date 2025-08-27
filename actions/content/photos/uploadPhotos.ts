@@ -30,7 +30,7 @@ export async function uploadPhotos(
                 const stream = cloudinary.uploader.upload_stream(
                     {
                         folder: folder
-                            ? `${currentUserId}/photos/${folder}`
+                            ? `${currentUserId}/${folder}`
                             : `${currentUserId}/photos`,
                     },
                     (error, result) => {

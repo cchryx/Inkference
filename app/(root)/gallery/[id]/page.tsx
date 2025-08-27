@@ -35,9 +35,6 @@ export async function generateMetadata({
         .slice(0, 4)
         .map((photo: any, index: number) => ({
             url: photo.image,
-            alt: `${galleryData.user?.name ?? "User"}'s gallery photo #${
-                index + 1
-            }`,
         }));
 
     if (previewImages.length === 0) {

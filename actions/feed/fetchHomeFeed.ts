@@ -62,6 +62,7 @@ async function fetchPosts(whereClause: any, take: number, orderByClause: any) {
                             name: true,
                             username: true,
                             image: true,
+                            id: true,
                         },
                     },
                 },

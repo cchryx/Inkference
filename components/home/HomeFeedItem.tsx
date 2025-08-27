@@ -18,6 +18,10 @@ import { likeProject } from "@/actions/content/project/likeProject";
 import { saveProject } from "@/actions/content/project/saveProject";
 import { likePost } from "@/actions/content/post/likePost";
 import { savePost } from "@/actions/content/post/savePost";
+import { deletePost } from "@/actions/content/post/deletePost";
+import ConfirmModal from "../general/ConfirmModal";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
     item: any;
@@ -25,9 +29,13 @@ type Props = {
 };
 
 const HomeFeedItem = ({ item, currentUserId }: Props) => {
+    const router = useRouter();
+    const queryClient = useQueryClient();
+
     const isProject = item.type === "project";
     const isPost = item.type === "post";
     const content = item.content;
+    const isOwner = currentUserId === content.userData.user.id;
 
     const [likes, setLikes] = useState(
         isProject
@@ -49,6 +57,10 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     const menuButtonRef = useRef<HTMLButtonElement>(null);
 
     const author = content.data?.author || content.author || null;
+
+    // ✅ confirm modal states
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [isPending, setIsPending] = useState(false);
 
     // Close menu when clicking outside or pressing Escape
     useEffect(() => {
@@ -197,13 +209,22 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                     </div>
 
                     {/* 3-dot menu button */}
-                    <button
-                        ref={menuButtonRef}
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="p-1 hover:bg-gray-200 rounded-full"
-                    >
-                        <MoreVertical className="size-5 text-gray-600" />
-                    </button>
+                    {isOwner && (
+                        <button
+                            ref={menuButtonRef}
+                            className={`p-1 rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors ${
+                                menuOpen ? "bg-gray-200" : ""
+                            }`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpen(!menuOpen);
+                            }}
+                            aria-label="Menu"
+                            aria-expanded={menuOpen}
+                        >
+                            <MoreVertical className="size-6" />
+                        </button>
+                    )}
 
                     {/* Dropdown menu */}
                     {menuOpen && (
@@ -221,7 +242,10 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
 
                             <button
                                 className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-red-600 rounded-md"
-                                onClick={() => setMenuOpen(false)}
+                                onClick={() => {
+                                    setConfirmDeleteOpen(true);
+                                    setMenuOpen(false);
+                                }}
                             >
                                 <Trash2 className="size-4" />
                                 Delete
@@ -276,6 +300,40 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                     handleSave={handleSave}
                 />
             </div>
+
+            {/* ✅ Confirm Delete Modal */}
+            <ConfirmModal
+                isPending={isPending}
+                open={confirmDeleteOpen}
+                title="Delete this post?"
+                text="This action cannot be undone. The post and its images will be permanently deleted."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmVariant="destructive"
+                onConfirm={async () => {
+                    setIsPending(true);
+                    const result = await deletePost(content.id);
+                    setIsPending(false);
+
+                    if (result?.error) {
+                        toast.error(result.error);
+                    } else {
+                        toast.success("Post deleted successfully.");
+                        queryClient.invalidateQueries({
+                            queryKey: ["forYouFeed"],
+                        });
+                        queryClient.invalidateQueries({
+                            queryKey: ["followingFeed"],
+                        });
+                        queryClient.invalidateQueries({
+                            queryKey: ["friendsFeed"],
+                        });
+                    }
+
+                    setConfirmDeleteOpen(false);
+                }}
+                onClose={() => setConfirmDeleteOpen(false)}
+            />
         </div>
     );
 };

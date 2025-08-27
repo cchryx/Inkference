@@ -6,6 +6,7 @@ import { X, ZoomIn, Layers2, Maximize } from "lucide-react";
 import type { CroppableImage } from "./CreatePostModal";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { toast } from "sonner";
 
 type Props = {
     images: CroppableImage[];
@@ -20,6 +21,7 @@ export default function Step1({ images, setImages }: Props) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const MAX_IMAGES = 20;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     const ASPECTS: { label: string; value: number }[] = [
         { label: "1:1", value: 1 },
@@ -32,11 +34,23 @@ export default function Step1({ images, setImages }: Props) {
         const fileArray = Array.from(files);
 
         if (images.length >= MAX_IMAGES) {
-            alert(`Maximum ${MAX_IMAGES} images allowed`);
+            toast.error(`Maximum ${MAX_IMAGES} images allowed`);
             return;
         }
 
-        const allowedFiles = fileArray.slice(0, MAX_IMAGES - images.length);
+        // filter out oversized files
+        const validFiles = fileArray.filter(
+            (file) => file.size <= MAX_FILE_SIZE
+        );
+        const skippedCount = fileArray.length - validFiles.length;
+
+        if (skippedCount > 0) {
+            toast.error(`${skippedCount} file(s) were skipped (over 5MB)`);
+        }
+
+        if (validFiles.length === 0) return;
+
+        const allowedFiles = validFiles.slice(0, MAX_IMAGES - images.length);
 
         const newImages: CroppableImage[] = allowedFiles.map((file) => ({
             file,
@@ -221,9 +235,14 @@ export default function Step1({ images, setImages }: Props) {
                         onChange={(e) => handleFiles(e.target.files)}
                         className="hidden"
                     />
-                    <span className="text-gray-600 text-lg text-center p-6">
+                    <span className="text-gray-500 text-lg text-center flex items-center flex-col p-6">
                         Drag & drop images here or click to upload. (Max{" "}
-                        {MAX_IMAGES} images)
+                        {MAX_IMAGES} images, {MAX_FILE_SIZE / 1024 / 1024} MB
+                        each)
+                        <img
+                            src="/assets/icons/photoStack.png"
+                            className="size-30 mb-4 object-cover"
+                        />
                     </span>
                 </div>
             )}

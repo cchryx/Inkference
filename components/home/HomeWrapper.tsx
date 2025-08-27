@@ -13,6 +13,7 @@ import Loader from "../general/Loader";
 import { Skeleton } from "../general/Skeleton";
 import HomeFeedItem from "./HomeFeedItem";
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 
 type FeedKey = "for_you" | "following" | "friends";
 
@@ -282,7 +283,17 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                                             </p>
                                         )}
                                         {key === "for_you" && (
-                                            <p>No posts found</p>
+                                            <div className="flex items-center justify-center flex-col gap-2">
+                                                <p>
+                                                    There are no posts to show.
+                                                </p>
+                                                <Link
+                                                    href="/portfolio?section=posts"
+                                                    className="px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200"
+                                                >
+                                                    Try posting something
+                                                </Link>
+                                            </div>
                                         )}
                                     </div>
                                 )}
