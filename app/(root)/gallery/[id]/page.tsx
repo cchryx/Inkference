@@ -47,8 +47,10 @@ export async function generateMetadata({
         });
     }
 
-    const userDisplay = `${galleryData.user?.name ?? "a user"}${
-        galleryData.user?.username ? ` (@${galleryData.user.username})` : ""
+    const userDisplay = `${galleryData.userData.user?.name ?? "a user"}${
+        galleryData.userData.user?.username
+            ? ` (@${galleryData.userData.user.username})`
+            : ""
     }`.trim();
 
     return {
