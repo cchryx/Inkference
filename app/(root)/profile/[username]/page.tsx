@@ -30,6 +30,7 @@ export async function generateMetadata({
 
     if (!profileData) {
         return {
+            metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL!),
             title: `User "${username}" not found`,
             description: `The profile for "${username}" does not exist or may have been removed.`,
             openGraph: {
@@ -51,6 +52,7 @@ export async function generateMetadata({
         profileData.user.image || "/assets/general/fillerImage.png";
 
     return {
+        metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL!),
         title: `${profileData.user.name} (@${profileData.user.username})`,
         description: profileData.profile.bio || "View this user's profile.",
         openGraph: {
