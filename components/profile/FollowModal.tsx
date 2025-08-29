@@ -30,7 +30,7 @@ const FollowModal = ({
 
     return (
         <Modal open={open} onClose={onClose}>
-            <div className="w-full p-4 max-h-[80vh] flex flex-col overflow-hidden select-none">
+            <div className="max-h-[80vh] min-h-[50vh] w-[95vw] md:w-[80vw] lg:w-[30vw] flex flex-col overflow-hidden select-none bg-gray-100 p-4 rounded-md">
                 {/* Toggle Nav */}
                 <div className="flex border-b border-muted mb-4">
                     <button
