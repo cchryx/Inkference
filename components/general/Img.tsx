@@ -89,7 +89,7 @@ const Img = ({
                     alt={alt}
                     className={`transition-opacity select-none duration-300 w-full h-full object-cover ${
                         loading ? "opacity-0" : "opacity-100"
-                    }`}
+                    } ${className}`}
                     onLoad={() => setLoading(false)}
                     onError={() => {
                         setError(true);

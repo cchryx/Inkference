@@ -90,7 +90,7 @@ const ChangeProfileImageForm = ({ profileImage, isLoading }: Props) => {
             <div className="flex flex-col gap-2 items-start">
                 <div className="flex gap-4 w-full">
                     <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center shrink-0">
-                        <UserIcon image={profileImage} size="size-full" />
+                        <UserIcon image={imagePreview} size="size-full" />
                     </div>
 
                     <div className="gap-2 flex flex-col w-full">

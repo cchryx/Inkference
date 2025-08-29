@@ -102,23 +102,17 @@ export async function changeUserAction(formData: FormData, type: string) {
             }
         }
 
-        if (["image", "username", "name"].includes(type)) {
-            // Use better-auth's update method for these types
-            await auth.api.updateUser({
-                headers: await headers(),
-                body: { [type]: value || null },
-            });
-        } else {
-            // For other types, update directly with Prisma
-            await prisma.user.update({
-                where: { id: userId },
-                data: {
-                    [type]: value || null,
-                    [`${type}UpdatedAt`]: new Date(),
-                    id: userId,
-                },
-            });
-        }
+        await auth.api.updateUser({
+            headers: await headers(),
+            body: { [type]: value || null },
+        });
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                [`${type}UpdatedAt`]: new Date(),
+            },
+        });
 
         return { error: null };
     } catch (error) {

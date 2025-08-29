@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FallbackUserIcon from "./FallbackUserIcon";
 
 type UserIconProps = {
@@ -10,6 +10,10 @@ type UserIconProps = {
 
 export function UserIcon({ image, size = "size-10" }: UserIconProps) {
     const [imgError, setImgError] = useState(false);
+
+    useEffect(() => {
+        setImgError(false);
+    }, [image]);
 
     if (!image || imgError) {
         return <FallbackUserIcon size={size} />;

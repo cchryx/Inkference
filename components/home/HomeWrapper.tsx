@@ -187,7 +187,7 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                                 {/* Desktop Skeleton */}
                                 <div className="hidden md:flex snap-start h-full items-center justify-center">
                                     <div className="flex gap-2 w-full px-2 lg:w-auto md:gap-4">
-                                        <Skeleton className="flex-1 h-[500px] lg:h-[90vh] lg:w-[500px] rounded-md" />
+                                        <Skeleton className="flex-1 w-full h-[70vh] md:w-[50vw] xl:w-[35vw] lg:h-[90vh] rounded-md" />
                                         <div className="flex flex-col items-center gap-4">
                                             <Skeleton className="w-10 h-10 rounded-full" />
                                             <div className="flex flex-col items-center gap-4 mt-auto mb-2">

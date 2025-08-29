@@ -45,6 +45,10 @@ export async function changeProfileAction(formData: FormData, type: string) {
             },
         });
 
+        if (profile && profile[type] === value) {
+            return { error: `This is already your current ${type}.` };
+        }
+
         const lastUpdated = profile?.[`${type}UpdatedAt`] ?? null;
 
         const cooldownMinutes = COOLDOWN_MINUTES[type] ?? 1440;

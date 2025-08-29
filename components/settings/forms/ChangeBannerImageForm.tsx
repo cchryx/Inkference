@@ -11,6 +11,7 @@ import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/general/Skeleton";
 import { changeProfileAction } from "@/actions/profile/changeProfile";
 import { useRouter } from "next/navigation";
+import Img from "@/components/general/Img";
 
 type Props = {
     bannerImage: string | undefined;
@@ -92,7 +93,8 @@ const ChangeBannerImageForm = ({ bannerImage, isLoading }: Props) => {
             <div className="flex flex-col gap-2 items-start">
                 {/* Preview section */}
                 {imagePreview ? (
-                    <img
+                    <Img
+                        fallbackSrc="/assets/general/fillerColour.png"
                         src={imagePreview}
                         className="h-40 w-full rounded-sm object-cover border border-gray-300 dark:border-gray-600"
                     />

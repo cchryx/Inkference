@@ -181,7 +181,7 @@ const GalleryImage = ({
                     {galleryImages[selectedIndex]?.image && (
                         <Img
                             src={galleryImages[selectedIndex].image}
-                            className="lg:h-[90vh] w-[95vw] h-auto lg:w-auto object-contain"
+                            className="lg:h-[80vh] w-[95vw] h-auto lg:w-auto object-contain"
                         />
                     )}
                 </div>
