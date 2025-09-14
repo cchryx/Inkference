@@ -43,9 +43,9 @@ export default function Loading() {
     const loadingText = pathname.startsWith("/profile/")
         ? "Loading profile data..."
         : pathname === "/"
-        ? "Loading Home page feeds..."
+        ? "Loading home page feeds..."
         : matchedLink?.label
-        ? `Loading ${matchedLink.label} data...`
+        ? `Loading ${matchedLink.label.toLowerCase()} data...`
         : "Loading...";
 
     // Pick a random space statement
