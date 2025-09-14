@@ -67,7 +67,7 @@ export default function Loading() {
             </h1>
 
             {/* Space Statement */}
-            <p className="mb-2 text-sm text-gray-500 italic">
+            <p className="mb-2 text-sm text-gray-500 italic text-center">
                 {randomStatement}
             </p>
 
