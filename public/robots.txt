@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://inkference.space
+Host: https://inkference.app
 
 # Sitemaps
-Sitemap: https://inkference.space/sitemap.xml
+Sitemap: https://inkference.app/sitemap.xml
