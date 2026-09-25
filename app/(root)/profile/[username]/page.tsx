@@ -14,6 +14,8 @@ import { cache } from "react";
 import { previewUrl } from "@/lib/imageUrl";
 import { getViewerContext } from "@/lib/visibility";
 import BlockedNotice from "@/components/profile/BlockedNotice";
+import JsonLd from "@/components/general/JsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // Deduped within one request.
 const loadProfile = cache(getProfileData);
@@ -30,6 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         return {
             title: `User "${username}" not found`,
             description: `The profile for "${username}" does not exist or may have been removed.`,
+            robots: { index: false },
         };
     }
 
@@ -42,6 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
         title,
         description,
+        alternates: { canonical: `/profile/${user.username}` },
         openGraph: {
             title,
             description,
@@ -107,6 +111,22 @@ export default async function Page({ params }: PageProps) {
 
     return (
         <div className="w-full">
+            {/* Tells Google this page is a person's profile */}
+            <JsonLd
+                data={{
+                    "@context": "https://schema.org",
+                    "@type": "ProfilePage",
+                    url: `${SITE_URL}/profile/${profileData.user.username}`,
+                    mainEntity: {
+                        "@type": "Person",
+                        name: profileData.user.name,
+                        alternateName: `@${profileData.user.username}`,
+                        description: profileData.profile.bio || undefined,
+                        image: profileData.user.image || undefined,
+                        url: `${SITE_URL}/profile/${profileData.user.username}`,
+                    },
+                }}
+            />
             {/* Main profile & sidebar */}
             <div className="flex flex-col lg:flex-row items-stretch gap-4 w-full px-[2%] py-5">
                 {/* Left/Main section */}

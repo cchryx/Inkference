@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
+// Pages that need an account (these paths and everything under them).
 const protectedRoutes = [
-    "/",
     "/settings",
     "/explore",
-    "library",
-    "social",
-    "inbox",
+    "/library",
+    "/social",
+    "/inbox",
+    "/portfolio",
+    "/drive",
 ];
 
 export async function proxy(req: NextRequest) {
@@ -17,7 +19,10 @@ export async function proxy(req: NextRequest) {
     const res = NextResponse.next();
 
     const isLoggedIn = !!sessionCookie;
-    const isOnProtectedRoute = protectedRoutes.includes(nextUrl.pathname);
+    const path = nextUrl.pathname;
+    const isOnProtectedRoute = protectedRoutes.some(
+        (route) => path === route || path.startsWith(`${route}/`)
+    );
     // Password links from emails must work even when already signed in.
     const isPasswordLink = [
         "/auth/create-password",
@@ -25,6 +30,11 @@ export async function proxy(req: NextRequest) {
     ].includes(nextUrl.pathname);
     const isOnAuthRoute =
         nextUrl.pathname.startsWith("/auth") && !isPasswordLink;
+
+    // Logged-out visitors (and Google) opening the homepage see the landing page.
+    if (path === "/" && !isLoggedIn) {
+        return NextResponse.redirect(new URL("/welcome", req.url));
+    }
 
     if (isOnProtectedRoute && !isLoggedIn) {
         return NextResponse.redirect(new URL("/auth/signin", req.url));

@@ -11,6 +11,8 @@ import { ReturnButton } from "@/components/auth/ReturnButton";
 import GalleryCard from "@/components/content/project/GalleryCard";
 import { prisma } from "@/lib/prisma";
 import { previewUrl } from "@/lib/imageUrl";
+import JsonLd from "@/components/general/JsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
 import { cache } from "react";
 import { canViewProject, getCurrentViewer } from "@/lib/visibility";
 import { Metadata } from "next";
@@ -37,6 +39,7 @@ export async function generateMetadata({
     if (!projectData || "error" in projectData) {
         return {
             title: `Project not found`,
+            robots: { index: false },
             description: `The project with this ID does not exist or may have been removed.`,
             openGraph: {
                 title: `Project not found`,
@@ -64,6 +67,7 @@ export async function generateMetadata({
         description:
             projectData.summary ||
             "View details about this project on our platform.",
+        alternates: { canonical: `/project/${projectData.id}` },
         openGraph: {
             title: projectData.name,
             description:
@@ -131,6 +135,23 @@ export default async function Page({
 
     return (
         <div className="w-full flex space-y-5 flex-col my-5">
+            <JsonLd
+                data={{
+                    "@context": "https://schema.org",
+                    "@type": "CreativeWork",
+                    name: project.name,
+                    url: `${SITE_URL}/project/${project.id}`,
+                    description: project.summary || project.description?.slice(0, 300) || undefined,
+                    image: project.bannerImage ? previewUrl(project.bannerImage, 1200) : undefined,
+                    dateCreated: new Date(project.createdAt).toISOString(),
+                    keywords: project.skills?.map((s: { name: string }) => s.name).join(", ") || undefined,
+                    author: {
+                        "@type": "Person",
+                        name: project.userData.user.name,
+                        url: `${SITE_URL}/profile/${project.userData.user.username}`,
+                    },
+                }}
+            />
             <div className="flex lg:flex-row flex-col px-[2%] w-full gap-5">
                 <div className="lg:flex-1">
                     <HeaderCard

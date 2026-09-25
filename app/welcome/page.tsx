@@ -4,9 +4,12 @@ import { unstable_cache } from "next/cache";
 import WelcomeWrapper from "@/components/welcome/WelcomeWrapper";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import JsonLd from "@/components/general/JsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
-    title: "Inkference: build your portfolio, share your work",
+    title: { absolute: "Inkference: build your portfolio, share your work" },
+    alternates: { canonical: "/welcome" },
     description:
         "Inkference is a portfolio and social platform for creators. Show off your projects, experience and skills, post photos, and connect with other creators.",
 };
@@ -32,9 +35,33 @@ export default async function WelcomePage() {
     ]);
 
     return (
-        <WelcomeWrapper
-            stats={stats}
-            signedInAs={session?.user?.name ?? null}
-        />
+        <>
+            {/* Tells Google the site's name and what it is */}
+            <JsonLd
+                data={{
+                    "@context": "https://schema.org",
+                    "@graph": [
+                        {
+                            "@type": "WebSite",
+                            name: "Inkference",
+                            url: SITE_URL,
+                            description:
+                                "A portfolio and social platform for creators to show projects, experience and skills.",
+                        },
+                        {
+                            "@type": "Organization",
+                            name: "Inkference",
+                            url: SITE_URL,
+                            logo: `${SITE_URL}/icon512_rounded.png`,
+                            email: "inkference@gmail.com",
+                        },
+                    ],
+                }}
+            />
+            <WelcomeWrapper
+                stats={stats}
+                signedInAs={session?.user?.name ?? null}
+            />
+        </>
     );
 }

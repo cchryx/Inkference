@@ -7,6 +7,8 @@ import { ReturnButton } from "@/components/auth/ReturnButton";
 import PostView from "@/components/content/post/view/PostView";
 import PostPreviewCard from "@/components/content/cards/PostPreviewCard";
 import { previewUrl } from "@/lib/imageUrl";
+import JsonLd from "@/components/general/JsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // Shared between generateMetadata and the page, so the post is loaded once.
 const loadPost = cache(getPostPage);
@@ -21,17 +23,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         return {
             title: "Post not found",
             description: "This post does not exist or may have been removed.",
+            robots: { index: false },
         };
     }
 
     const { post } = data;
-    const title = `${post.author.name} (@${post.author.username}) on Inkference`;
+    const title = `Post by ${post.author.name} (@${post.author.username})`;
     const description = post.description?.slice(0, 160) || `A post by @${post.author.username}`;
     const image = post.content[0] ? previewUrl(post.content[0], 1200) : undefined;
 
     return {
         title,
         description,
+        alternates: { canonical: `/post/${post.id}` },
         openGraph: { title, description, images: image ? [{ url: image }] : [] },
         twitter: {
             card: image ? "summary_large_image" : "summary",
@@ -68,8 +72,31 @@ export default async function Page({ params }: PageProps) {
         authorId: data.post.author.id,
     });
 
+    const { post } = data;
+
     return (
         <div className="w-full max-w-5xl mx-auto md:px-6 md:py-6 pb-24 md:pb-10">
+            <JsonLd
+                data={{
+                    "@context": "https://schema.org",
+                    "@type": "SocialMediaPosting",
+                    url: `${SITE_URL}/post/${post.id}`,
+                    headline: (post.description || `Post by @${post.author.username}`).slice(0, 110),
+                    articleBody: post.description || undefined,
+                    image: post.content.slice(0, 4).map((img) => previewUrl(img, 1200)),
+                    datePublished: new Date(post.createdAt).toISOString(),
+                    keywords: post.tags.length ? post.tags.join(", ") : undefined,
+                    author: {
+                        "@type": "Person",
+                        name: post.author.name,
+                        url: `${SITE_URL}/profile/${post.author.username}`,
+                    },
+                    interactionStatistic: [
+                        { "@type": "InteractionCounter", interactionType: "https://schema.org/LikeAction", userInteractionCount: post.stats.likes },
+                        { "@type": "InteractionCounter", interactionType: "https://schema.org/CommentAction", userInteractionCount: post.stats.comments },
+                    ],
+                }}
+            />
             <PostView {...data} />
 
             {similar.length > 0 && (

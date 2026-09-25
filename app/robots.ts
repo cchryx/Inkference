@@ -1,20 +1,29 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 
+// Tells search engines what they may read. Public pages (welcome, profiles,
+// projects, posts, galleries) are open; private/app pages are not.
 export default function robots(): MetadataRoute.Robots {
     return {
         rules: [
             {
                 userAgent: "*",
-                allow: "/",
+                allow: ["/", "/welcome", "/profile/", "/project/", "/post/", "/gallery/"],
                 disallow: [
+                    "/api/",
+                    "/auth/",
+                    "/serwist/",
                     "/settings",
+                    "/inbox",
                     "/explore",
-                    "library",
-                    "social",
-                    "inbox",
+                    "/portfolio",
+                    "/drive",
+                    "/social",
+                    "/library",
                 ],
             },
         ],
-        sitemap: `${process.env.NEXT_PUBLIC_API_URL}/sitemap.xml`,
+        sitemap: `${SITE_URL}/sitemap.xml`,
+        host: SITE_URL,
     };
 }

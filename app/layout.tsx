@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/context/QueryProvider";
 import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -36,9 +37,17 @@ export async function generateMetadata(): Promise<Metadata> {
     const { userCount, projectCount } = await getSiteCounts();
 
     return {
-        metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL!),
-        title: `Inkference`,
+        metadataBase: new URL(SITE_URL),
+        // Page titles become "Page name | Inkference".
+        title: { default: "Inkference", template: "%s | Inkference" },
+        applicationName: "Inkference",
         description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
+        keywords: ["portfolio", "creators", "projects", "showcase", "social network", "Inkference"],
+        robots: { index: true, follow: true },
+        // Optional: paste Google Search Console's HTML-tag code into this env var.
+        verification: process.env.GOOGLE_SITE_VERIFICATION
+            ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+            : undefined,
         openGraph: {
             title: `Inkference — ${userCount} users & ${projectCount} projects`,
             description: `Showcase your work and connect with creators.`,

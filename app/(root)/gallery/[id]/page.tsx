@@ -12,6 +12,8 @@ import { UserIcon } from "@/components/general/UserIcon";
 import HeaderCard from "@/components/content/photos/HeaderCard";
 import { GalleryWrapper } from "@/components/content/photos/GalleryWrapper";
 import { previewUrl } from "@/lib/imageUrl";
+import JsonLd from "@/components/general/JsonLd";
+import { SITE_URL } from "@/lib/siteUrl";
 
 // Loads the gallery, but only if the viewer is allowed to see it.
 const getGalleryData = cache(async (id: string) => {
@@ -32,6 +34,7 @@ export async function generateMetadata({
     if (!galleryData || "error" in galleryData) {
         return {
             title: `Gallery not found`,
+            robots: { index: false },
             description: `This gallery does not exist or may have been removed.`,
         };
     }
@@ -56,7 +59,9 @@ export async function generateMetadata({
     }`.trim();
 
     return {
+        title: `${galleryData.name} by ${userDisplay}`,
         description: `A gallery created by ${userDisplay}`,
+        alternates: { canonical: `/gallery/${galleryData.id}` },
         openGraph: {
             title: galleryData.name,
             description: `A gallery created by ${userDisplay}`,
@@ -100,6 +105,20 @@ export default async function Page({
 
     return (
         <div className="w-full flex flex-col gap-5 my-5 px-[2%]">
+            <JsonLd
+                data={{
+                    "@context": "https://schema.org",
+                    "@type": "ImageGallery",
+                    name: gallery.name,
+                    url: `${SITE_URL}/gallery/${gallery.id}`,
+                    image: gallery.photos.slice(0, 4).map((p) => previewUrl(p.image, 1200)),
+                    author: {
+                        "@type": "Person",
+                        name: gallery.userData.user.name,
+                        url: `${SITE_URL}/profile/${gallery.userData.user.username}`,
+                    },
+                }}
+            />
             <div className="flex flex-col gap-5 lg:flex-row">
                 {/* --- HEADER CARD --- */}
                 <HeaderCard
