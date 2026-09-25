@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteSkill } from "@/actions/content/skill/deleteSkill";
+import { previewUrl } from "@/lib/imageUrl";
 
 type SkillItem = {
     id: string;
@@ -63,7 +64,7 @@ const SkillCard = ({ skill, rootUser = false }: SkillCardProps) => {
                     <div className="w-12 h-12 flex-shrink-0">
                         <Img
                             src={
-                                skill.iconImage ||
+                                previewUrl(skill.iconImage, 96) ||
                                 "/assets/general/fillers/skill.png"
                             }
                             fallbackSrc="/assets/general/fillers/skill.png"

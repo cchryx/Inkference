@@ -6,6 +6,7 @@ import { CalendarDays, GraduationCap, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Education = {
     id: string;
@@ -106,7 +107,7 @@ const EducationCard = ({
                     </div>
 
                     <img
-                        src={school || fillerImage}
+                        src={previewUrl(school, 160) || fillerImage}
                         className="size-20 rounded-md object-contain border-2 border-gray-300 shadow-sm"
                         onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;

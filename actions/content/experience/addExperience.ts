@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "../../users/getUserData";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 
 export async function addExperience(data: {
     title: string;
@@ -14,7 +14,7 @@ export async function addExperience(data: {
     startDate: number;
     endDate?: number | null;
 }) {
-    const userData = await getUserData();
+    const userData = await getCurrentUserData();
 
     if (!userData || "error" in userData || !userData.userId) {
         return { error: "Unauthorized or no user data found." };

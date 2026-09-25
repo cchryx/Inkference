@@ -23,6 +23,7 @@ const Posts = ({ posts, rootUser = false }: Props) => {
             {posts.map((post) => (
                 <PostPreviewCard
                     key={post.id}
+                    postId={post.id}
                     type={post.type}
                     content={post.data}
                     width="w-full"

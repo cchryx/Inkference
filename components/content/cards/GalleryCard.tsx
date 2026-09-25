@@ -1,6 +1,7 @@
 "use client";
 
 import Img from "@/components/general/Img";
+import { previewUrl } from "@/lib/imageUrl";
 import Link from "next/link";
 
 type Photo = {
@@ -44,7 +45,7 @@ export default function GalleryCard({ gallery }: Props) {
                         >
                             {photo.image && (
                                 <Img
-                                    src={photo.image}
+                                    src={previewUrl(photo.image, 200)}
                                     fallbackSrc="/assets/general/fillers/skill.png"
                                     className="w-full h-full object-cover"
                                 />

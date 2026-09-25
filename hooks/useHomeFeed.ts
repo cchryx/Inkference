@@ -1,45 +1,25 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchHomeFeed } from "@/actions/feed/fetchHomeFeed";
+import { fetchHomeFeed, type FeedType } from "@/actions/feed/fetchHomeFeed";
 
-export function useForYouFeed() {
+const PAGE_SIZE = 10;
+
+function useFeed(queryKey: string, feedType: FeedType) {
     return useInfiniteQuery({
-        queryKey: ["forYouFeed"],
-        queryFn: async ({ pageParam }: { pageParam?: string }) => {
-            return await fetchHomeFeed({ cursor: pageParam, limit: 10 });
-        },
-        getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
-        initialPageParam: undefined,
+        queryKey: [queryKey],
+        queryFn: ({ pageParam }) =>
+            fetchHomeFeed({ cursor: pageParam, limit: PAGE_SIZE, feedType }),
+        initialPageParam: undefined as string | undefined,
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        // Don't silently reload old pages: what counts as "seen" changes while
+        // scrolling, so a reload would shuffle posts under the user's finger.
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
     });
 }
 
-export function useFollowingFeed() {
-    return useInfiniteQuery({
-        queryKey: ["followingFeed"],
-        queryFn: async ({ pageParam }: { pageParam?: string }) => {
-            return await fetchHomeFeed({
-                cursor: pageParam,
-                limit: 10,
-                feedType: "following",
-            });
-        },
-        getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
-        initialPageParam: undefined,
-    });
-}
-
-export function useFriendsFeed() {
-    return useInfiniteQuery({
-        queryKey: ["friendsFeed"],
-        queryFn: async ({ pageParam }: { pageParam?: string }) => {
-            return await fetchHomeFeed({
-                cursor: pageParam,
-                limit: 10,
-                feedType: "friends",
-            });
-        },
-        getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
-        initialPageParam: undefined,
-    });
-}
+export const useForYouFeed = () => useFeed("forYouFeed", "foryou");
+export const useFollowingFeed = () => useFeed("followingFeed", "following");
+export const useFriendsFeed = () => useFeed("friendsFeed", "friends");

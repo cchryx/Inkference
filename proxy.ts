@@ -10,7 +10,7 @@ const protectedRoutes = [
     "inbox",
 ];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const { nextUrl } = req;
     const sessionCookie = getSessionCookie(req);
 
@@ -18,7 +18,13 @@ export async function middleware(req: NextRequest) {
 
     const isLoggedIn = !!sessionCookie;
     const isOnProtectedRoute = protectedRoutes.includes(nextUrl.pathname);
-    const isOnAuthRoute = nextUrl.pathname.startsWith("/auth");
+    // Password links from emails must work even when already signed in.
+    const isPasswordLink = [
+        "/auth/create-password",
+        "/auth/reset-password",
+    ].includes(nextUrl.pathname);
+    const isOnAuthRoute =
+        nextUrl.pathname.startsWith("/auth") && !isPasswordLink;
 
     if (isOnProtectedRoute && !isLoggedIn) {
         return NextResponse.redirect(new URL("/auth/signin", req.url));

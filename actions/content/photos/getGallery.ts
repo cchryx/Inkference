@@ -10,7 +10,6 @@ export async function getGalleryById(galleryId: string) {
         include: {
             userData: {
                 include: {
-                    galleries: true,
                     user: {
                         select: {
                             id: true,

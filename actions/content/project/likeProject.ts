@@ -1,56 +1,19 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { APIError } from "better-auth/api";
+import { toggleReaction } from "@/lib/toggleReaction";
 
-export async function likeProject(projectId: string, userId: string) {
+/**
+ * Like or unlike a project.
+ * `_userId` is ignored: the signed-in user is used, so nobody can
+ * like on someone else's behalf.
+ */
+export async function likeProject(projectId: string, _userId?: string) {
     try {
-        // Ensure project exists
-        const project = await prisma.project.findUnique({
-            where: { id: projectId },
-            include: { likes: { select: { userId: true } } },
-        });
-
-        if (!project) return { error: "Project not found." };
-
-        // Ensure userData exists
-        let userData = await prisma.userData.findUnique({
-            where: { userId },
-            select: { id: true },
-        });
-
-        if (!userData) {
-            userData = await prisma.userData.create({
-                data: { userId },
-            });
-        }
-
-        const alreadyLiked = project.likes.some((u) => u.userId === userId);
-
-        await prisma.userData.update({
-            where: { id: userData.id },
-            data: {
-                projectsLiked: {
-                    [alreadyLiked ? "disconnect" : "connect"]: {
-                        id: projectId,
-                    },
-                },
-            },
-        });
-
-        return { error: null, liked: !alreadyLiked };
+        const { error, active } = await toggleReaction("project", "like", projectId);
+        if (error) return { error };
+        return { error: null, liked: active };
     } catch (error) {
-        if (error instanceof APIError) {
-            let message = error.message?.trim() || "An unknown error occurred.";
-            message = message
-                .split(/(?<=[.!?])\s+/)
-                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join(" ");
-            if (!/[.!?]$/.test(message)) message += ".";
-
-            return { error: message };
-        }
-
+        console.error("likeProject failed:", error);
         return { error: "Internal server error." };
     }
 }

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Skeleton } from "../../general/Skeleton";
 import { ChevronDown, ChevronRight, Pencil, X } from "lucide-react";
 import EditGalleryModal from "./edit/EditGalleryModal";
 import Modal from "@/components/general/Modal";
 import Img from "@/components/general/Img";
+import ProgressiveImg from "@/components/general/ProgressiveImg";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Props = {
     isOwner: boolean;
@@ -14,7 +15,6 @@ type Props = {
 };
 
 const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
-    const [isLoading, setIsLoading] = useState(true);
     const [isMinimized, setIsMinimized] = useState(false);
     const [selectedImage, setSelectedImage] = useState<null | {
         image: string;
@@ -22,31 +22,20 @@ const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
     }>(null);
     const [editOpen, setEditOpen] = useState(false);
 
+    // While the viewer is open, download the previous/next images in the
+    // background so switching between them is instant.
     useEffect(() => {
-        const timer = setTimeout(() => setIsLoading(false), 800);
-        return () => clearTimeout(timer);
-    }, []);
+        if (!selectedImage) return;
+        const i = galleryImages.indexOf(selectedImage);
+        for (const neighbour of [galleryImages[i - 1], galleryImages[i + 1]]) {
+            if (!neighbour?.image) continue;
+            new Image().src = previewUrl(neighbour.image, 640);
+            new Image().src = neighbour.image;
+        }
+    }, [selectedImage, galleryImages]);
 
     const toggleMinimize = () => setIsMinimized((prev) => !prev);
     const closeModal = () => setSelectedImage(null);
-
-    if (isLoading) {
-        return (
-            <div className="bg-gray-200 p-3 shadow-md rounded-md w-full flex flex-col">
-                <div className="flex items-center justify-between mb-3">
-                    <Skeleton className="w-[30%] h-6 rounded-md" />
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[...Array(8)].map((_, i) => (
-                        <div key={i} className="space-y-2">
-                            <Skeleton className="w-full h-[180px] rounded-md" />
-                            <Skeleton className="w-[80%] h-3 rounded-sm" />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    }
 
     return (
         <>
@@ -92,12 +81,12 @@ const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {galleryImages.map((img: any, index: number) => (
                                 <div
-                                    key={index}
+                                    key={img.id ?? index}
                                     onClick={() => setSelectedImage(img)}
                                     className="rounded-md overflow-hidden cursor-pointer bg-gray-300 hover:brightness-90 transition"
                                 >
                                     <Img
-                                        src={img.image}
+                                        src={previewUrl(img.image, 640)}
                                         fallbackSrc="/assets/general/fillers/merit.png"
                                         alt={`Gallery image ${index + 1}`}
                                         className="w-full h-[240px] object-cover"
@@ -115,12 +104,11 @@ const GalleryCard = ({ isOwner, galleryImages, projectId }: Props) => {
                     <Modal open={true} onClose={closeModal}>
                         <div className="max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[70vw] flex flex-col md:flex-row gap-4 justify-center">
                             {/* Image Box */}
-                            <div className="bg-gray-300 w-full md:flex-1 overflow-hidden rounded-md shadow-lg flex items-center justify-center p-0 md:p-4">
-                                <Img
+                            {/* Fixed-size box so the modal doesn't jump between photos */}
+                            <div className="bg-gray-300 w-full md:flex-1 h-[55vh] md:h-[80vh] overflow-hidden rounded-md shadow-lg p-0 md:p-4">
+                                <ProgressiveImg
                                     src={selectedImage.image}
-                                    fallbackSrc="/assets/general/fillers/merit.png"
                                     alt="Gallery image"
-                                    className="w-full h-full object-contain rounded-md"
                                 />
                             </div>
 

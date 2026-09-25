@@ -1,56 +1,19 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { APIError } from "better-auth/api";
+import { toggleReaction } from "@/lib/toggleReaction";
 
-export async function saveProject(projectId: string, userId: string) {
+/**
+ * Save or unsave a project.
+ * `_userId` is ignored: the signed-in user is used, so nobody can
+ * save on someone else's behalf.
+ */
+export async function saveProject(projectId: string, _userId?: string) {
     try {
-        const project = await prisma.project.findUnique({
-            where: { id: projectId },
-            include: { saves: { select: { userId: true } } },
-        });
-
-        if (!project) {
-            return { error: "Project not found." };
-        }
-
-        let userData = await prisma.userData.findUnique({
-            where: { userId },
-            select: { id: true },
-        });
-
-        if (!userData) {
-            userData = await prisma.userData.create({
-                data: { userId },
-            });
-        }
-
-        const alreadySaved = project.saves.some((u) => u.userId === userId);
-
-        await prisma.userData.update({
-            where: { id: userData.id },
-            data: {
-                projectsSaved: {
-                    [alreadySaved ? "disconnect" : "connect"]: {
-                        id: projectId,
-                    },
-                },
-            },
-        });
-
-        return { error: null, saved: !alreadySaved };
+        const { error, active } = await toggleReaction("project", "save", projectId);
+        if (error) return { error };
+        return { error: null, saved: active };
     } catch (error) {
-        if (error instanceof APIError) {
-            let message = error.message?.trim() || "An unknown error occurred.";
-            message = message
-                .split(/(?<=[.!?])\s+/)
-                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join(" ");
-            if (!/[.!?]$/.test(message)) message += ".";
-
-            return { error: message };
-        }
-
+        console.error("saveProject failed:", error);
         return { error: "Internal server error." };
     }
 }

@@ -1,48 +1,41 @@
 "use server";
 
 import { APIError } from "better-auth/api";
-import { auth, ErrorCode } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-export async function getLinkedAccounts() {
+export type LinkedAccount = {
+    id: string;
+    providerId: string;
+    accountId: string;
+};
+
+export async function getLinkedAccounts(): Promise<{
+    error: string | null;
+    accounts: LinkedAccount[];
+    hasPassword: boolean;
+}> {
     try {
         const accounts = await auth.api.listUserAccounts({
             headers: await headers(),
         });
 
-        const hasPassword = accounts?.some(
-            (account: any) => account.provider === "credential"
-        );
-
         return {
             error: null,
-            accounts,
-            hasPassword,
+            accounts: accounts.map(({ id, providerId, accountId }) => ({
+                id,
+                providerId,
+                accountId,
+            })),
+            // The email/password sign-in is stored as a "credential" account.
+            hasPassword: accounts.some((a) => a.providerId === "credential"),
         };
     } catch (error) {
-        if (error instanceof APIError) {
-            const errorCode = error.body
-                ? (error.body.code as ErrorCode)
-                : "UNKNOWN";
+        const message =
+            error instanceof APIError
+                ? error.message?.trim() || "An unknown error occurred."
+                : "Internal server error.";
 
-            let message = error.message?.trim() || "An unknown error occurred";
-            message = message
-                .split(/(?<=[.!?])\s+/)
-                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join(" ");
-            if (!/[.!?]$/.test(message)) message += ".";
-
-            return {
-                error: message || "An unknown error occurred.",
-                accounts: [],
-                hasPassword: false,
-            };
-        }
-
-        return {
-            error: "Internal server error.",
-            accounts: [],
-            hasPassword: false,
-        };
+        return { error: message, accounts: [], hasPassword: false };
     }
 }

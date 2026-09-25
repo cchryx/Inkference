@@ -1,52 +1,50 @@
 "use server";
 
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { APIError } from "better-auth/api";
+import { headers } from "next/headers";
+import { recordEngagement } from "@/lib/engagement";
+import { notifyViewMilestones } from "@/lib/notify";
 
-export async function viewProject(projectId: string, userId: string) {
+/**
+ * Records that the signed-in user viewed a project (view count + Trending).
+ * `_userId` is ignored: the session user is used.
+ */
+export async function viewProject(projectId: string, _userId?: string) {
     try {
-        const project = await prisma.project.findUnique({
-            where: { id: projectId },
-            select: { id: true },
+        const session = await auth.api.getSession({ headers: await headers() });
+        const userId = session?.user?.id;
+        if (!userId) return { error: null };
+
+        const [project, userData] = await Promise.all([
+            prisma.project.findUnique({ where: { id: projectId }, select: { id: true } }),
+            prisma.userData.upsert({
+                where: { userId },
+                update: {},
+                create: { userId },
+                select: { id: true },
+            }),
+        ]);
+        if (!project) return { error: "Project not found." };
+
+        // Only a first-ever view from this person raises the view count.
+        const seenBefore = await prisma.project.count({
+            where: { id: projectId, views: { some: { id: userData.id } } },
         });
 
-        if (!project) {
-            return { error: "Project not found." };
-        }
+        await Promise.all([
+            prisma.userData.update({
+                where: { id: userData.id },
+                data: { projectsViewed: { connect: { id: projectId } } },
+            }),
+            recordEngagement("view", "project", [projectId], userData.id),
+        ]);
 
-        let userData = await prisma.userData.findUnique({
-            where: { userId },
-            select: { id: true },
-        });
-
-        if (!userData) {
-            userData = await prisma.userData.create({
-                data: { userId },
-            });
-        }
-
-        await prisma.userData.update({
-            where: { id: userData.id },
-            data: {
-                projectsViewed: {
-                    connect: { id: projectId },
-                },
-            },
-        });
+        if (!seenBefore) await notifyViewMilestones("project", [projectId]);
 
         return { error: null };
     } catch (error) {
-        if (error instanceof APIError) {
-            let message = error.message?.trim() || "An unknown error occurred.";
-            message = message
-                .split(/(?<=[.!?])\s+/)
-                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join(" ");
-            if (!/[.!?]$/.test(message)) message += ".";
-
-            return { error: message };
-        }
-
+        console.error("viewProject failed:", error);
         return { error: "Internal server error." };
     }
 }

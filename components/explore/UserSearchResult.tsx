@@ -1,5 +1,6 @@
 "use client";
 
+import SuggestedUsers from "./SuggestedUsers";
 import { useEffect, useRef } from "react";
 import UserCard from "../content/cards/UserCard";
 import Loader from "../general/Loader";
@@ -55,16 +56,15 @@ const UserSearchResult = ({
                 </div>
             )}
 
-            {/* When search is empty */}
-            {!search && !isUsersLoading && (
-                <div className="flex flex-col items-center justify-center mt-20 text-center text-gray-500">
-                    <img
-                        src="/assets/icons/searchBear.png"
-                        className="w-32 h-32 mb-4 object-cover"
-                    />
-                    <p className="text-lg font-medium">
-                        Start typing to search for users.
+            {/* When search is empty: suggest people */}
+            {!search && (
+                <div className="w-full">
+                    <p className="mb-6 mt-2 flex w-full items-center gap-2 text-sm text-gray-500">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/assets/icons/searchBear.png" alt="" className="h-8 w-8 object-cover" />
+                        Search people by name or username, or check out these suggestions.
                     </p>
+                    <SuggestedUsers />
                 </div>
             )}
 

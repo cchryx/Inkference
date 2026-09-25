@@ -11,7 +11,14 @@ import {
     UserPlus,
     Users,
     UserMinus,
+    MoreHorizontal,
+    Ban,
+    Pencil,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import ConfirmModal from "../general/ConfirmModal";
+import { blockUser } from "@/actions/users/blockUser";
 import { toast } from "sonner";
 import { toggleFollowUser } from "@/actions/users/toggleFollowUser";
 import { toggleFriendRequest } from "@/actions/users/toggleFriendRequest";
@@ -19,6 +26,7 @@ import FollowModal from "./FollowModal";
 import { acceptFriendRequest } from "@/actions/users/acceptFriendRequest";
 import { removeFriend } from "@/actions/users/removeFriend";
 import { UserIcon } from "../general/UserIcon";
+import { previewUrl } from "@/lib/imageUrl";
 
 type ProfileCardProps = {
     tUser: any;
@@ -27,7 +35,8 @@ type ProfileCardProps = {
 
 export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
     const currentUserId = session?.user.id;
-    const [isLoading, setIsLoading] = useState(true);
+    // No fake loading delay: the data is already here from the server.
+    const [isLoading, setIsLoading] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const [showFollowModal, setShowFollowModal] = useState(false);
     const [followers, setFollowers] = useState(
@@ -50,6 +59,21 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
         ) ?? false
     );
 
+    const router = useRouter();
+    const [confirmUnfriend, setConfirmUnfriend] = useState(false);
+    const [confirmBlock, setConfirmBlock] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    const handleBlock = async () => {
+        setIsPending(true);
+        const { error } = await blockUser(tUser.id);
+        setIsPending(false);
+        setConfirmBlock(false);
+        if (error) return toast.error(error);
+        toast.success(`Blocked @${tUser.username}.`);
+        router.refresh();
+    };
+
     const handleRemoveFriend = async () => {
         setIsPending(true);
         if (!currentUserId) {
@@ -66,6 +90,7 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
             toast.error(error);
         } else if (unfriended) {
             toast.success("Removed friend successfully.");
+            setConfirmUnfriend(false);
             setIsFriend(false);
             setIsRequestSent(false);
             setIsRequestReceived(false);
@@ -179,6 +204,30 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
 
     return (
         <>
+            <ConfirmModal
+                isPending={isPending}
+                open={confirmUnfriend}
+                title={`Remove @${tUser.username} as a friend?`}
+                text="You'll stop being friends. You can send a new friend request later."
+                confirmText="Remove Friend"
+                cancelText="Cancel"
+                confirmVariant="destructive"
+                onConfirm={handleRemoveFriend}
+                onClose={() => setConfirmUnfriend(false)}
+            />
+
+            <ConfirmModal
+                isPending={isPending}
+                open={confirmBlock}
+                title={`Block @${tUser.username}?`}
+                text="They won't be able to see your profile, posts, projects or galleries, or follow you. You'll also stop following each other and stop being friends. You can unblock them in Settings."
+                confirmText="Block"
+                cancelText="Cancel"
+                confirmVariant="destructive"
+                onConfirm={handleBlock}
+                onClose={() => setConfirmBlock(false)}
+            />
+
             <FollowModal
                 open={showFollowModal}
                 onClose={() => setShowFollowModal(false)}
@@ -190,7 +239,7 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                 <div className="relative">
                     {tUser?.bannerImage ? (
                         <img
-                            src={tUser.bannerImage}
+                            src={previewUrl(tUser.bannerImage, 1600)}
                             alt="User banner"
                             className="w-full h-[200px] md:h-[350px] object-cover object-center"
                         />
@@ -200,6 +249,33 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                     <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-full border-3 border-gray-200 flex items-center justify-center bg-gray-700">
                         <UserIcon image={tUser.image} size="size-full" />
                     </div>
+
+                    {/* ⋯ menu in the top-right corner (other people's profiles only) */}
+                    {session && currentUserId !== tUser.id && (
+                        <div className="absolute right-3 top-3 z-20">
+                            <button
+                                onClick={() => setMenuOpen((o) => !o)}
+                                aria-label="More options"
+                                aria-expanded={menuOpen}
+                                className="grid h-9 w-9 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition hover:bg-black/65 cursor-pointer"
+                            >
+                                <MoreHorizontal className="h-5 w-5" />
+                            </button>
+                            {menuOpen && (
+                                <div className="absolute right-0 top-11 w-40 overflow-hidden rounded-md bg-gray-100 text-sm shadow-lg">
+                                    <button
+                                        onClick={() => {
+                                            setMenuOpen(false);
+                                            setConfirmBlock(true);
+                                        }}
+                                        className="flex w-full items-center gap-2 px-3 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
+                                    >
+                                        <Ban className="h-4 w-4" /> Block
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-gray-200 p-4 font-medium pt-10 md:flex space-y-10 h-full">
@@ -263,12 +339,23 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                             Share Profile
                         </button>
 
+                        {/* Your own profile: jump to the profile settings */}
+                        {session && currentUserId === tUser.id && (
+                            <Link
+                                href="/settings?section=profile"
+                                className="flex items-center gap-2 px-3 py-1 rounded-sm bg-neutral-900 text-white hover:bg-neutral-700 transition text-sm"
+                            >
+                                <Pencil className="w-4 h-4" />
+                                Edit Profile
+                            </Link>
+                        )}
+
                         {currentUserId !== tUser.id && session && (
                             <>
                                 {isFriend ? (
                                     <button
                                         disabled={isPending}
-                                        onClick={handleRemoveFriend}
+                                        onClick={() => setConfirmUnfriend(true)}
                                         className={`flex items-center gap-2 px-3 py-1 rounded-sm text-sm transition
                                             ${
                                                 isPending
@@ -342,6 +429,7 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                                         </>
                                     )}
                                 </button>
+
                             </>
                         )}
                     </div>

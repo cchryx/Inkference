@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Img from "@/components/general/Img";
+import ProgressiveImg from "@/components/general/ProgressiveImg";
+import { previewUrl } from "@/lib/imageUrl";
 import Modal from "@/components/general/Modal";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { MoreVertical, Trash2, Eye } from "lucide-react";
@@ -35,6 +37,18 @@ const GalleryImage = ({
         setIsPending(false);
     };
 
+    // While the viewer is open, download the next/previous full images in
+    // the background so swiping between them is instant.
+    useEffect(() => {
+        if (!viewModalOpen) return;
+        for (const i of [selectedIndex - 1, selectedIndex + 1]) {
+            const url = galleryImages[i]?.image;
+            if (!url) continue;
+            new Image().src = previewUrl(url, 640);
+            new Image().src = url;
+        }
+    }, [viewModalOpen, selectedIndex, galleryImages]);
+
     const prevImage = () =>
         selectedIndex > 0 && setSelectedIndex(selectedIndex - 1);
     const nextImage = () =>
@@ -51,7 +65,8 @@ const GalleryImage = ({
             >
                 {photo.image && (
                     <Img
-                        src={photo.image}
+                        src={previewUrl(photo.image, 640)}
+                        placeholderClassName="aspect-[4/5]"
                         fallbackSrc="/assets/general/fillers/skill.png"
                         alt="Gallery image"
                         className="w-full h-full object-cover rounded-lg"
@@ -143,7 +158,8 @@ const GalleryImage = ({
             />
 
             <Modal open={viewModalOpen} onClose={() => setViewModalOpen(false)}>
-                <div className="relative rounded-lg flex items-center justify-center max-h-[90vh] w-full overflow-hidden group">
+                {/* Fixed-size box so the viewer doesn't jump between photos */}
+                <div className="relative rounded-lg flex items-center justify-center w-[95vw] lg:w-[85vw] h-[75vh] lg:h-[85vh] overflow-hidden group">
                     {/* Previous Button (Desktop Only) */}
                     {selectedIndex > 0 && (
                         <button
@@ -179,9 +195,9 @@ const GalleryImage = ({
                     )}
 
                     {galleryImages[selectedIndex]?.image && (
-                        <Img
+                        <ProgressiveImg
                             src={galleryImages[selectedIndex].image}
-                            className="lg:h-[80vh] w-[95vw] h-auto lg:w-auto object-contain"
+                            alt="Gallery image"
                         />
                     )}
                 </div>

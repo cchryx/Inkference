@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { forgetPassword } from "@/lib/auth-client";
+import { requestPasswordReset } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ export const ForgotPasswordForm = () => {
 
         if (!email) return toast.error("Please enter your email.");
 
-        await forgetPassword({
+        await requestPasswordReset({
             email,
             redirectTo: "/auth/reset-password",
             fetchOptions: {

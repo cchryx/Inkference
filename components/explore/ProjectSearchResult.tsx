@@ -1,5 +1,6 @@
 "use client";
 
+import TrendingSection from "./TrendingSection";
 import { useEffect, useRef } from "react";
 import ProjectCard from "../content/cards/ProjectCard";
 import Loader from "../general/Loader";
@@ -55,17 +56,15 @@ const ProjectSearchResult = ({
                 </div>
             )}
 
-            {/* When search is empty */}
-            {!search && !isProjectsLoading && (
-                <div className="flex flex-col items-center justify-center mt-20 text-center text-gray-500">
-                    <img
-                        src="/assets/icons/searchBear.png"
-                        alt="Search prompt"
-                        className="w-32 h-32 mb-4 object-cover"
-                    />
-                    <p className="text-lg font-medium">
-                        Start typing to search for projects.
+            {/* When search is empty: show popular projects */}
+            {!search && (
+                <div className="w-full">
+                    <p className="mb-6 mt-2 flex w-full items-center gap-2 text-sm text-gray-500">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/assets/icons/searchBear.png" alt="" className="h-8 w-8 object-cover" />
+                        Search projects by name, skill or creator, or browse what&apos;s popular.
                     </p>
+                    <TrendingSection kind="project" title="Popular projects" />
                 </div>
             )}
 

@@ -11,9 +11,14 @@ import Loader from "../general/Loader";
 
 interface ResetPasswordFormProps {
     token: string;
+    mode?: "reset" | "create";
 }
 
-export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
+export const ResetPasswordForm = ({
+    token,
+    mode = "reset",
+}: ResetPasswordFormProps) => {
+    const isCreate = mode === "create";
     const [isPending, setIsPending] = useState(false);
     const router = useRouter();
 
@@ -22,7 +27,7 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         const formData = new FormData(evt.currentTarget);
 
         const password = String(formData.get("password"));
-        if (!password) return toast.error("Please enter your new password.");
+        if (!password) return toast.error("Please enter a password.");
 
         const confirmPassword = String(formData.get("confirmPassword"));
 
@@ -44,8 +49,15 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
                     toast.error(ctx.error.message);
                 },
                 onSuccess: () => {
-                    toast.success("Password reset successfully.");
-                    router.push("/auth/signin");
+                    if (isCreate) {
+                        toast.success(
+                            "Password created. You can now sign in with your email too."
+                        );
+                        router.push("/settings?section=authentication");
+                    } else {
+                        toast.success("Password reset successfully.");
+                        router.push("/auth/signin");
+                    }
                 },
             },
         });
@@ -54,7 +66,9 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
     return (
         <form className="max-w-sm w-full space-y-4" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2">
-                <Label htmlFor="password">New Password</Label>
+                <Label htmlFor="password">
+                    {isCreate ? "Password" : "New Password"}
+                </Label>
                 <PasswordInput
                     id="password"
                     name="password"
@@ -77,7 +91,7 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
                 disabled={isPending}
             >
                 {isPending && <Loader size={5} color="text-white" />}
-                Reset Password
+                {isCreate ? "Create Password" : "Reset Password"}
             </Button>
         </form>
     );

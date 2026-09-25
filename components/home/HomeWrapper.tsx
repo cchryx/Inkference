@@ -109,11 +109,14 @@ const HomeWrapper = ({ currentUserId }: Props) => {
         const feed = feeds[key];
         if (!feed) return;
 
+        // Start loading the next page ~2 screens before the end, so new
+        // posts are usually ready before the user reaches them.
         const target = e.currentTarget;
-        const isAtBottom =
-            target.scrollHeight - target.scrollTop <= target.clientHeight + 10;
+        const distanceToBottom =
+            target.scrollHeight - target.scrollTop - target.clientHeight;
+        const isNearBottom = distanceToBottom <= target.clientHeight * 2;
 
-        if (isAtBottom && feed.hasNextPage && !feed.isFetchingNextPage) {
+        if (isNearBottom && feed.hasNextPage && !feed.isFetchingNextPage) {
             feed.fetchNextPage();
         }
     };
@@ -299,13 +302,28 @@ const HomeWrapper = ({ currentUserId }: Props) => {
                                 )}
 
                                 {/* Feed Items */}
-                                {feedItems.map((item: any, i: number) => (
-                                    <HomeFeedItem
-                                        key={i}
-                                        currentUserId={currentUserId}
-                                        item={item}
-                                    />
-                                ))}
+                                {feedItems.map((item: any, i: number) =>
+                                    item.type === "caught_up" ? (
+                                        <div
+                                            key={`caught-up-${i}`}
+                                            className="snap-start flex flex-col items-center justify-center gap-1 py-10 text-center text-muted-foreground"
+                                        >
+                                            <p className="font-medium text-foreground">
+                                                You&apos;re all caught up
+                                            </p>
+                                            <p className="text-sm">
+                                                Keep scrolling for posts
+                                                you&apos;ve already seen.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <HomeFeedItem
+                                            key={item.content.id}
+                                            currentUserId={currentUserId}
+                                            item={item}
+                                        />
+                                    )
+                                )}
 
                                 {/* Loading More */}
                                 {isFetchingNextPage && (

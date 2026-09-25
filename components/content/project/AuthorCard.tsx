@@ -10,18 +10,19 @@ type Props = {
     isOwner: boolean;
     project: any;
     tProfile: any;
-    tProjects: any[];
-    tFollowers: any[];
+    followerCount: number;
+    projectCount: number;
 };
 
 export const AuthorCard = ({
     isOwner,
     project,
     tProfile,
-    tFollowers,
-    tProjects,
+    followerCount,
+    projectCount,
 }: Props) => {
-    const [isLoading, setIsLoading] = useState(true);
+    // No fake loading delay: the data is already here from the server.
+    const [isLoading, setIsLoading] = useState(false);
     const tUser = project.userData.user;
 
     useEffect(() => {
@@ -106,8 +107,8 @@ export const AuthorCard = ({
                         </div>
                     </div>
                     <div className="flex space-x-4 py-1 px-2 bg-gray-300 rounded-md w-fit text-sm">
-                        <div>{tFollowers.length} Followers</div>
-                        <div>{tProjects.length} Projects</div>
+                        <div>{followerCount} Followers</div>
+                        <div>{projectCount} Projects</div>
                     </div>
                     <Link href={`/profile/${tUser.username}`}>
                         <button className="bg-gray-800 hover:bg-gray-900 text-white text-sm px-4 py-2 rounded-md transition cursor-pointer">
@@ -143,10 +144,10 @@ export const AuthorCard = ({
                     </div>
                     <div className="flex flex-wrap justify-center gap-2 mt-2 w-fit ">
                         <div className="py-1 px-3 bg-gray-300 rounded-md text-sm">
-                            {tFollowers.length} Followers
+                            {followerCount} Followers
                         </div>
                         <div className="py-1 px-3 bg-gray-300 rounded-md text-sm">
-                            {tProjects.length} Projects
+                            {projectCount} Projects
                         </div>
                     </div>
                     <Link href={`/profile/${tUser.username}`}>

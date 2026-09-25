@@ -1,19 +1,24 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-import { getProfileData } from "@/actions/profile/getProfileData";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cache } from "react";
+import { canViewGallery, getCurrentViewer } from "@/lib/visibility";
 import { Metadata } from "next";
 import { getGalleryById } from "@/actions/content/photos/getGallery";
 import { UserIcon } from "@/components/general/UserIcon";
 import HeaderCard from "@/components/content/photos/HeaderCard";
 import { GalleryWrapper } from "@/components/content/photos/GalleryWrapper";
+import { previewUrl } from "@/lib/imageUrl";
 
+// Loads the gallery, but only if the viewer is allowed to see it.
 const getGalleryData = cache(async (id: string) => {
-    return await getGalleryById(id);
+    const [gallery, viewer] = await Promise.all([getGalleryById(id), getCurrentViewer()]);
+    if (!gallery || "error" in gallery) return gallery;
+    if (!(await canViewGallery(id, viewer))) return { error: "Gallery not found." };
+    return gallery;
 });
 
 export async function generateMetadata({
@@ -34,7 +39,7 @@ export async function generateMetadata({
     const previewImages = (galleryData.photos || [])
         .slice(0, 4)
         .map((photo: any, index: number) => ({
-            url: photo.image,
+            url: previewUrl(photo.image, 1200),
         }));
 
     if (previewImages.length === 0) {
@@ -73,11 +78,10 @@ export default async function Page({
 }) {
     const { id } = await params;
 
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    const gallery = await getGalleryData(id);
+    const [session, gallery] = await Promise.all([
+        auth.api.getSession({ headers: await headers() }),
+        getGalleryData(id),
+    ]);
     if (!gallery || "error" in gallery) {
         return (
             <div className="flex justify-center items-center h-full w-full">
@@ -90,7 +94,6 @@ export default async function Page({
         );
     }
 
-    const tUser = await getProfileData(gallery.userData.user.username);
     const isOwner = session?.user.id === gallery.userData.user.id;
 
     const topPhotos = gallery.photos.slice(0, 4);
@@ -103,9 +106,10 @@ export default async function Page({
                     galleryId={gallery.id}
                     galleryName={gallery.name}
                     topPhotos={topPhotos}
+                    photos={gallery.photos}
                     isOwner={isOwner}
                     numOfPhotos={gallery.photos.length}
-                    currentUserId={tUser.user.id}
+                    currentUserId={gallery.userData.user.id}
                 />
 
                 {/* --- OWNER BOX --- */}

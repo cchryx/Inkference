@@ -3,11 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { INBOX_LINKS } from "@/constants";
 import { Inbox } from "lucide-react";
-import General from "@/components/inbox/General";
+import Notifications from "@/components/inbox/Notifications";
+import { useSearchParams } from "next/navigation";
 import Requests from "@/components/inbox/Requests";
 
 export default function Page() {
-    const [activeSection, setActiveSection] = useState("general");
+    // /inbox?tab=requests opens the Requests tab (used by friend request notifications).
+    const tab = useSearchParams().get("tab");
+    const [activeSection, setActiveSection] = useState(tab === "requests" ? "requests" : "general");
+    const sectionLabel =
+        INBOX_LINKS.find((l) => l.id === activeSection)?.label ?? activeSection;
     const [showMobileLabel, setShowMobileLabel] = useState(false);
     const [isSlidingOut, setIsSlidingOut] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -96,7 +101,7 @@ export default function Page() {
                 </div>
                 <div className="text-sm font-semibold capitalize">
                     <Inbox className="w-4 h-4 inline-block mr-1" />
-                    {activeSection}
+                    {sectionLabel}
                 </div>
                 <div className="w-6 h-6" />
             </div>
@@ -157,10 +162,10 @@ export default function Page() {
                     {/* Section Content */}
                     <div className="flex-1 p-6 pt-6 overflow-y-scroll no-scrollbar">
                         <div className="hidden md:block text-xl font-semibold capitalize">
-                            {activeSection}
+                            {sectionLabel}
                         </div>
                         <div className="mt-4">
-                            {activeSection === "general" && <General />}
+                            {activeSection === "general" && <Notifications />}
                             {activeSection === "requests" && <Requests />}
                         </div>
                     </div>

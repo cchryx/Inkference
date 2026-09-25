@@ -6,6 +6,9 @@ import { Skeleton } from "./Skeleton";
 type Props = React.ImgHTMLAttributes<HTMLImageElement> & {
     fallbackSrc?: string;
     src: string | Blob;
+    // Extra classes for the box while the image is still loading, e.g. a
+    // min-height so unloaded images take up space instead of 0px.
+    placeholderClassName?: string;
 };
 
 const Img = ({
@@ -13,6 +16,7 @@ const Img = ({
     alt,
     fallbackSrc = "/assets/general/fillerImage.png",
     className = "",
+    placeholderClassName = "",
     ...props
 }: Props) => {
     const [loading, setLoading] = useState(true);
@@ -78,7 +82,12 @@ const Img = ({
     }, [objectUrl]);
 
     return (
-        <div ref={containerRef} className={`relative ${className}`}>
+        <div
+            ref={containerRef}
+            className={`relative ${className} ${
+                loading && !error ? placeholderClassName : ""
+            }`}
+        >
             {loading && !error && (
                 <Skeleton className="absolute inset-0 w-full h-full" />
             )}

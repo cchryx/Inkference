@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "../../users/getUserData";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
@@ -11,7 +11,7 @@ cloudinary.config({
 });
 
 export async function deletePost(postId: string) {
-    const userData = await getUserData();
+    const userData = await getCurrentUserData();
 
     if (!userData || "error" in userData || !userData.userId) {
         return { error: "Unauthorized or no user data found." };

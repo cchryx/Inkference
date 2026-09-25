@@ -3,17 +3,12 @@
 import { useEffect, useState } from "react";
 import { Skeleton } from "../general/Skeleton";
 import { toast } from "sonner";
-import { recommendUsers } from "@/actions/users/recomendUsers";
+import {
+    recommendUsers,
+    type RecommendedUser,
+} from "@/actions/users/recomendUsers";
 import { UserIcon } from "../general/UserIcon";
 import Link from "next/link";
-
-type RecommendedUser = {
-    id: string;
-    name: string;
-    username: string;
-    image: string | null;
-    reason: string;
-};
 
 const RecommendedAccountsCard = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -31,9 +26,7 @@ const RecommendedAccountsCard = () => {
                     toast.error(error);
                     setRecommendedAccounts([]);
                 } else {
-                    setRecommendedAccounts(
-                        data.recommendedUsers as unknown as RecommendedUser[]
-                    );
+                    setRecommendedAccounts(data.recommendedUsers ?? []);
                 }
             } catch {
                 toast.error("Failed to load recommendations.");

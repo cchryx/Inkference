@@ -1,6 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { notify, removeNotification } from "@/lib/notify";
+import { isBlockedBetween } from "@/lib/visibility";
 import { APIError } from "better-auth/api";
 
 export async function toggleFriendRequest(
@@ -8,6 +12,11 @@ export async function toggleFriendRequest(
     targetUserId: string
 ) {
     try {
+        // The sender can send/cancel; the receiver can only decline (cancel).
+        const session = await auth.api.getSession({ headers: await headers() });
+        const me = session?.user?.id;
+        if (me !== senderUserId && me !== targetUserId) return { error: "Unauthorized." };
+
         if (senderUserId === targetUserId) {
             return { error: "You cannot send a friend request to yourself." };
         }
@@ -59,6 +68,14 @@ export async function toggleFriendRequest(
             },
         });
 
+        if (!requestExists && (await isBlockedBetween(senderUserId, targetUserId))) {
+            return { error: "You can't do that with this user." };
+        }
+
+        if (!requestExists && me !== senderUserId) {
+            return { error: "No friend request to decline." };
+        }
+
         if (requestExists) {
             // Cancel friend request
             await prisma.relationships.update({
@@ -69,6 +86,7 @@ export async function toggleFriendRequest(
                     },
                 },
             });
+            await removeNotification(targetUserId, "friend_request", senderUserId);
             return { error: null, requested: false };
         } else {
             // Send friend request
@@ -80,6 +98,7 @@ export async function toggleFriendRequest(
                     },
                 },
             });
+            await notify({ recipientId: targetUserId, actorId: senderUserId, type: "friend_request" });
             return { error: null, requested: true };
         }
     } catch (error) {

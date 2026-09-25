@@ -2,12 +2,12 @@ import {
     Aperture,
     BadgeCheck,
     Bell,
+    Shield,
     BookUser,
     Brain,
     BriefcaseBusiness,
     Building2,
     Compass,
-    Contact,
     Folders,
     GraduationCap,
     Group,
@@ -73,9 +73,9 @@ export const SETTINGS_LINKS = [
         label: "Authentication",
     },
     {
-        icon: Contact,
-        id: "relations",
-        label: "Relations",
+        icon: Shield,
+        id: "privacy",
+        label: "Privacy",
     },
     {
         icon: Bell,
@@ -126,7 +126,7 @@ export const INBOX_LINKS = [
     {
         icon: Mail,
         id: "general",
-        label: "General",
+        label: "Notifications",
     },
     {
         icon: UserPlus,

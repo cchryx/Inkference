@@ -4,9 +4,22 @@ import { useState, useRef, useEffect } from "react";
 import Subnavbar from "@/components/root/Subnavbar";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useSearchProjects, useSearchUsers } from "@/hooks/useSearch";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import {
+    useSearchPosts,
+    useSearchProjects,
+    useSearchUsers,
+} from "@/hooks/useSearch";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import UserSearchResult from "@/components/explore/UserSearchResult";
 import ProjectSearchResult from "@/components/explore/ProjectSearchResult";
+import PostSearchResult from "@/components/explore/PostSearchResult";
+import TrendingSection from "@/components/explore/TrendingSection";
+import UserCard from "@/components/content/cards/UserCard";
+import ProjectCard from "@/components/content/cards/ProjectCard";
+import PostPreviewCard from "@/components/content/cards/PostPreviewCard";
+import Loader from "@/components/general/Loader";
 
 const categories = [
     { key: "top", label: "Top" },
@@ -23,8 +36,19 @@ const PULL_THRESHOLD = isIOS ? 60 : 80;
 
 export default function Page() {
     const [active, setActive] = useState("top");
-    const [search, setSearch] = useState("");
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    // ?q=... in the link (e.g. tapping a #tag) pre-fills the search.
+    const searchParams = useSearchParams();
+    const urlQuery = searchParams.get("q") ?? "";
+    const [input, setInput] = useState(urlQuery);
+    // If the link changes while you're on Explore, use the new query.
+    const [lastUrlQuery, setLastUrlQuery] = useState(urlQuery);
+    if (urlQuery !== lastUrlQuery) {
+        setLastUrlQuery(urlQuery);
+        if (urlQuery) setInput(urlQuery);
+    }
+    // Wait until the user stops typing before searching (saves requests).
+    const search = useDebouncedValue(input.trim(), 300);
+    const queryClient = useQueryClient();
 
     const [pullDistance, setPullDistance] = useState(0);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -32,14 +56,15 @@ export default function Page() {
     const isTouchingRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // 🔎 Hooks for searching users and projects
+    // Each search only runs when its tab (or "Top") is open.
+    const isTop = active === "top";
     const {
         data: usersData,
         fetchNextPage: fetchNextUsers,
         hasNextPage: hasNextUsers,
         isFetchingNextPage: isFetchingNextUsers,
         isLoading: isUsersLoading,
-    } = useSearchUsers(search);
+    } = useSearchUsers(search, isTop || active === "users");
 
     const {
         data: projectsData,
@@ -47,11 +72,23 @@ export default function Page() {
         hasNextPage: hasNextProjects,
         isFetchingNextPage: isFetchingNextProjects,
         isLoading: isProjectsLoading,
-    } = useSearchProjects(search);
+    } = useSearchProjects(search, isTop || active === "projects");
+
+    const {
+        data: postsData,
+        fetchNextPage: fetchNextPosts,
+        hasNextPage: hasNextPosts,
+        isFetchingNextPage: isFetchingNextPosts,
+        isLoading: isPostsLoading,
+    } = useSearchPosts(search, isTop || active === "posts");
 
     // Flatten results from infinite queries
     const users = usersData?.pages.flatMap((p) => p.users) ?? [];
     const projects = projectsData?.pages.flatMap((p) => p.projects) ?? [];
+    const posts = postsData?.pages.flatMap((p) => p.posts) ?? [];
+    const isTyping = input.trim() !== search;
+    const topLoading =
+        isTyping || isUsersLoading || isProjectsLoading || isPostsLoading;
 
     useEffect(() => {
         const el = containerRef.current;
@@ -84,7 +121,10 @@ export default function Page() {
             if (pullDistance >= PULL_THRESHOLD) {
                 setIsRefreshing(true);
                 setPullDistance(PULL_THRESHOLD);
-                // Simulate refresh delay
+                queryClient.invalidateQueries({ queryKey: ["trending"] });
+                queryClient.invalidateQueries({ queryKey: ["searchUsers"] });
+                queryClient.invalidateQueries({ queryKey: ["searchProjects"] });
+                queryClient.invalidateQueries({ queryKey: ["searchPosts"] });
                 setTimeout(() => {
                     setIsRefreshing(false);
                     setPullDistance(0);
@@ -103,7 +143,7 @@ export default function Page() {
             el.removeEventListener("touchmove", onTouchMove);
             el.removeEventListener("touchend", onTouchEnd);
         };
-    }, [isRefreshing, pullDistance]);
+    }, [isRefreshing, pullDistance, queryClient]);
 
     return (
         <div className="h-full flex flex-col">
@@ -115,13 +155,9 @@ export default function Page() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                         <Input
                             type="text"
-                            placeholder="Search..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setShowSuggestions(true);
-                            }}
-                            onFocus={() => setShowSuggestions(true)}
+                            placeholder="Search people, projects, posts or #tags"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
                             className="w-full pl-9"
                         />
                     </div>
@@ -163,24 +199,85 @@ export default function Page() {
 
                 {/* Main Content */}
                 <div className="p-4">
-                    {active === "top" && (
-                        <div>
-                            <h2 className="text-xl font-semibold mb-2">Top</h2>
-                            <p className="text-gray-500">
-                                Top results section (coming soon)...
-                            </p>
+                    {/* Top: trending when empty, a mix of results when searching */}
+                    {active === "top" && !search && !isTyping && (
+                        <TrendingSection />
+                    )}
+
+                    {active === "top" && (search || isTyping) && (
+                        <div className="space-y-8">
+                            {topLoading &&
+                                users.length + projects.length + posts.length === 0 && (
+                                    <div className="flex justify-center mt-10">
+                                        <Loader size={10} color="black" />
+                                    </div>
+                                )}
+
+                            {!topLoading &&
+                                users.length + projects.length + posts.length === 0 && (
+                                    <p className="mt-10 text-center text-gray-500">
+                                        No results for &ldquo;{search}&rdquo;.
+                                    </p>
+                                )}
+
+                            {users.length > 0 && (
+                                <TopSection title="Users" onSeeAll={() => setActive("users")}>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                                        {users.slice(0, 6).map((u) => (
+                                            <UserCard
+                                                key={u.id}
+                                                id={u.id}
+                                                username={u.username}
+                                                name={u.name}
+                                                image={u.image}
+                                            />
+                                        ))}
+                                    </div>
+                                </TopSection>
+                            )}
+
+                            {projects.length > 0 && (
+                                <TopSection title="Projects" onSeeAll={() => setActive("projects")}>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                        {projects.slice(0, 4).map((project) => (
+                                            <ProjectCard
+                                                key={project.id}
+                                                project={project}
+                                                width="w-full"
+                                                height="h-[400px]"
+                                            />
+                                        ))}
+                                    </div>
+                                </TopSection>
+                            )}
+
+                            {posts.length > 0 && (
+                                <TopSection title="Posts" onSeeAll={() => setActive("posts")}>
+                                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-0.5 md:gap-4">
+                                        {posts.slice(0, 10).map((post) => (
+                                            <PostPreviewCard
+                                                key={post.id}
+                                                postId={post.id}
+                                                type={post.type}
+                                                content={post.data}
+                                                height="aspect-square"
+                                            />
+                                        ))}
+                                    </div>
+                                </TopSection>
+                            )}
                         </div>
                     )}
 
                     {active === "posts" && (
-                        <div>
-                            <h2 className="text-xl font-semibold mb-2">
-                                Posts
-                            </h2>
-                            <p className="text-gray-500">
-                                Posts results section (coming soon)...
-                            </p>
-                        </div>
+                        <PostSearchResult
+                            posts={posts}
+                            search={search}
+                            isLoading={isPostsLoading || isTyping}
+                            hasNextPage={!!hasNextPosts}
+                            isFetchingNextPage={isFetchingNextPosts}
+                            fetchNextPage={fetchNextPosts}
+                        />
                     )}
 
                     {/* ✅ Projects tab now uses ProjectSearchResult */}
@@ -202,7 +299,7 @@ export default function Page() {
                             users={users}
                             search={search}
                             isUsersLoading={isUsersLoading}
-                            hasNextPage={hasNextUsers}
+                            hasNextPage={!!hasNextUsers}
                             isFetchingNextPage={isFetchingNextUsers}
                             fetchNextPage={fetchNextUsers}
                         />
@@ -210,5 +307,31 @@ export default function Page() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// Heading + "See all" for each group in the Top tab.
+function TopSection({
+    title,
+    onSeeAll,
+    children,
+}: {
+    title: string;
+    onSeeAll: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <section className="space-y-3">
+            <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">{title}</h2>
+                <button
+                    onClick={onSeeAll}
+                    className="text-sm text-blue-600 hover:underline cursor-pointer"
+                >
+                    See all
+                </button>
+            </div>
+            {children}
+        </section>
     );
 }

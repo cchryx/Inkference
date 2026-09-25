@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import FallbackUserIcon from "./FallbackUserIcon";
+import { previewUrl } from "@/lib/imageUrl";
 
 type UserIconProps = {
     image?: string | null;
@@ -21,7 +22,7 @@ export function UserIcon({ image, size = "size-10" }: UserIconProps) {
 
     return (
         <img
-            src={image}
+            src={previewUrl(image, 400)}
             onError={() => setImgError(true)}
             className={`${size} rounded-full object-cover`}
         />

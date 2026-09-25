@@ -1,7 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "../../users/getUserData";
+import { notifyFriends } from "@/lib/notify";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 
 type CreatePostInput = {
     type: string;
@@ -14,7 +15,7 @@ type CreatePostInput = {
 };
 
 export async function createPost(input: CreatePostInput) {
-    const userData = await getUserData();
+    const userData = await getCurrentUserData();
 
     if (!userData || "error" in userData || !userData.userId) {
         return { error: "Unauthorized or no user data found." };
@@ -33,6 +34,14 @@ export async function createPost(input: CreatePostInput) {
                 tags: input.tags || [],
             },
         });
+
+        // Let the author's friends know about the new post.
+        if (post.type === "post") {
+            await notifyFriends(userData.userId, "friend_post", {
+                targetType: "post",
+                targetId: post.id,
+            }, post.description);
+        }
 
         return { error: null, post };
     } catch (error) {

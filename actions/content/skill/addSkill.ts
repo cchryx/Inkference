@@ -1,10 +1,10 @@
 "use server";
 
-import { getUserData } from "@/actions/users/getUserData";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 import { prisma } from "@/lib/prisma";
 
 export async function addSkill(data: { name: string }, projectId?: string) {
-    const userData = await getUserData();
+    const userData = await getCurrentUserData();
 
     if (!userData || "error" in userData || !userData.userId) {
         return { error: "Unauthorized or no user data found." };

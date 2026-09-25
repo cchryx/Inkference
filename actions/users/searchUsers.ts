@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getCurrentViewer } from "@/lib/visibility";
 
 const SearchUserSchema = z.object({
     query: z.string().min(1),
@@ -11,12 +12,17 @@ const SearchUserSchema = z.object({
 
 export async function searchUsers(input: z.infer<typeof SearchUserSchema>) {
     const { query, cursor, limit } = SearchUserSchema.parse(input);
+    const viewer = await getCurrentViewer();
 
     const users = await prisma.user.findMany({
         where: {
+            // Only users who finished setting up (have a username).
+            username: { not: null },
+            // Hide people you've blocked or who blocked you.
+            ...(viewer.blocked.length ? { id: { notIn: viewer.blocked } } : {}),
             OR: [
-                { name: { contains: query, mode: "insensitive" } },
-                { username: { contains: query, mode: "insensitive" } },
+                { name: { contains: query.trim(), mode: "insensitive" } },
+                { username: { contains: query.trim(), mode: "insensitive" } },
             ],
         },
         select: {

@@ -5,6 +5,7 @@ import { getProfileData } from "@/actions/profile/getProfileData";
 import Link from "next/link";
 import { Skeleton } from "@/components/general/Skeleton";
 import FallbackUserIcon from "../general/FallbackUserIcon";
+import { previewUrl } from "@/lib/imageUrl";
 
 const General = () => {
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -69,7 +70,7 @@ const General = () => {
                             >
                                 {notification.user.image ? (
                                     <img
-                                        src={notification.user.image}
+                                        src={previewUrl(notification.user.image, 96)}
                                         alt={notification.user.username}
                                         width={40}
                                         height={40}

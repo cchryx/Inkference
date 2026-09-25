@@ -12,6 +12,7 @@ import { useSearchSkills } from "@/hooks/useSearchSkills";
 import { addSkill } from "@/actions/content/skill/addSkill";
 import { deleteSkill } from "@/actions/content/skill/deleteSkill";
 import Img from "@/components/general/Img";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Props = {
     open: boolean;
@@ -199,7 +200,7 @@ const EditSkillsModal = ({
                                             >
                                                 <Img
                                                     src={
-                                                        skill.iconImage ||
+                                                        previewUrl(skill.iconImage, 96) ||
                                                         "/assets/general/fillers/skill.png"
                                                     }
                                                     fallbackSrc="/assets/general/fillers/skill.png"
@@ -230,7 +231,7 @@ const EditSkillsModal = ({
                                 <div className="flex items-center gap-2 truncate">
                                     <Img
                                         src={
-                                            skill.iconImage ||
+                                            previewUrl(skill.iconImage, 96) ||
                                             "/assets/general/fillers/skill.png"
                                         }
                                         fallbackSrc="/assets/general/fillers/skill.png"

@@ -12,7 +12,8 @@ type Props = {
 };
 
 const ResourcesCard = ({ isOwner, projectId, resources }: Props) => {
-    const [isLoading, setIsLoading] = useState(true);
+    // No fake loading delay: the data is already here from the server.
+    const [isLoading, setIsLoading] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
 

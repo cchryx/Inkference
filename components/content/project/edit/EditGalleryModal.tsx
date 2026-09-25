@@ -13,6 +13,7 @@ import Loader from "@/components/general/Loader";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import InfoTooltip from "@/components/general/InfoToolTip";
+import { previewUrl } from "@/lib/imageUrl";
 
 type GalleryItem = {
     image: string;
@@ -225,7 +226,7 @@ const EditGalleryModal = ({
                                             {/* Thumb */}
                                             <div className="w-9 h-9 rounded-md bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
                                                 <img
-                                                    src={item.image}
+                                                    src={previewUrl(item.image, 96)}
                                                     alt={
                                                         item.description ||
                                                         "Gallery image"

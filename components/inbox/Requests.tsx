@@ -9,6 +9,7 @@ import FallbackUserIcon from "../general/FallbackUserIcon";
 import { acceptFriendRequest } from "@/actions/users/acceptFriendRequest";
 import { toggleFriendRequest } from "@/actions/users/toggleFriendRequest";
 import { toast } from "sonner";
+import { previewUrl } from "@/lib/imageUrl";
 
 const Requests = () => {
     const [isPending, setIsPending] = useState(false);
@@ -126,7 +127,7 @@ const Requests = () => {
                         >
                             {req.user.image ? (
                                 <img
-                                    src={req.user.image}
+                                    src={previewUrl(req.user.image, 96)}
                                     alt={req.user.username}
                                     width={40}
                                     height={40}

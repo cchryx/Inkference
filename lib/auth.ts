@@ -32,15 +32,24 @@ export const auth = betterAuth({
             verify: verifyPassword,
         },
         requireEmailVerification: true,
+        // Used both for "forgot password" and for "create password" (users
+        // who signed up with Google/GitHub). Better Auth creates the
+        // email/password sign-in when the user follows the link.
         sendResetPassword: async ({ user, url }) => {
-            const email = user.email;
+            const hasPassword = await prisma.account.findFirst({
+                where: { userId: user.id, providerId: "credential" },
+                select: { id: true },
+            });
 
             await sendEmailAction({
-                to: email,
-                subject: "Reset your password",
+                to: user.email,
+                subject: hasPassword
+                    ? "Reset your password"
+                    : "Create your password",
                 meta: {
-                    description:
-                        "Please click the link below to reset your password.",
+                    description: hasPassword
+                        ? "Please click the link below to reset your password."
+                        : "Please click the link below to create a password. You'll then be able to sign in with your email and password too.",
                     link: String(url),
                 },
             });
@@ -110,7 +119,11 @@ export const auth = betterAuth({
     },
     account: {
         accountLinking: {
+            // Signing in with Google/GitHub using the same (verified) email
+            // joins the existing account instead of creating a new one.
             enabled: true,
+            // Accounts linked from Settings may use a different email.
+            allowDifferentEmails: true,
         },
     },
     advanced: {

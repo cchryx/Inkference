@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { SignoutButton } from "../auth/SignoutButton";
 import { NAVBARLEFT_LINKS, NAVBARLEFT_SUB_LINKS } from "@/constants/index";
 import { UserIcon } from "../general/UserIcon";
+import { UnreadBadge } from "../general/UnreadBadge";
 
 type NavbarLeftProps = {
     session: any;
@@ -60,9 +61,23 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                     <Menu className="w-6 h-6 text-black" />
                 </button>
                 {isOpen && (
-                    <span className="text-lg font-semibold text-black">
-                        Inkference
-                    </span>
+                    // Same logo as the welcome page: nib in a cut-corner plate.
+                    <Link href="/" className="flex min-w-0 items-center gap-2 leading-5">
+                        <span className="grid h-5 w-5 shrink-0 place-items-center bg-neutral-900 [clip-path:polygon(5px_0,100%_0,100%_calc(100%-5px),calc(100%-5px)_100%,0_100%,0_5px)]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="/assets/brand/logo-mark-white.png"
+                                alt=""
+                                width={14}
+                                height={14}
+                                className="h-3.5 w-3.5 select-none"
+                                draggable={false}
+                            />
+                        </span>
+                        <span className="truncate font-mono text-sm font-bold tracking-[0.3em] text-black">
+                            INKFERENCE
+                        </span>
+                    </Link>
                 )}
             </div>
 
@@ -105,7 +120,11 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                     }`}
                     onClick={() => setShowUserMenu(!showUserMenu)}
                 >
-                    <UserIcon image={user.image} size="size-12" />
+                    <span className="relative shrink-0">
+                        <UserIcon image={user.image} size="size-12" />
+                        {/* Red dot when there are unread notifications */}
+                        <UnreadBadge className="absolute -right-0.5 -top-0.5" />
+                    </span>
 
                     {isOpen && (
                         <div className="flex flex-col max-w-full overflow-hidden">
@@ -155,6 +174,9 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                                                 >
                                                     <Icon className="size-4 text-bold" />
                                                     <span>{label}</span>
+                                            {label === "Inbox" && (
+                                                <UnreadBadge variant="count" className="ml-auto" />
+                                            )}
                                                 </Link>
                                             )}
                                         </li>

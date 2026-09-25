@@ -8,15 +8,19 @@ import ResourcesCard from "@/components/content/project/ResourcesCard";
 import SkillsCard from "@/components/content/project/SkillsCard";
 import { getProjectById } from "@/actions/content/project/getProject";
 import { ReturnButton } from "@/components/auth/ReturnButton";
-import { getProfileData } from "@/actions/profile/getProfileData";
 import GalleryCard from "@/components/content/project/GalleryCard";
-import { getUserData } from "@/actions/users/getUserData";
+import { prisma } from "@/lib/prisma";
+import { previewUrl } from "@/lib/imageUrl";
 import { cache } from "react";
+import { canViewProject, getCurrentViewer } from "@/lib/visibility";
 import { Metadata } from "next";
 
+// Loads the project, but only if the viewer is allowed to see it.
+// Hidden projects look exactly like missing ones.
 const getProjectData = cache(async (id: string) => {
-    const projectData = await getProjectById(id);
-
+    const [projectData, viewer] = await Promise.all([getProjectById(id), getCurrentViewer()]);
+    if (!projectData || "error" in projectData) return projectData;
+    if (!(await canViewProject(id, viewer))) return { error: "Project not found." };
     return projectData;
 });
 
@@ -30,7 +34,7 @@ export async function generateMetadata({
     const projectData: any = await getProjectData(id);
 
     // If no project found
-    if (!projectData) {
+    if (!projectData || "error" in projectData) {
         return {
             title: `Project not found`,
             description: `The project with this ID does not exist or may have been removed.`,
@@ -47,10 +51,13 @@ export async function generateMetadata({
         };
     }
 
-    const bannerImage =
-        projectData.bannerImage || "/assets/general/fillerImage.png";
-    const iconImage =
-        projectData.iconImage || "/assets/general/fillers/project.png";
+    // Smaller copies so link previews (Discord etc.) load faster.
+    const bannerImage = projectData.bannerImage
+        ? previewUrl(projectData.bannerImage, 1200)
+        : "/assets/general/fillerImage.png";
+    const iconImage = projectData.iconImage
+        ? previewUrl(projectData.iconImage, 400)
+        : "/assets/general/fillers/project.png";
 
     return {
         title: projectData.name,
@@ -92,11 +99,10 @@ export default async function Page({
 }) {
     const { id } = await params;
 
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    const project = await getProjectData(id);
+    const [session, project] = await Promise.all([
+        auth.api.getSession({ headers: await headers() }),
+        getProjectData(id),
+    ]);
     if (!project || "error" in project) {
         return (
             <div className="flex justify-center items-center h-full w-full">
@@ -108,11 +114,17 @@ export default async function Page({
             </div>
         );
     }
-    const tUser = await getProfileData(project.userData.user.username);
-    const tProfile = tUser.profile;
-    const tUserData: any = await getUserData(project.userData.userId);
-    const tProjects = tUserData?.projects;
-    const tFollowers = tUser.relationships?.followers;
+    // The author card only needs a bio and two numbers: count them instead
+    // of loading the author's whole profile.
+    const author = await prisma.user.findUnique({
+        where: { id: project.userData.userId },
+        select: {
+            Profile: { select: { bio: true } },
+            Relationships: { select: { _count: { select: { followers: true } } } },
+            UserData: { select: { _count: { select: { projects: true } } } },
+        },
+    });
+    const tProfile = { bio: author?.Profile?.bio ?? "" };
 
     const isOwner = session?.user.id === project.userData.user.id;
     const hasItems = (arr: unknown) => Array.isArray(arr) && arr.length > 0;
@@ -131,9 +143,9 @@ export default async function Page({
                 <div className="lg:w-[15rem] lg:flex flex-col space-y-5">
                     <AuthorCard
                         isOwner={isOwner}
-                        tProjects={tProjects || []}
                         tProfile={tProfile}
-                        tFollowers={tFollowers || []}
+                        followerCount={author?.Relationships?._count.followers ?? 0}
+                        projectCount={author?.UserData?._count.projects ?? 0}
                         project={project}
                     />
 

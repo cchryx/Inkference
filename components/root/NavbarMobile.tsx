@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { NAVBARLEFT_LINKS, NAVBARLEFT_SUB_LINKS } from "@/constants/index";
 import { SignoutButton } from "../auth/SignoutButton";
 import { UserIcon } from "../general/UserIcon";
+import { UnreadBadge } from "../general/UnreadBadge";
 
 type NavbarMobileProps = {
     session: any;
@@ -51,7 +52,11 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                     className="flex flex-col items-center text-xs cursor-pointer border-black border-2 rounded-full"
                     onClick={() => setShowUserMenu((prev) => !prev)}
                 >
-                    <UserIcon image={user.image} size="size-8" />
+                    <span className="relative shrink-0">
+                        <UserIcon image={user.image} size="size-8" />
+                        {/* Red dot when there are unread notifications */}
+                        <UnreadBadge className="absolute -right-0.5 -top-0.5" />
+                    </span>
                 </div>
 
                 {/* Main Nav Links */}
@@ -124,6 +129,9 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                                         >
                                             <Icon className="size-4 text-bold" />
                                             <span>{label}</span>
+                                            {label === "Inbox" && (
+                                                <UnreadBadge variant="count" className="ml-auto" />
+                                            )}
                                         </Link>
                                     </li>
                                 );

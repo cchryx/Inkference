@@ -21,11 +21,14 @@ import { format } from "date-fns";
 import ConfirmModal from "../../general/ConfirmModal";
 import { deleteProject } from "@/actions/content/project/deleteProject";
 import { useRouter } from "next/navigation";
+import { useNavigate } from "@/lib/navigation";
 import EditHeaderModal from "./edit/EditHeaderModal";
+import VisibilityModal from "@/components/general/VisibilityModal";
 import { likeProject } from "@/actions/content/project/likeProject";
 import { viewProject } from "@/actions/content/project/viewProject";
 import { saveProject } from "@/actions/content/project/saveProject";
 import { createPost } from "@/actions/content/post/createPost";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Props = {
     isOwner: boolean;
@@ -35,11 +38,15 @@ type Props = {
 
 export const HeaderCard = ({ isOwner, session, project }: Props) => {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
+    // Shows the loading screen right away (see NavigationLoader).
+    const navigate = useNavigate();
+    // No fake loading delay: the data is already here from the server.
+    const [isLoading, setIsLoading] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const [confirmMopen, setConfirmMOpen] = useState(false);
     const [confirmPostOpen, setConfirmPostOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
+    const [visibilityOpen, setVisibilityOpen] = useState(false);
     const [likes, setLikes] = useState(project.likes || []);
     const [saves, setSaves] = useState(project.saves || []);
 
@@ -112,7 +119,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
         } else {
             toast.success("Project deleted successfully.");
             router.refresh();
-            router.push("/portfolio");
+            navigate("/portfolio");
         }
 
         setIsPending(false);
@@ -260,6 +267,10 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                 onClose={() => setConfirmPostOpen(false)}
             />
 
+            {visibilityOpen && (
+                <VisibilityModal kind="project" id={project.id} onClose={() => setVisibilityOpen(false)} />
+            )}
+
             <EditHeaderModal
                 open={editOpen}
                 onClose={() => setEditOpen(false)}
@@ -285,7 +296,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                         className="w-full h-[200px] md:h-[350px] bg-center bg-cover"
                         style={{
                             backgroundImage: `url('${
-                                project.bannerImage ??
+                                previewUrl(project.bannerImage, 1600) ||
                                 "/assets/general/fillerImage.png"
                             }')`,
                         }}
@@ -294,7 +305,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                     <div className="absolute left-[3%] -bottom-[10%] w-20 h-20 md:w-40 md:h-40 rounded-md border-[3px] flex items-center justify-center overflow-hidden">
                         <img
                             src={
-                                project.iconImage ??
+                                previewUrl(project.iconImage, 320) ||
                                 "/assets/general/fillers/project.png"
                             }
                             alt={`${project.name} icon`}
@@ -370,6 +381,14 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         <button
+                                            onClick={() => setVisibilityOpen(true)}
+                                            aria-label="Who can see this"
+                                            title="Who can see this"
+                                            className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </button>
+                                        <button
                                             onClick={() =>
                                                 setConfirmMOpen(true)
                                             }
@@ -387,7 +406,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                                     disabled
                                 >
                                     <Eye className="w-4 h-4 text-gray-600" />
-                                    <span>{project.views?.length ?? 0}</span>
+                                    <span>{project._count?.views ?? project.views?.length ?? 0}</span>
                                 </button>
                                 <button
                                     onClick={handleLike}

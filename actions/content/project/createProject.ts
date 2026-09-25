@@ -1,7 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "../../users/getUserData";
+import { notifyFriends } from "@/lib/notify";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 
 export async function createProject(data: {
     name: string;
@@ -17,7 +18,7 @@ export async function createProject(data: {
     skills: any[];
     contributorIds: string[];
 }) {
-    const userData = await getUserData();
+    const userData = await getCurrentUserData();
 
     if (!userData || "error" in userData) {
         return { error: "Unauthorized or no user data found." };
@@ -47,6 +48,12 @@ export async function createProject(data: {
             },
         },
     });
+
+    // Let the author's friends know about the new project.
+    await notifyFriends(userData.userId, "friend_project", {
+        targetType: "project",
+        targetId: project.id,
+    }, project.name);
 
     return project;
 }

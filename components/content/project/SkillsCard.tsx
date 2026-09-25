@@ -5,6 +5,7 @@ import { Skeleton } from "../../general/Skeleton";
 import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import EditSkillsModal from "./edit/EditSkillsModal";
 import Img from "@/components/general/Img"; // make sure you have this component
+import { previewUrl } from "@/lib/imageUrl";
 
 interface SkillsCardProps {
     isOwner: boolean;
@@ -13,7 +14,8 @@ interface SkillsCardProps {
 }
 
 const SkillsCard = ({ isOwner, skills, projectId }: SkillsCardProps) => {
-    const [isLoading, setIsLoading] = useState(true);
+    // No fake loading delay: the data is already here from the server.
+    const [isLoading, setIsLoading] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
 
@@ -100,7 +102,7 @@ const SkillsCard = ({ isOwner, skills, projectId }: SkillsCardProps) => {
                             >
                                 {skill.iconImage && (
                                     <Img
-                                        src={skill.iconImage}
+                                        src={previewUrl(skill.iconImage, 64)}
                                         fallbackSrc="/assets/general/fillers/skill.png"
                                         alt={`${skill.name} icon`}
                                         className="w-5 h-5 rounded-sm object-contain"

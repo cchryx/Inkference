@@ -1,10 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getUserData } from "../../users/getUserData";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 
 export async function deleteSkill(skillId: string, projectId?: string) {
-    const userData = await getUserData();
+    const userData = await getCurrentUserData();
     if (!userData || "error" in userData) return { error: "Unauthorized." };
 
     // Fetch the skill including connected users

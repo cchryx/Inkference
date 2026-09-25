@@ -6,6 +6,7 @@ import { Briefcase, CalendarDays, MapPin, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Experience = {
     id: string;
@@ -128,7 +129,7 @@ const ExperienceCard = ({
 
                     {organization && (
                         <img
-                            src={organization || fillerImage}
+                            src={previewUrl(organization, 160) || fillerImage}
                             className="size-20 rounded-md object-contain border-2 border-gray-300 shadow-md"
                             onError={(e) => {
                                 const target =

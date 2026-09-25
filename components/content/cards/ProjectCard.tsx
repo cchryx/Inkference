@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Heart, Eye, CalendarDays, Bookmark } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@/lib/navigation";
+import { previewUrl } from "@/lib/imageUrl";
 
 type ProjectCardProps = {
     project: any;
@@ -15,7 +16,8 @@ export default function ProjectCard({
     width = "w-full",
     height = "h-[400px]",
 }: ProjectCardProps) {
-    const router = useRouter();
+    // Shows the loading screen right away (see NavigationLoader).
+    const navigate = useNavigate();
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
 
@@ -47,9 +49,13 @@ export default function ProjectCard({
         : "Present";
 
     const skills = Array.isArray(project.skills) ? project.skills : [];
-    const likes = Array.isArray(project.likes) ? project.likes.length : 0;
-    const views = Array.isArray(project.views) ? project.views.length : 0;
-    const saves = Array.isArray(project.saves) ? project.saves.length : 0;
+    // Prefer counts (_count) when the caller sends them, e.g. the home feed.
+    const count = (key: "likes" | "views" | "saves") =>
+        project._count?.[key] ??
+        (Array.isArray(project[key]) ? project[key].length : 0);
+    const likes = count("likes");
+    const views = count("views");
+    const saves = count("saves");
 
     const postedAt = project.createdAt
         ? new Date(project.createdAt).toISOString()
@@ -60,10 +66,10 @@ export default function ProjectCard({
 
     const handleClick = () => {
         if (!isTouchDevice) {
-            router.push(`/project/${project.id}`);
+            navigate(`/project/${project.id}`);
         } else {
             if (isOverlayVisible) {
-                router.push(`/project/${project.id}`);
+                navigate(`/project/${project.id}`);
             } else {
                 setIsOverlayVisible(true);
                 setTimeout(() => setIsOverlayVisible(false), 3000);
@@ -79,13 +85,13 @@ export default function ProjectCard({
             {/* Banner */}
             <div
                 className="h-32 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                style={{ backgroundImage: `url('${bannerUrl}')` }}
+                style={{ backgroundImage: `url('${previewUrl(bannerUrl, 800)}')` }}
             />
 
             {/* Icon */}
             <div className="absolute right-4 top-[5rem]">
                 <img
-                    src={iconUrl}
+                    src={previewUrl(iconUrl, 200)}
                     alt={`${name} icon`}
                     className="size-18 rounded-md border-2 border-white shadow-md object-cover bg-gray-800/50"
                 />

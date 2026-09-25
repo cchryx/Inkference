@@ -6,14 +6,21 @@ import { headers } from "next/headers";
 import { getLinkedAccounts } from "./getLinkedAccounts";
 
 export async function changePasswordAction(formData: FormData) {
-    const {
-        accounts,
-        error: linkedAccountsError,
-        hasPassword,
-    } = await getLinkedAccounts();
+    const { error: linkedAccountsError, hasPassword } =
+        await getLinkedAccounts();
 
     if (linkedAccountsError) {
         return { error: linkedAccountsError };
+    }
+
+    // No password yet: that goes through the emailed "create password" link.
+    if (!hasPassword) {
+        return { error: "You don't have a password yet. Create one first." };
+    }
+
+    const currentPassword = String(formData.get("currentPassword") ?? "");
+    if (!currentPassword) {
+        return { error: "Please enter your current password." };
     }
 
     const newPassword = String(formData.get("newPassword"));
@@ -25,22 +32,10 @@ export async function changePasswordAction(formData: FormData) {
     }
 
     try {
-        if (hasPassword) {
-            const currentPassword = String(formData.get("currentPassword"));
-            if (!currentPassword) {
-                return { error: "Please enter your current password." };
-            }
-
-            await auth.api.changePassword({
-                headers: await headers(),
-                body: { currentPassword, newPassword },
-            });
-        } else {
-            await auth.api.setPassword({
-                headers: await headers(),
-                body: { newPassword },
-            });
-        }
+        await auth.api.changePassword({
+            headers: await headers(),
+            body: { currentPassword, newPassword },
+        });
 
         return { error: null };
     } catch (error) {

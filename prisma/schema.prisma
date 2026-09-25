@@ -5,13 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 ////////// AUTH //////////
@@ -92,6 +91,7 @@ model User {
   Profile       Profile?
   UserData      UserData?
   Relationships Relationships?
+  PrivacySettings PrivacySettings?
 
   @@map("users")
 }
@@ -147,6 +147,8 @@ model UserData {
   postsViewed Post[] @relation("PostViews")
   postsSaved  Post[] @relation("PostSaves")
 
+  comments Comment[]
+
   @@map("userData")
 }
 
@@ -193,6 +195,12 @@ model Project {
   views UserData[] @relation("ProjectViews")
   likes UserData[] @relation("ProjectLikes")
   saves UserData[] @relation("ProjectSaves")
+
+  // Who can see it. DEFAULT = use the owner's default from Settings.
+  // PUBLIC | FOLLOWERS | FRIENDS | CUSTOM (only allowedUserIds) | PRIVATE (only me)
+  visibility        String   @default("DEFAULT") @db.VarChar(10)
+  allowedUserIds    String[] @default([]) // for CUSTOM
+  hiddenFromUserIds String[] @default([]) // these people can never see it
 
   galleryImages ProjectGalleryImage[]
 
@@ -320,7 +328,17 @@ model Post {
   likes UserData[] @relation("PostLikes")
   saves UserData[] @relation("PostSaves")
 
+  // Who can see it. DEFAULT = use the owner's default from Settings.
+  // PUBLIC | FOLLOWERS | FRIENDS | CUSTOM (only allowedUserIds) | PRIVATE (only me)
+  visibility        String   @default("DEFAULT") @db.VarChar(10)
+  allowedUserIds    String[] @default([]) // for CUSTOM
+  hiddenFromUserIds String[] @default([]) // these people can never see it
+
+  comments Comment[]
+
   @@index([userDataId, updatedAt])
+  @@index([userDataId, createdAt]) // Following / Friends feed
+  @@index([createdAt, id]) // For You feed (keyset pagination)
   @@map("posts")
 }
 
@@ -350,6 +368,12 @@ model Gallery {
 
   photos Photo[]
 
+  // Who can see it. DEFAULT = use the owner's default from Settings.
+  // PUBLIC | FOLLOWERS | FRIENDS | CUSTOM (only allowedUserIds) | PRIVATE (only me)
+  visibility        String   @default("DEFAULT") @db.VarChar(10)
+  allowedUserIds    String[] @default([]) // for CUSTOM
+  hiddenFromUserIds String[] @default([]) // these people can never see it
+
   @@map("galleries")
 }
 
@@ -364,4 +388,114 @@ model Photo {
   image String
 
   @@map("photos")
+}
+
+////////// TRENDING //////////
+// One row per person, per action, per item, per day. Used to find what's
+// hot right now (likes/views/saves in the last 24 hours or 7 days).
+model Engagement {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  day       DateTime @db.Date
+
+  kind       String @db.VarChar(10) // "view" | "like" | "save" | "comment"
+  targetType String @db.VarChar(10) // "post" | "project"
+  targetId   String
+  userDataId String
+
+  @@unique([kind, targetType, targetId, userDataId, day])
+  @@index([createdAt])
+  @@index([targetType, targetId])
+  @@map("engagements")
+}
+
+////////// COMMENTS //////////
+model Comment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  text String @db.VarChar(1000)
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userDataId String
+  userData   UserData @relation(fields: [userDataId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@map("comments")
+}
+
+////////// NOTIFICATIONS //////////
+// One row per "group" for a person, e.g. all new likes on one post.
+// New activity updates the row ("Sam and 4 others liked your post")
+// instead of creating a row per like.
+model Notification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipientId String // User.id of who gets it
+  type        String  @db.VarChar(30) // like | comment | follow | friend_request | friend_accept | friend_post | friend_project | views
+  groupKey    String  @db.VarChar(120) // e.g. "like:post:<id>"
+  targetType  String? @db.VarChar(10) // post | project
+  targetId    String?
+
+  actorIds   String[] @default([]) // most recent people first (up to 3)
+  actorCount Int      @default(1) // how many people in total
+  preview    String?  @db.VarChar(200) // e.g. the latest comment
+  read       Boolean  @default(false)
+
+  @@unique([recipientId, groupKey])
+  @@index([recipientId, updatedAt])
+  @@index([recipientId, read])
+  @@map("notifications")
+}
+
+////////// PRIVACY //////////
+model PrivacySettings {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Default audience for posts, projects and galleries:
+  // PUBLIC | FOLLOWERS | FRIENDS | PRIVATE
+  defaultVisibility String   @default("PUBLIC") @db.VarChar(10)
+  // People who can't see ANY of your posts, projects or galleries.
+  hiddenFrom        String[] @default([])
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_settings")
+}
+
+// Which notifications someone wants. Everything is on unless listed here.
+model NotificationSettings {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inAppOff String[] @default([]) // types not shown in the Inbox at all
+  pushOff  String[] @default([]) // types not sent to the phone/computer
+
+  userId String @unique
+
+  @@map("notification_settings")
+}
+
+// A device that agreed to receive push notifications (phone PWA, browser).
+model PushSubscription {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  endpoint  String  @unique
+  p256dh    String
+  auth      String
+  userAgent String? @db.VarChar(300)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }

@@ -16,7 +16,7 @@ export default async function page({ searchParams }: PageProps) {
 
             <p className="text-destructive">
                 {params.error === "account_not_linked"
-                    ? "This account is not linked to another sign-in method."
+                    ? "An account with this email already exists. Sign in with your email and password, then link this account in Settings under Authentication."
                     : "Oops! Something went wrong. Please try again."}
             </p>
         </div>

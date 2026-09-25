@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { addSkill } from "@/actions/content/skill/addSkill";
 import { useSearchSkills } from "@/hooks/useSearchSkills";
 import Img from "@/components/general/Img";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Props = {
     skills: any[];
@@ -134,7 +135,7 @@ export default function AddSkillModal({
                                     >
                                         <Img
                                             src={
-                                                skill.iconImage ||
+                                                previewUrl(skill.iconImage, 96) ||
                                                 "/assets/general/fillers/skill.png"
                                             }
                                             fallbackSrc="/assets/general/fillers/skill.png"

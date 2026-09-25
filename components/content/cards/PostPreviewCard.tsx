@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
     Heart,
     Eye,
@@ -11,11 +10,13 @@ import {
     GraduationCap,
     Send,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@/lib/navigation";
+import { previewUrl } from "@/lib/imageUrl";
 
 type PostPreviewCardProps = {
     type: string; // "project", "experience", "education", "post", etc.
     content: any;
+    postId?: string; // the Post row id (content.id is the project id for projects)
     width?: string;
     height?: string;
 };
@@ -23,46 +24,24 @@ type PostPreviewCardProps = {
 export default function PostPreviewCard({
     type,
     content,
+    postId,
     width = "w-full",
     height = "h-[200px]",
 }: PostPreviewCardProps) {
-    const router = useRouter();
-    const [isOverlayVisible, setIsOverlayVisible] = useState(false);
-    const [isTouchDevice, setIsTouchDevice] = useState(false);
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            setIsTouchDevice(window.matchMedia("(hover: none)").matches);
-        }
-    }, []);
-
-    console.log(content);
-
+    // Shows the loading screen right away (see NavigationLoader).
+    const navigate = useNavigate();
     const thumbnailUrl =
         content.bannerImage ||
         (content.content && content.content[0]) ||
         "/assets/general/fillerImage.png";
 
-    const handleClick = () => {
-        if (!isTouchDevice) {
-            if (type === "project") {
-                router.push(`/project/${content.id}`);
-            } else if (type === "experience") {
-                router.push(`/experience/${content.id}`);
-            } else if (type === "education") {
-                router.push(`/education/${content.id}`);
-            } else {
-                router.push(`/post/${content.id}`);
-            }
-        } else {
-            if (isOverlayVisible) {
-                router.push(`/post/${content.id}`);
-            } else {
-                setIsOverlayVisible(true);
-                setTimeout(() => setIsOverlayVisible(false), 3000);
-            }
-        }
-    };
+    const href =
+        type === "project"
+            ? `/project/${content.id}`
+            : `/post/${postId ?? content.id}`;
+
+    // Phones open the post straight away, like Instagram.
+    const handleClick = () => navigate(href);
 
     const getTypeIcon = () => {
         switch (type) {
@@ -79,10 +58,13 @@ export default function PostPreviewCard({
         }
     };
 
-    // Stats
-    const likes = Array.isArray(content.likes) ? content.likes.length : 0;
-    const views = Array.isArray(content.views) ? content.views.length : 0;
-    const saves = Array.isArray(content.saves) ? content.saves.length : 0;
+    // Stats (counts from _count when provided, otherwise array lengths)
+    const count = (key: "likes" | "views" | "saves") =>
+        content._count?.[key] ??
+        (Array.isArray(content[key]) ? content[key].length : 0);
+    const likes = count("likes");
+    const views = count("views");
+    const saves = count("saves");
     const postedAt = content.createdAt
         ? new Date(content.createdAt).toISOString()
         : "";
@@ -93,7 +75,7 @@ export default function PostPreviewCard({
             onClick={handleClick}
             className={`group relative ${width} ${height} rounded-md shadow-md hover:shadow-xl transition-shadow transform-gpu hover:-translate-y-1 hover:scale-[1.015] duration-300 overflow-hidden flex flex-col cursor-pointer`}
             style={{
-                backgroundImage: `url('${thumbnailUrl}')`,
+                backgroundImage: `url('${previewUrl(thumbnailUrl, 480)}')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
             }}
@@ -105,11 +87,7 @@ export default function PostPreviewCard({
 
             {/* Overlay with stats */}
             <div
-                className={`absolute inset-0 z-20 bg-black/50 backdrop-blur-[1px] text-white ${
-                    isOverlayVisible
-                        ? "opacity-100"
-                        : "opacity-0 group-hover:opacity-100"
-                } transition-opacity duration-300 flex flex-col justify-between p-4 text-sm pointer-events-none`}
+                className={`absolute inset-0 z-20 bg-black/50 backdrop-blur-[1px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 text-sm pointer-events-none`}
             >
                 <div className="text-[0.5rem] md:text-xs bg-white/10 px-2 py-1 rounded-md font-medium w-fit text-white shadow-sm">
                     Click to view

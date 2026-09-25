@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { previewUrl } from "@/lib/imageUrl";
+import { timeShort } from "@/lib/timeShort";
+import Caption from "@/components/content/post/Caption";
 
 type Props = {
     post: any;
@@ -9,7 +12,8 @@ type Props = {
     location: string;
 };
 
-const PostCard = ({ post, description }: Props) => {
+const PostCard = ({ post, description, location }: Props) => {
+    const username: string | undefined = post?.author?.username;
     const [currentIndex, setCurrentIndex] = useState(0);
     const [dragOffset, setDragOffset] = useState(0);
     const [showFullDescription, setShowFullDescription] = useState(false);
@@ -89,7 +93,7 @@ const PostCard = ({ post, description }: Props) => {
                             className="flex-shrink-0 w-full flex items-center justify-center"
                         >
                             <img
-                                src={img}
+                                src={previewUrl(img, 1080)}
                                 className="w-full object-cover select-none pointer-events-none"
                             />
                         </div>
@@ -128,41 +132,57 @@ const PostCard = ({ post, description }: Props) => {
                     </>
                 )}
 
-                {/* Full description overlay */}
-                {showFullDescription && (
-                    <div className="absolute bottom-0 left-0 w-full h-[70%] bg-gray-100/70 px-4 py-1 transition-all duration-200 flex flex-col">
-                        {/* Close button */}
-                        <button
-                            onClick={() => setShowFullDescription(false)}
-                            className="absolute top-2 right-2 bg-white rounded-full p-1 z-10"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-
-                        {/* Scrollable description (no fades, simple scroll) */}
-                        <div className="mt-6 flex-1 overflow-y-auto scrollbar-none whitespace-pre-wrap text-sm no-scrollbar">
-                            {description}
-                        </div>
+                {/* Full caption: slides up over the photo, tap outside the text to close */}
+                <div
+                    onClick={() => setShowFullDescription(false)}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className={`absolute inset-0 flex items-end bg-gradient-to-t from-black/85 via-black/50 to-transparent transition-opacity duration-200 ${
+                        showFullDescription ? "opacity-100" : "pointer-events-none opacity-0"
+                    }`}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className={`max-h-[65%] w-full overflow-y-auto no-scrollbar px-4 pb-4 pt-10 text-white transition-transform duration-200 ${
+                            showFullDescription ? "translate-y-0" : "translate-y-4"
+                        }`}
+                    >
+                        {showFullDescription && (
+                            <Caption
+                                text={description}
+                                username={username}
+                                expanded
+                                onToggle={setShowFullDescription}
+                                className="[&_a]:!text-sky-300 [&_button]:!text-white/70"
+                            />
+                        )}
                     </div>
-                )}
+                </div>
             </div>
 
-            {/* Collapsed description */}
-            {!showFullDescription && description && (
-                <div className="text-sm m-3 relative">
-                    <div className="line-clamp-2 break-all whitespace-pre-wrap">
-                        {description}
-                    </div>
-                    {description.length > 100 && (
-                        <div className="mt-1">
-                            <button
-                                onClick={() => setShowFullDescription(true)}
-                                className="text-blue-500"
-                            >
-                                See More
-                            </button>
-                        </div>
+            {/* Caption under the photo (2 lines, "more" only if it's cut off) */}
+            {(description || location || post?.createdAt) && (
+                <div className="px-3 py-2.5 space-y-1">
+                    {description && (
+                        <Caption
+                            text={description}
+                            username={username}
+                            lines={2}
+                            onToggle={setShowFullDescription}
+                            // Kept in place (just hidden) so nothing jumps when opened.
+                            className={showFullDescription ? "invisible" : ""}
+                        />
                     )}
+                    <p className="flex items-center gap-1.5 text-xs text-gray-500">
+                        {post?.createdAt && <span>{timeShort(post.createdAt)}</span>}
+                        {location && (
+                            <>
+                                {post?.createdAt && <span aria-hidden>·</span>}
+                                <MapPin className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{location}</span>
+                            </>
+                        )}
+                    </p>
                 </div>
             )}
         </div>

@@ -12,7 +12,9 @@ export const {
     signIn,
     useSession,
     sendVerificationEmail,
-    forgetPassword,
+    requestPasswordReset,
     resetPassword,
     updateUser,
+    linkSocial,
+    unlinkAccount,
 } = authClient;

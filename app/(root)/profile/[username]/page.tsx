@@ -1,9 +1,8 @@
-import { getProfileData } from "@/actions/profile/getProfileData";
+import { getProfileData, getProfileMeta } from "@/actions/profile/getProfileData";
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { SocialsCard } from "@/components/profile/SocialsCard";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -12,90 +11,62 @@ import RecommendedAccountsCard from "@/components/profile/RecommendedAccountsCar
 import { getUserData } from "@/actions/users/getUserData";
 import { Metadata } from "next";
 import { cache } from "react";
+import { previewUrl } from "@/lib/imageUrl";
+import { getViewerContext } from "@/lib/visibility";
+import BlockedNotice from "@/components/profile/BlockedNotice";
 
-const getprofileData = cache(async (username: string) => {
-    const profileData = await getProfileData(username);
+// Deduped within one request.
+const loadProfile = cache(getProfileData);
 
-    return profileData;
-});
+type PageProps = { params: Promise<{ username: string }> };
 
-export async function generateMetadata({
-    params,
-}: {
-    params: Promise<{ username: string }>;
-}): Promise<Metadata> {
+// Link previews only need a name, bio and picture: one small cached query
+// instead of loading the whole profile.
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { username } = await params;
+    const user = await getProfileMeta(username);
 
-    const profileData = await getProfileData(username);
-
-    if (!profileData) {
+    if (!user) {
         return {
             title: `User "${username}" not found`,
             description: `The profile for "${username}" does not exist or may have been removed.`,
-            openGraph: {
-                title: `User "${username}" not found`,
-                description: `The profile for "${username}" does not exist or may have been removed.`,
-                url: `/user/${username}`,
-            },
-            twitter: {
-                card: "summary",
-                title: `User "${username}" not found`,
-                description: `The profile for "${username}" does not exist or may have been removed.`,
-            },
         };
     }
 
-    const bannerImage =
-        profileData.profile.bannerImage || "/assets/general/fillerImage.png";
-    const profileImage =
-        profileData.user.image || "/assets/general/fillerImage.png";
+    const title = `${user.name} (@${user.username})`;
+    const description = user.Profile?.bio || "View this user's profile on Inkference.";
+    const banner = user.Profile?.bannerImage
+        ? previewUrl(user.Profile.bannerImage, 1200)
+        : "/assets/general/fillerImage.png";
 
     return {
-        metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL!),
-        title: `${profileData.user.name} (@${profileData.user.username})`,
-        description: profileData.profile.bio || "View this user's profile.",
+        title,
+        description,
         openGraph: {
-            title: `${profileData.user.name} (@${profileData.user.username})`,
-            description: profileData.profile.bio || "View this user's profile.",
-            url: `/user/${profileData.user.username}`,
-            images: [
-                {
-                    url: bannerImage,
-                    alt: `${profileData.user.name}'s profile banner`,
-                },
-                {
-                    url: profileImage,
-                    alt: `${profileData.user.name}'s profile picture`,
-                },
-            ],
+            title,
+            description,
+            url: `/profile/${user.username}`,
+            images: [{ url: banner, alt: `${user.name}'s profile banner` }],
         },
         twitter: {
             card: "summary_large_image",
-            title: `${profileData.user.name} (@${profileData.user.username})`,
-            description: profileData.profile.bio || "View this user's profile.",
-            images: [bannerImage],
+            title,
+            description,
+            images: [banner],
         },
     };
 }
 
-export default async function Page({
-    params,
-}: {
-    params: Promise<{ username: string }>;
-}) {
+export default async function Page({ params }: PageProps) {
     const { username } = await params;
 
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+    // Session and profile load at the same time.
+    const [session, profileData] = await Promise.all([
+        auth.api.getSession({ headers: await headers() }),
+        loadProfile(username),
+    ]);
 
-    let tUser: any = await prisma.user.findFirst({
-        where: {
-            username,
-        },
-    });
-
-    if (!tUser) {
+    if (!profileData.user.id) {
         return (
             <div className="flex justify-center items-center h-full w-full">
                 <div className="bg-gray-100 p-8 rounded shadow-md space-y-2">
@@ -107,11 +78,22 @@ export default async function Page({
         );
     }
 
-    const profileData = await getprofileData(username);
-    const userData: any = await getUserData(tUser.id);
+    // Blocked (either way)? Show a notice instead of the profile.
+    const viewer = await getViewerContext(session?.user?.id);
+    if (viewer.blocked.includes(profileData.user.id)) {
+        return (
+            <BlockedNotice
+                userId={profileData.user.id}
+                username={profileData.user.username}
+                blockedByMe={viewer.blockedByMe.includes(profileData.user.id)}
+            />
+        );
+    }
 
-    tUser = {
-        ...tUser,
+    const userData: any = await getUserData(profileData.user.id, { viewer });
+
+    const tUser: any = {
+        ...profileData.user,
         ...profileData.profile,
         relationships: profileData.relationships,
         projects: userData.projects,

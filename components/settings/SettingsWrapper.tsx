@@ -6,14 +6,30 @@ import Authentication from "@/components/settings/Authenticaion";
 import Profile from "@/components/settings/Profile";
 import { Settings } from "lucide-react";
 import User from "@/components/settings/User";
+import Privacy from "@/components/settings/Privacy";
+import NotificationSettings from "@/components/settings/NotificationSettings";
+import type { LinkedAccount } from "@/actions/auth/getLinkedAccounts";
 
 type Props = {
-    accounts: any[];
+    accounts: LinkedAccount[];
     hasPassword: boolean;
+    initialSection?: string;
+    linkError?: string;
+    linked?: string;
 };
 
-const SettingsWrapper = ({ accounts, hasPassword }: Props) => {
-    const [activeSection, setActiveSection] = useState("profile");
+const SettingsWrapper = ({
+    accounts,
+    hasPassword,
+    initialSection,
+    linkError,
+    linked,
+}: Props) => {
+    const [activeSection, setActiveSection] = useState(
+        SETTINGS_LINKS.some((l) => l.id === initialSection)
+            ? initialSection!
+            : "profile"
+    );
     const [showMobileLabel, setShowMobileLabel] = useState(false);
     const [isSlidingOut, setIsSlidingOut] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -172,14 +188,12 @@ const SettingsWrapper = ({ accounts, hasPassword }: Props) => {
                                 <Authentication
                                     accounts={accounts}
                                     hasPassword={hasPassword}
+                                    linkError={linkError}
+                                    linked={linked}
                                 />
                             )}
-                            {activeSection === "relations" && (
-                                <div>Relations settings</div>
-                            )}
-                            {activeSection === "notifications" && (
-                                <div>Notifications settings</div>
-                            )}
+                            {activeSection === "privacy" && <Privacy />}
+                            {activeSection === "notifications" && <NotificationSettings />}
                         </div>
                     </div>
                 </div>

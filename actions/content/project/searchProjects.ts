@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getCurrentViewer, visibleProjects } from "@/lib/visibility";
 
 const SearchProjectSchema = z.object({
     query: z.string().min(1),
@@ -14,8 +15,11 @@ export async function searchProjects(
 ) {
     const { query, cursor, limit } = SearchProjectSchema.parse(input);
 
+    const viewer = await getCurrentViewer();
+
     const projects = await prisma.project.findMany({
         where: {
+            AND: [visibleProjects(viewer)],
             OR: [
                 { name: { contains: query, mode: "insensitive" } },
                 {
@@ -83,7 +87,8 @@ export async function searchProjects(
                     user: { select: { id: true, username: true, name: true } },
                 },
             },
-            skills: { select: { id: true, name: true } },
+            skills: { select: { id: true, name: true, iconImage: true } },
+            _count: { select: { likes: true, saves: true, views: true } },
         },
         take: limit + 1,
         skip: cursor ? 1 : 0,

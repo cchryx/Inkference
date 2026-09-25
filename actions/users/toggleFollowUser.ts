@@ -1,6 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { notify } from "@/lib/notify";
+import { isBlockedBetween } from "@/lib/visibility";
 import { APIError } from "better-auth/api";
 
 export async function toggleFollowUser(
@@ -8,6 +12,14 @@ export async function toggleFollowUser(
     targetUserId: string
 ) {
     try {
+        // Only the signed-in user can act as themselves.
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (session?.user?.id !== followerUserId) return { error: "Unauthorized." };
+
+        if (await isBlockedBetween(followerUserId, targetUserId)) {
+            return { error: "You can't do that with this user." };
+        }
+
         if (followerUserId === targetUserId) {
             return { error: "You cannot follow yourself." };
         }
@@ -59,6 +71,10 @@ export async function toggleFollowUser(
                 },
             },
         });
+
+        if (!isFollowing) {
+            await notify({ recipientId: targetUserId, actorId: followerUserId, type: "follow" });
+        }
 
         return { error: null, following: !isFollowing };
     } catch (error) {

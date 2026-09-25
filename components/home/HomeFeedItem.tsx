@@ -10,7 +10,11 @@ import {
     Trash2,
     Pen,
     MoreVertical,
+    Maximize2,
+    Eye,
 } from "lucide-react";
+import VisibilityModal from "../general/VisibilityModal";
+import CommentsSheet from "../content/comments/CommentsSheet";
 import { UserIcon } from "../general/UserIcon";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -22,6 +26,7 @@ import { deletePost } from "@/actions/content/post/deletePost";
 import ConfirmModal from "../general/ConfirmModal";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { markSeen } from "@/lib/seenPosts";
 
 type Props = {
     item: any;
@@ -37,20 +42,51 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     const content = item.content;
     const isOwner = currentUserId === content.userData.user.id;
 
-    const [likes, setLikes] = useState(
-        isProject
-            ? content.data?.likes || []
-            : isPost
-            ? content.likes || []
-            : []
-    );
-    const [saves, setSaves] = useState(
-        isProject
-            ? content.data?.saves || []
-            : isPost
-            ? content.saves || []
-            : []
-    );
+    // Counts + "did I like/save it" come from the server (content.stats),
+    // instead of the full list of everyone who liked the post.
+    const [like, setLike] = useState({
+        count: content.stats?.likes ?? 0,
+        active: content.stats?.liked ?? false,
+    });
+    const [save, setSave] = useState({
+        count: content.stats?.saves ?? 0,
+        active: content.stats?.saved ?? false,
+    });
+
+    // Mark the post as seen once it's been on screen for 1 second.
+    const rootRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const el = rootRef.current;
+        const postId: string | undefined = content.id;
+        if (!el || !postId || content.seen) return;
+
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    timeout = setTimeout(() => {
+                        markSeen(postId);
+                        observer.disconnect();
+                    }, 1000);
+                } else {
+                    clearTimeout(timeout);
+                }
+            },
+            { threshold: 0.6 }
+        );
+
+        observer.observe(el);
+        return () => {
+            clearTimeout(timeout);
+            observer.disconnect();
+        };
+    }, [content.id, content.seen]);
+
+    const [commentCount, setCommentCount] = useState<number>(content.stats?.comments ?? 0);
+    const [commentsOpen, setCommentsOpen] = useState(false);
+    const [visibilityOpen, setVisibilityOpen] = useState(false);
+    // Full page for this item: projects have their own page, posts open /post/[id].
+    const href = isProject && content.data?.id ? `/project/${content.data.id}` : `/post/${content.id}`;
 
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -105,12 +141,11 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
             return;
         }
 
-        const isLiked = likes.some((u: any) => u.userId === currentUserId);
-        const updatedLikes = isLiked
-            ? likes.filter((u: any) => u.userId !== currentUserId)
-            : [...likes, { userId: currentUserId }];
-
-        setLikes(updatedLikes);
+        const previous = like;
+        setLike({
+            count: like.count + (like.active ? -1 : 1),
+            active: !like.active,
+        });
 
         let result;
         if (isProject)
@@ -119,7 +154,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
 
         if (result?.error) {
             toast.error(result.error);
-            setLikes(likes); // revert
+            setLike(previous); // revert
         }
     };
 
@@ -133,12 +168,11 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
             return;
         }
 
-        const isSaved = saves.some((u: any) => u.userId === currentUserId);
-        const updatedSaves = isSaved
-            ? saves.filter((u: any) => u.userId !== currentUserId)
-            : [...saves, { userId: currentUserId }];
-
-        setSaves(updatedSaves);
+        const previous = save;
+        setSave({
+            count: save.count + (save.active ? -1 : 1),
+            active: !save.active,
+        });
 
         let result;
         if (isProject)
@@ -147,16 +181,12 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
 
         if (result?.error) {
             toast.error(result.error);
-            setSaves(saves); // revert
+            setSave(previous); // revert
         }
     };
 
-    const isLiked =
-        (isProject || isPost) &&
-        likes.some((u: any) => u.userId === currentUserId);
-    const isSaved =
-        (isProject || isPost) &&
-        saves.some((u: any) => u.userId === currentUserId);
+    const isLiked = (isProject || isPost) && like.active;
+    const isSaved = (isProject || isPost) && save.active;
 
     // Render content
     const contentRender = isProject ? (
@@ -178,7 +208,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     );
 
     return (
-        <div className="snap-start h-full flex flex-col w-full">
+        <div ref={rootRef} className="snap-start h-full flex flex-col w-full">
             {/* Author info (mobile top bar) */}
             {author?.username && (
                 <div className="flex items-center justify-between w-full p-3 md:hidden bg-gray-100 relative">
@@ -241,6 +271,17 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                             </button>
 
                             <button
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md whitespace-nowrap"
+                                onClick={() => {
+                                    setVisibilityOpen(true);
+                                    setMenuOpen(false);
+                                }}
+                            >
+                                <Eye className="size-4" />
+                                Visibility
+                            </button>
+
+                            <button
                                 className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-red-600 rounded-md"
                                 onClick={() => {
                                     setConfirmDeleteOpen(true);
@@ -277,11 +318,14 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                             <ActionButtons
                                 isProject={isProject || isPost}
                                 isLiked={isLiked}
-                                likes={likes}
+                                likes={like.count}
                                 isSaved={isSaved}
-                                saves={saves}
+                                saves={save.count}
                                 handleLike={handleLike}
                                 handleSave={handleSave}
+                                commentCount={commentCount}
+                                onComment={() => setCommentsOpen(true)}
+                                href={href}
                             />
                         </div>
                     </div>
@@ -293,13 +337,34 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                 <ActionButtons
                     isProject={isProject || isPost}
                     isLiked={isLiked}
-                    likes={likes}
+                    likes={like.count}
                     isSaved={isSaved}
-                    saves={saves}
+                    saves={save.count}
                     handleLike={handleLike}
                     handleSave={handleSave}
+                    commentCount={commentCount}
+                    onComment={() => setCommentsOpen(true)}
+                    href={href}
                 />
             </div>
+
+            {visibilityOpen && (
+                <VisibilityModal
+                    kind={isProject && content.data?.id ? "project" : "post"}
+                    id={isProject && content.data?.id ? content.data.id : content.id}
+                    onClose={() => setVisibilityOpen(false)}
+                />
+            )}
+
+            {commentsOpen && (
+                <CommentsSheet
+                    postId={content.id}
+                    currentUserId={currentUserId}
+                    count={commentCount}
+                    onClose={() => setCommentsOpen(false)}
+                    onCountChange={(d) => setCommentCount((c) => Math.max(0, c + d))}
+                />
+            )}
 
             {/* ✅ Confirm Delete Modal */}
             <ConfirmModal
@@ -346,6 +411,9 @@ const ActionButtons = ({
     saves,
     handleLike,
     handleSave,
+    commentCount,
+    onComment,
+    href,
 }: any) => (
     <>
         {/* Mobile bottom bar */}
@@ -367,24 +435,34 @@ const ActionButtons = ({
                             fill={isLiked ? "currentColor" : "none"}
                         />
                     </button>
-                    <span className="text-sm">{likes.length}</span>
+                    <span className="text-sm">{likes}</span>
                 </div>
 
                 {/* Comments */}
                 <div className="flex items-center gap-1">
                     <button
+                        onClick={onComment}
                         className="hover:text-blue-500 transition-colors cursor-pointer"
                         aria-label="Comments"
                     >
                         <MessageCircle className="size-7" />
                     </button>
-                    <span className="text-sm">0</span>
+                    <span className="text-sm">{commentCount}</span>
                 </div>
+
+                {/* Open the full post page */}
+                <Link
+                    href={href}
+                    aria-label="Open post"
+                    className="hover:text-blue-500 transition-colors"
+                >
+                    <Maximize2 className="size-6" />
+                </Link>
             </div>
 
             {/* Save */}
             <div className="flex items-center gap-1">
-                <span className="text-sm">{saves.length}</span>{" "}
+                <span className="text-sm">{saves}</span>{" "}
                 <button
                     onClick={isProject ? handleSave : undefined}
                     className={`transition-colors cursor-pointer ${
@@ -419,17 +497,18 @@ const ActionButtons = ({
                         fill={isLiked ? "currentColor" : "none"}
                     />
                 </button>
-                <span className="text-sm mt-1">{likes.length}</span>
+                <span className="text-sm mt-1">{likes}</span>
             </div>
 
             <div className="flex flex-col items-center">
                 <button
+                    onClick={onComment}
                     className="hover:text-blue-500 transition-colors cursor-pointer"
                     aria-label="Comments"
                 >
                     <MessageCircle className="size-8" />
                 </button>
-                <span className="text-sm mt-1">0</span>
+                <span className="text-sm mt-1">{commentCount}</span>
             </div>
 
             <div className="flex flex-col items-center">
@@ -447,8 +526,19 @@ const ActionButtons = ({
                         fill={isSaved ? "currentColor" : "none"}
                     />
                 </button>
-                <span className="text-sm mt-1">{saves.length}</span>
+                <span className="text-sm mt-1">{saves}</span>
             </div>
+
+            {/* Open the full post page */}
+            <Link
+                href={href}
+                aria-label="Open post"
+                title="Open post"
+                className="flex flex-col items-center hover:text-blue-500 transition-colors"
+            >
+                <Maximize2 className="size-7" />
+                <span className="text-xs mt-1">Open</span>
+            </Link>
         </div>
     </>
 );

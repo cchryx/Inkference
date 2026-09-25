@@ -2,22 +2,28 @@
 
 import React, { useState } from "react";
 import Img from "@/components/general/Img";
-import { Pencil, Share2, Trash2, UploadIcon } from "lucide-react";
+import { Eye, Pencil, Share2, Trash2, UploadIcon } from "lucide-react";
+import VisibilityModal from "@/components/general/VisibilityModal";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { deleteGallery } from "@/actions/content/photos/deleteGallery";
 import { useRouter } from "next/navigation";
+import { useNavigate } from "@/lib/navigation";
 import { toast } from "sonner";
 import AddGalleryPhotosModal from "./edit/AddGalleryPhotosModal";
+import EditGalleryModal from "./edit/EditGalleryModal";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Photo = {
     id: string;
     image?: string;
+    createdAt?: string | Date;
 };
 
 type Props = {
     galleryId: string;
     galleryName: string;
     topPhotos: Photo[];
+    photos: Photo[];
     isOwner: boolean;
     numOfPhotos: number;
     currentUserId: string;
@@ -27,14 +33,19 @@ const HeaderCard = ({
     galleryId,
     galleryName,
     topPhotos,
+    photos,
     isOwner,
     numOfPhotos,
     currentUserId,
 }: Props) => {
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [addPhotosOpen, setAddPhotosOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [visibilityOpen, setVisibilityOpen] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const router = useRouter();
+    // Shows the loading screen right away (see NavigationLoader).
+    const navigate = useNavigate();
 
     const handleDeleteGallery = async () => {
         setIsPending(true);
@@ -45,7 +56,7 @@ const HeaderCard = ({
         } else {
             toast.success("Gallery deleted successfully.");
             router.refresh();
-            router.push("/portfolio?section=photos");
+            navigate("/portfolio?section=photos");
         }
 
         setIsPending(false);
@@ -67,6 +78,20 @@ const HeaderCard = ({
                 }}
                 onClose={() => setConfirmDeleteOpen(false)}
             />
+
+            {/* Edit Gallery Modal (mounted only while open, so it resets each time) */}
+            {editOpen && (
+                <EditGalleryModal
+                    onClose={() => setEditOpen(false)}
+                    galleryId={galleryId}
+                    initialName={galleryName}
+                    photos={photos}
+                />
+            )}
+
+            {visibilityOpen && (
+                <VisibilityModal kind="gallery" id={galleryId} onClose={() => setVisibilityOpen(false)} />
+            )}
 
             {/* Add Photos Modal */}
             {addPhotosOpen && (
@@ -93,7 +118,7 @@ const HeaderCard = ({
                                 >
                                     {photo?.image && (
                                         <Img
-                                            src={photo.image}
+                                            src={previewUrl(photo.image, 400)}
                                             fallbackSrc="/assets/general/fillers/skill.png"
                                             className="w-full h-full object-cover"
                                         />
@@ -140,8 +165,22 @@ const HeaderCard = ({
                             </button>
 
                             <div className="flex gap-2">
-                                <button className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer">
+                                <button
+                                    onClick={() => setEditOpen(true)}
+                                    aria-label="Edit gallery"
+                                    title="Edit gallery"
+                                    className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                                >
                                     <Pencil className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                    onClick={() => setVisibilityOpen(true)}
+                                    aria-label="Who can see this"
+                                    title="Who can see this"
+                                    className="flex items-center w-fit h-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"
+                                >
+                                    <Eye className="w-4 h-4" />
                                 </button>
 
                                 <button

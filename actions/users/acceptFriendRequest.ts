@@ -1,6 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { notify, removeNotification } from "@/lib/notify";
 import { APIError } from "better-auth/api";
 
 export async function acceptFriendRequest(
@@ -8,6 +11,10 @@ export async function acceptFriendRequest(
     targetUserId: string
 ) {
     try {
+        // Only the signed-in user can act as themselves.
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (session?.user?.id !== currentUserId) return { error: "Unauthorized." };
+
         if (currentUserId === targetUserId) {
             return { error: "You cannot accept your own friend request." };
         }
@@ -70,6 +77,12 @@ export async function acceptFriendRequest(
                     friendRequestsSent: { disconnect: { id: currentRel.id } },
                 },
             }),
+        ]);
+
+        // Tell them it was accepted, and clear the request notification.
+        await Promise.all([
+            notify({ recipientId: targetUserId, actorId: currentUserId, type: "friend_accept" }),
+            removeNotification(currentUserId, "friend_request", targetUserId),
         ]);
 
         return { error: null };

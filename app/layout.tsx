@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SerwistProvider } from "@serwist/turbopack/react";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/context/QueryProvider";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -16,9 +18,22 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
+// These numbers show in link previews on every page. Counting the whole
+// table on every request is slow, so the result is cached for an hour.
+const getSiteCounts = unstable_cache(
+    async () => {
+        const [userCount, projectCount] = await Promise.all([
+            prisma.user.count(),
+            prisma.project.count(),
+        ]);
+        return { userCount, projectCount };
+    },
+    ["site-counts"],
+    { revalidate: 3600 }
+);
+
 export async function generateMetadata(): Promise<Metadata> {
-    const userCount = await prisma.user.count();
-    const projectCount = await prisma.project.count();
+    const { userCount, projectCount } = await getSiteCounts();
 
     return {
         metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL!),
@@ -59,12 +74,17 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
+        <html lang="en" data-scroll-behavior="smooth">
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased flex h-screen`}
             >
-                <QueryProvider>{children}</QueryProvider>
-                <Toaster position="top-center" richColors />
+                <SerwistProvider
+                    swUrl="/serwist/sw.js"
+                    disable={process.env.NODE_ENV === "development"}
+                >
+                    <QueryProvider>{children}</QueryProvider>
+                    <Toaster position="top-center" richColors />
+                </SerwistProvider>
             </body>
         </html>
     );

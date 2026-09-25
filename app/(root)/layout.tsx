@@ -3,7 +3,8 @@ import NavbarLeft from "@/components/root/NavbarLeft";
 import NavbarMobile from "@/components/root/NavbarMobile";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
+import NavigationLoader from "@/components/general/NavigationLoader";
 
 type LayoutProps = {
     children: ReactNode;
@@ -23,17 +24,24 @@ export default async function Layout({ children }: LayoutProps) {
             )}
 
             <div className="flex-1 flex flex-col h-full overflow-hidden">
-                <section className="flex-1 overflow-x-scroll no-scrollbar">
-                    {session ? (
-                        session.user.username ? (
-                            children
+                <div className="relative flex min-h-0 flex-1 flex-col">
+                    <section className="flex-1 overflow-x-scroll no-scrollbar">
+                        {session ? (
+                            session.user.username ? (
+                                children
+                            ) : (
+                                <ChooseUsernameForm />
+                            )
                         ) : (
-                            <ChooseUsernameForm />
-                        )
-                    ) : (
-                        children
-                    )}
-                </section>
+                            children
+                        )}
+                    </section>
+
+                    {/* Loading screen shown instantly when you open another page */}
+                    <Suspense fallback={null}>
+                        <NavigationLoader />
+                    </Suspense>
+                </div>
                 {session && (
                     <section className="md:hidden">
                         <NavbarMobile session={session} />

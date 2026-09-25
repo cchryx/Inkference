@@ -12,7 +12,8 @@ export default async function Page() {
 
     if (!session) return redirect("/auth/signin");
 
-    const userData = await getUserData(session.user.id);
+    // Your own portfolio also shows your saved / liked / viewed projects.
+    const userData = await getUserData(session.user.id, { includeActivity: true });
 
     return (
         <div className="w-full px-[2%] py-5">

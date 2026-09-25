@@ -5,14 +5,56 @@ import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
 
-function formatUser(user: any, reason: string) {
-    return {
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        image: user.image,
-        reason,
-    };
+/*
+ * Recommended accounts
+ *
+ * 1. Collect candidates from several signals (in parallel):
+ *      - they follow you
+ *      - followed by people you follow   (mutual follows)
+ *      - friends with your friends       (mutual friends)
+ *      - worked on the same projects
+ *      - share your skills
+ *      - popular / recently joined       (fallback for new users)
+ * 2. Give each candidate a score. Signals add up, so someone who shares
+ *    3 skills AND is followed by 2 of your follows ranks above either alone.
+ * 3. Return the top results, each with the reason that counted most.
+ *
+ * Never shown: you, people you already follow/are friends with, blocked
+ * users (either direction), pending requests, and users without a username.
+ */
+
+export type RecommendedUser = {
+    id: string;
+    name: string;
+    username: string;
+    image: string | null;
+    reason: string;
+};
+
+// How much each signal is worth, and how many times it can count.
+const WEIGHTS = {
+    followsYou: { points: 40, max: 1 },
+    mutualFollow: { points: 8, max: 10 },
+    mutualFriend: { points: 10, max: 8 },
+    sharedProject: { points: 20, max: 3 },
+    sharedSkill: { points: 5, max: 5 },
+    popular: { points: 5, max: 1 },
+    newUser: { points: 4, max: 1 },
+} as const;
+
+type Signal = keyof typeof WEIGHTS;
+
+type Candidate = {
+    score: number;
+    topPoints: number;
+    reason: string;
+};
+
+const CANDIDATES_PER_SIGNAL = 200;
+
+function others(name: string | null | undefined, count: number) {
+    const first = name || "someone you know";
+    return count > 1 ? `${first} and ${count - 1} other${count > 2 ? "s" : ""}` : first;
 }
 
 export async function recommendUsers(limit = 12) {
@@ -20,363 +62,307 @@ export async function recommendUsers(limit = 12) {
         const session = await auth.api.getSession({
             headers: await headers(),
         });
-
         const currentUserId = session?.user?.id;
-        if (!currentUserId) {
-            return { error: "Unauthorized." };
-        }
+        if (!currentUserId) return { error: "Unauthorized." };
 
-        let userData = await prisma.userData.findUnique({
-            where: { userId: currentUserId },
-        });
-        if (!userData) {
-            userData = await prisma.userData.create({
-                data: { userId: currentUserId },
-            });
-        }
+        limit = Math.min(Math.max(1, limit), 50);
 
-        let relationships = await prisma.relationships.findUnique({
-            where: { userId: currentUserId },
-            include: {
-                following: { select: { userId: true } },
-                friends: { select: { userId: true } },
-            },
-        });
-        if (!relationships) {
-            relationships = await prisma.relationships.create({
-                data: { userId: currentUserId },
-                include: {
-                    following: { select: { userId: true } },
-                    friends: { select: { userId: true } },
+        // --- Who am I connected to? (ids only) ---
+        const [me, myData] = await Promise.all([
+            prisma.relationships.upsert({
+                where: { userId: currentUserId },
+                update: {},
+                create: { userId: currentUserId },
+                select: {
+                    following: { select: { id: true, userId: true } },
+                    followers: { select: { userId: true } },
+                    friends: { select: { id: true, userId: true } },
+                    blockedUsers: { select: { userId: true } },
+                    blockedBy: { select: { userId: true } },
+                    followRequestsSent: { select: { userId: true } },
+                    friendRequestsSent: { select: { userId: true } },
                 },
-            });
+            }),
+            prisma.userData.upsert({
+                where: { userId: currentUserId },
+                update: {},
+                create: { userId: currentUserId },
+                select: {
+                    skills: { select: { id: true } },
+                    projects: { select: { id: true } },
+                    projectsContributedTo: { select: { id: true } },
+                },
+            }),
+        ]);
+
+        const excluded = new Set<string>([currentUserId]);
+        for (const list of [
+            me.following,
+            me.friends,
+            me.blockedUsers,
+            me.blockedBy,
+            me.followRequestsSent,
+            me.friendRequestsSent,
+        ]) {
+            for (const r of list) excluded.add(r.userId);
+        }
+        const excludedIds = [...excluded];
+
+        // Filter shared by every candidate query.
+        const candidateFilter = {
+            userId: { notIn: excludedIds },
+            user: { username: { not: null } },
+        };
+
+        const followingRelIds = me.following.map((r) => r.id);
+        const friendRelIds = me.friends.map((r) => r.id);
+        const skillIds = myData.skills.map((s) => s.id);
+        const projectIds = [
+            ...myData.projects.map((p) => p.id),
+            ...myData.projectsContributedTo.map((p) => p.id),
+        ];
+
+        const none = Promise.resolve([]);
+        const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+        // --- Collect candidates from each signal, in parallel ---
+        const [mutualFollows, mutualFriends, collaborators, sameSkills, popular, newUsers] =
+            await Promise.all([
+                followingRelIds.length
+                    ? prisma.relationships.findMany({
+                          where: {
+                              ...candidateFilter,
+                              followers: { some: { id: { in: followingRelIds } } },
+                          },
+                          select: {
+                              userId: true,
+                              followers: {
+                                  where: { id: { in: followingRelIds } },
+                                  select: { user: { select: { name: true } } },
+                                  take: 1,
+                              },
+                              _count: {
+                                  select: {
+                                      followers: {
+                                          where: { id: { in: followingRelIds } },
+                                      },
+                                  },
+                              },
+                          },
+                          take: CANDIDATES_PER_SIGNAL,
+                      })
+                    : none,
+
+                friendRelIds.length
+                    ? prisma.relationships.findMany({
+                          where: {
+                              ...candidateFilter,
+                              friends: { some: { id: { in: friendRelIds } } },
+                          },
+                          select: {
+                              userId: true,
+                              friends: {
+                                  where: { id: { in: friendRelIds } },
+                                  select: { user: { select: { name: true } } },
+                                  take: 1,
+                              },
+                              _count: {
+                                  select: {
+                                      friends: { where: { id: { in: friendRelIds } } },
+                                  },
+                              },
+                          },
+                          take: CANDIDATES_PER_SIGNAL,
+                      })
+                    : none,
+
+                projectIds.length
+                    ? prisma.userData.findMany({
+                          where: {
+                              ...candidateFilter,
+                              OR: [
+                                  { projects: { some: { id: { in: projectIds } } } },
+                                  {
+                                      projectsContributedTo: {
+                                          some: { id: { in: projectIds } },
+                                      },
+                                  },
+                              ],
+                          },
+                          select: {
+                              userId: true,
+                              projects: {
+                                  where: { id: { in: projectIds } },
+                                  select: { name: true },
+                                  take: 1,
+                              },
+                              projectsContributedTo: {
+                                  where: { id: { in: projectIds } },
+                                  select: { name: true },
+                                  take: 1,
+                              },
+                              _count: {
+                                  select: {
+                                      projects: { where: { id: { in: projectIds } } },
+                                      projectsContributedTo: {
+                                          where: { id: { in: projectIds } },
+                                      },
+                                  },
+                              },
+                          },
+                          take: CANDIDATES_PER_SIGNAL,
+                      })
+                    : none,
+
+                skillIds.length
+                    ? prisma.userData.findMany({
+                          where: {
+                              ...candidateFilter,
+                              skills: { some: { id: { in: skillIds } } },
+                          },
+                          select: {
+                              userId: true,
+                              skills: {
+                                  where: { id: { in: skillIds } },
+                                  select: { name: true },
+                                  take: 2,
+                              },
+                              _count: {
+                                  select: {
+                                      skills: { where: { id: { in: skillIds } } },
+                                  },
+                              },
+                          },
+                          take: CANDIDATES_PER_SIGNAL,
+                      })
+                    : none,
+
+                prisma.relationships.findMany({
+                    where: { ...candidateFilter, followers: { some: {} } },
+                    orderBy: { followers: { _count: "desc" } },
+                    select: { userId: true },
+                    take: limit * 3,
+                }),
+
+                prisma.user.findMany({
+                    where: {
+                        id: { notIn: excludedIds },
+                        username: { not: null },
+                        createdAt: { gte: monthAgo },
+                    },
+                    orderBy: { createdAt: "desc" },
+                    select: { id: true },
+                    take: limit * 2,
+                }),
+            ]);
+
+        // --- Score ---
+        const candidates = new Map<string, Candidate>();
+
+        function add(userId: string, signal: Signal, times: number, reason: string) {
+            const { points, max } = WEIGHTS[signal];
+            const gained = points * Math.min(times, max);
+            if (gained <= 0) return;
+
+            const c = candidates.get(userId) ?? { score: 0, topPoints: 0, reason };
+            c.score += gained;
+            // Show the reason that contributed the most.
+            if (gained > c.topPoints) {
+                c.topPoints = gained;
+                c.reason = reason;
+            }
+            candidates.set(userId, c);
         }
 
-        const excludedUserIds = new Set<string>();
-        excludedUserIds.add(currentUserId);
-        relationships.following.forEach((f) => excludedUserIds.add(f.userId));
-        relationships.friends.forEach((f) => excludedUserIds.add(f.userId));
-
-        const recommendations: any[] = [];
-
-        for (const step of [
-            recommendFriendsOfFriends,
-            recommendProjectContributors,
-            recommendPopularUsers,
-            recommendedHasManyProjects,
-            recommendNewUsers,
-            recommendRandomUsers,
-        ]) {
-            if (recommendations.length >= limit) break;
-            const results = await step(
-                relationships,
-                userData,
-                excludedUserIds,
-                limit - recommendations.length
-            );
-            for (const r of results) {
-                recommendations.push(r);
-                excludedUserIds.add(r.id);
-                if (recommendations.length >= limit) break;
+        const followingIds = new Set(me.following.map((r) => r.userId));
+        for (const f of me.followers) {
+            if (!excluded.has(f.userId) && !followingIds.has(f.userId)) {
+                add(f.userId, "followsYou", 1, "Follows you");
             }
         }
 
-        return {
-            error: null,
-            recommendedUsers: recommendations,
-        };
+        for (const r of mutualFollows) {
+            const n = r._count.followers;
+            add(r.userId, "mutualFollow", n, `Followed by ${others(r.followers[0]?.user.name, n)}`);
+        }
+
+        for (const r of mutualFriends) {
+            const n = r._count.friends;
+            add(r.userId, "mutualFriend", n, `Friends with ${others(r.friends[0]?.user.name, n)}`);
+        }
+
+        for (const u of collaborators) {
+            const n = u._count.projects + u._count.projectsContributedTo;
+            const project = u.projects[0]?.name ?? u.projectsContributedTo[0]?.name;
+            add(
+                u.userId,
+                "sharedProject",
+                n,
+                project ? `Worked with you on ${project}` : "Worked on a project with you"
+            );
+        }
+
+        for (const u of sameSkills) {
+            const n = u._count.skills;
+            const names = u.skills.map((s) => s.name).join(", ");
+            add(u.userId, "sharedSkill", n, `Also skilled in ${names}${n > 2 ? " and more" : ""}`);
+        }
+
+        for (const r of popular) add(r.userId, "popular", 1, "Popular on Inkference");
+        for (const u of newUsers) add(u.id, "newUser", 1, "New to Inkference");
+
+        if (candidates.size === 0) return { error: null, recommendedUsers: [] };
+
+        // --- Load details for the best candidates only ---
+        const shortlist = [...candidates.entries()]
+            .sort((a, b) => b[1].score - a[1].score)
+            .slice(0, limit * 3)
+            .map(([id]) => id);
+
+        const users = await prisma.user.findMany({
+            where: { id: { in: shortlist }, username: { not: null } },
+            select: {
+                id: true,
+                name: true,
+                username: true,
+                image: true,
+                Relationships: {
+                    select: { _count: { select: { followers: true } } },
+                },
+            },
+        });
+
+        const ranked = users
+            .map((u) => {
+                const c = candidates.get(u.id)!;
+                const followers = u.Relationships?._count.followers ?? 0;
+                const score =
+                    c.score +
+                    Math.min(3 * Math.log2(1 + followers), 15) + // popularity
+                    (u.image ? 2 : 0) + // complete profiles first
+                    Math.random() * 3; // small shuffle so ties rotate
+
+                return {
+                    score,
+                    user: {
+                        id: u.id,
+                        name: u.name,
+                        username: u.username!,
+                        image: u.image,
+                        reason: c.reason,
+                    } satisfies RecommendedUser,
+                };
+            })
+            .sort((a, b) => b.score - a.score)
+            .slice(0, limit)
+            .map((r) => r.user);
+
+        return { error: null, recommendedUsers: ranked };
     } catch (error) {
         if (error instanceof APIError) {
-            let message = error.message?.trim() || "An unknown error occurred";
-            message = message
-                .split(/(?<=[.!?])\s+/)
-                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join(" ");
-            if (!/[.!?]$/.test(message)) message += ".";
-            return { error: message };
+            return { error: error.message?.trim() || "An unknown error occurred." };
         }
+        console.error("recommendUsers failed:", error);
         return { error: "Internal server error." };
     }
-}
-
-// Helper functions (in the same file):
-
-async function recommendFriendsOfFriends(
-    relationships: any,
-    _userData: any,
-    excludedUserIds: Set<string>,
-    limit: number
-) {
-    if (relationships.following.length === 0 || limit <= 0) return [];
-
-    // Map userId => User object (id, username, name) to get names easily
-    const followingUserIds = relationships.following.map((f: any) => f.userId);
-    const followingUsers = await prisma.user.findMany({
-        where: { id: { in: followingUserIds } },
-        select: { id: true, username: true, name: true },
-    });
-    const userIdToName = new Map(followingUsers.map((u) => [u.id, u.name]));
-
-    const followingRelationships = await prisma.relationships.findMany({
-        where: {
-            userId: {
-                in: followingUserIds,
-            },
-        },
-        include: {
-            following: true,
-        },
-    });
-
-    const fofUserIdToMutualFollowers = new Map<string, string[]>();
-
-    for (const rel of followingRelationships) {
-        for (const fof of rel.following) {
-            if (!excludedUserIds.has(fof.userId)) {
-                if (!fofUserIdToMutualFollowers.has(fof.userId)) {
-                    fofUserIdToMutualFollowers.set(fof.userId, []);
-                }
-                fofUserIdToMutualFollowers.get(fof.userId)!.push(rel.userId);
-            }
-        }
-    }
-
-    if (fofUserIdToMutualFollowers.size === 0) return [];
-
-    // Get all fof users details
-    const fofUserIds = Array.from(fofUserIdToMutualFollowers.keys());
-    const fofUsers = await prisma.user.findMany({
-        where: { id: { in: fofUserIds } },
-        take: limit,
-        select: {
-            id: true,
-            name: true,
-            username: true,
-            image: true,
-        },
-    });
-
-    // Map each fof user to a reason mentioning mutual followers by name
-    return fofUsers.map((user) => {
-        const mutualFollowersIds =
-            fofUserIdToMutualFollowers.get(user.id) || [];
-        const mutualFollowersNames = mutualFollowersIds
-            .map((id) => userIdToName.get(id))
-            .filter(Boolean)
-            .join(", ");
-
-        return formatUser(user, `Followed by ${mutualFollowersNames}`);
-    });
-}
-
-async function recommendProjectContributors(
-    _relationships: any,
-    userData: any,
-    excludedUserIds: Set<string>,
-    limit: number
-) {
-    if (limit <= 0) return [];
-
-    // Get the projects current user contributed to
-    const contributedProjects = await prisma.project.findMany({
-        where: {
-            contributors: {
-                some: { userId: userData.id },
-            },
-        },
-        select: { id: true, name: true },
-    });
-
-    const projectIds = contributedProjects.map((p) => p.id);
-    if (projectIds.length === 0) return [];
-
-    // Get contributors for those projects (excluding current user)
-    const contributorsUserData = await prisma.userData.findMany({
-        where: {
-            projectsContributedTo: {
-                some: { id: { in: projectIds } },
-            },
-            id: {
-                not: userData.id,
-            },
-        },
-        select: {
-            id: true,
-            user: {
-                select: {
-                    id: true,
-                    name: true,
-                    username: true,
-                    image: true,
-                },
-            },
-            projectsContributedTo: {
-                where: {
-                    id: { in: projectIds },
-                },
-                select: {
-                    name: true,
-                },
-            },
-        },
-        take: limit,
-    });
-
-    const results = [];
-    for (const contributor of contributorsUserData) {
-        if (excludedUserIds.has(contributor.user.id)) continue;
-
-        // Get the first project name they share with current user
-        const sharedProject = contributor.projectsContributedTo[0];
-        const projectName = sharedProject ? sharedProject.name : "a project";
-
-        results.push(
-            formatUser(
-                contributor.user,
-                `Contributed to your project: ${projectName}`
-            )
-        );
-        if (results.length >= limit) break;
-    }
-
-    return results;
-}
-
-async function recommendPopularUsers(
-    _relationships: any,
-    _userData: any,
-    excludedUserIds: Set<string>,
-    limit: number
-) {
-    if (limit <= 0) return [];
-
-    const popularRelationships = await prisma.relationships.findMany({
-        where: {
-            userId: { notIn: Array.from(excludedUserIds) },
-        },
-        orderBy: {
-            followers: {
-                _count: "desc",
-            },
-        },
-        take: limit * 2, // Fetch more to filter out zero followers below
-        select: {
-            userId: true,
-            followers: true, // fetch followers array to count length
-            user: {
-                select: {
-                    id: true,
-                    name: true,
-                    username: true,
-                    image: true,
-                },
-            },
-        },
-    });
-
-    // Filter out users with zero followers
-    const filtered = popularRelationships.filter(
-        (rel) => rel.followers.length > 0
-    );
-
-    // Return only up to limit
-    const limited = filtered.slice(0, limit);
-
-    return limited.map((rel) =>
-        formatUser(rel.user, "Popular user with many followers")
-    );
-}
-
-async function recommendedHasManyProjects(
-    _relationships: any,
-    _userData: any,
-    excludedUserIds: Set<string>,
-    limit: number
-) {
-    if (limit <= 0) return [];
-
-    const activeUsersData = await prisma.userData.findMany({
-        where: {
-            userId: { notIn: Array.from(excludedUserIds) },
-            projects: { some: {} }, // only users with >=1 project
-        },
-        orderBy: {
-            projects: {
-                _count: "desc",
-            },
-        },
-        take: limit,
-        select: {
-            id: true,
-            user: {
-                select: {
-                    id: true,
-                    name: true,
-                    username: true,
-                    image: true,
-                },
-            },
-        },
-    });
-
-    return activeUsersData.map((userDataEntry) =>
-        formatUser(userDataEntry.user, "User with many projects")
-    );
-}
-
-async function recommendNewUsers(
-    _relationships: any,
-    _userData: any,
-    excludedUserIds: Set<string>,
-    limit: number
-) {
-    if (limit <= 0) return [];
-
-    const newUsers = await prisma.user.findMany({
-        where: {
-            id: { notIn: Array.from(excludedUserIds) },
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
-        take: limit,
-        select: {
-            id: true,
-            name: true,
-            username: true,
-            image: true,
-        },
-    });
-
-    return newUsers.map((user) => formatUser(user, "Recently joined"));
-}
-
-async function recommendRandomUsers(
-    _relationships: any,
-    _userData: any,
-    excludedUserIds: Set<string>,
-    limit: number
-) {
-    if (limit <= 0) return [];
-
-    const randomUsers = await prisma.user.findMany({
-        where: {
-            id: { notIn: Array.from(excludedUserIds) },
-        },
-        orderBy: {
-            // Use approximate randomness: sort by createdAt with some offset (Prisma doesn't support full `RANDOM()` in many DBs)
-            createdAt: "asc", // could use "desc" and add randomness client-side if needed
-        },
-        take: limit,
-        select: {
-            id: true,
-            name: true,
-            username: true,
-            image: true,
-        },
-    });
-
-    return randomUsers.map((user) =>
-        formatUser(user, "User you might be interested in")
-    );
 }

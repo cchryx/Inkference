@@ -1,13 +1,8 @@
 "use client";
 
 import {
-    Github,
-    Instagram,
-    Linkedin,
-    Youtube,
     Link2,
     Mail,
-    Twitch,
     MapPin,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -19,6 +14,11 @@ import {
     FaRedditAlien,
     FaPinterestP,
     FaTiktok,
+    FaGithub,
+    FaInstagram,
+    FaLinkedin,
+    FaYoutube,
+    FaTwitch,
 } from "react-icons/fa";
 
 import { FaXTwitter } from "react-icons/fa6";
@@ -28,17 +28,17 @@ function getSocialIcon(link: string) {
     const lower = link.toLowerCase();
 
     if (lower.includes("linkedin.com"))
-        return <Linkedin className="w-4 h-4 text-blue-700 shrink-0" />;
+        return <FaLinkedin className="w-4 h-4 text-blue-700 shrink-0" />;
     if (lower.includes("instagram.com"))
-        return <Instagram className="w-4 h-4 text-pink-500 shrink-0" />;
+        return <FaInstagram className="w-4 h-4 text-pink-500 shrink-0" />;
     if (lower.includes("github.com"))
         return (
-            <Github className="w-4 h-4 text-black dark:text-white shrink-0" />
+            <FaGithub className="w-4 h-4 text-black dark:text-white shrink-0" />
         );
     if (lower.includes("youtube.com") || lower.includes("youtu.be"))
-        return <Youtube className="w-4 h-4 text-red-600 shrink-0" />;
+        return <FaYoutube className="w-4 h-4 text-red-600 shrink-0" />;
     if (lower.includes("twitch.tv"))
-        return <Twitch className="w-4 h-4 text-purple-600 shrink-0" />;
+        return <FaTwitch className="w-4 h-4 text-purple-600 shrink-0" />;
     if (lower.startsWith("mailto:") || lower.includes("gmail.com"))
         return <Mail className="w-4 h-4 text-rose-500 shrink-0" />;
     if (lower.includes("snapchat.com"))
@@ -137,7 +137,8 @@ function formatSocialLabel(link: string) {
 
 export const SocialsCard = ({ tUser }: { tUser: any }) => {
     const { address, socialLinks = [] } = tUser;
-    const [isLoading, setIsLoading] = useState(true);
+    // No fake loading delay: the data is already here from the server.
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 800);

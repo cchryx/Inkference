@@ -8,11 +8,13 @@ export async function getProjectById(projectId: string) {
     const project = await prisma.project.findUnique({
         where: { id: projectId },
         include: {
-            userData: { include: { user: true } },
-            contributors: { include: { user: true } },
-            likes: true,
-            saves: true,
-            views: true,
+            // Only public fields (never send emails etc. to the browser).
+            userData: { include: { user: { select: { id: true, name: true, username: true, image: true } } } },
+            contributors: { include: { user: { select: { id: true, name: true, username: true, image: true } } } },
+            // Only who liked/saved (to know if *you* did), and just the view count.
+            likes: { select: { userId: true } },
+            saves: { select: { userId: true } },
+            _count: { select: { views: true } },
             galleryImages: true,
             skills: {
                 select: {

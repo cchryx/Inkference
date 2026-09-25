@@ -6,6 +6,7 @@ import { CalendarDays, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { previewUrl } from "@/lib/imageUrl";
 
 type Merit = {
     id: string;
@@ -126,7 +127,7 @@ const MeritCard = ({
                         onClick={() => setImageModalOpen(true)}
                     >
                         <img
-                            src={image}
+                            src={previewUrl(image, 640)}
                             className="w-full h-full object-cover hover:opacity-90 transition"
                             onError={(e) => {
                                 const target =
