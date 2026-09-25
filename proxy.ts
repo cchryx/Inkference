@@ -31,9 +31,10 @@ export async function proxy(req: NextRequest) {
     const isOnAuthRoute =
         nextUrl.pathname.startsWith("/auth") && !isPasswordLink;
 
-    // Logged-out visitors (and Google) opening the homepage see the landing page.
+    // Logged-out visitors (and Google) opening the homepage see the landing
+    // page right at "/" (no redirect), so Google can index inkference.app itself.
     if (path === "/" && !isLoggedIn) {
-        return NextResponse.redirect(new URL("/welcome", req.url));
+        return NextResponse.rewrite(new URL("/welcome", req.url));
     }
 
     if (isOnProtectedRoute && !isLoggedIn) {

@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     return [
-        { url: `${SITE_URL}/welcome`, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
+        { url: `${SITE_URL}/`, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
         ...users.map((u) => ({
             url: `${SITE_URL}/profile/${encodeURIComponent(u.username!)}`,
             lastModified: u.updatedAt,

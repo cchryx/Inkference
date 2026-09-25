@@ -158,7 +158,7 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
             {/* ---------- Top bar ---------- */}
             <header className="sticky top-0 z-30 border-b border-neutral-900/15 bg-[#f3f3f1]/85 backdrop-blur">
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-                    <Link href="/welcome" className="flex items-center gap-2">
+                    <Link href="/" className="flex items-center gap-2">
                         {/* App icon (white pen nib) inside the cut-corner plate */}
                         <span className="grid h-5 w-5 place-items-center bg-neutral-900 [clip-path:polygon(5px_0,100%_0,100%_calc(100%-5px),calc(100%-5px)_100%,0_100%,0_5px)]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}

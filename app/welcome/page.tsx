@@ -9,7 +9,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
     title: { absolute: "Inkference: build your portfolio, share your work" },
-    alternates: { canonical: "/welcome" },
+    alternates: { canonical: "/" },
     description:
         "Inkference is a portfolio and social platform for creators. Show off your projects, experience and skills, post photos, and connect with other creators.",
 };
@@ -44,7 +44,8 @@ export default async function WelcomePage() {
                         {
                             "@type": "WebSite",
                             name: "Inkference",
-                            url: SITE_URL,
+                            alternateName: ["inkference.app", "Inkference App"],
+                            url: `${SITE_URL}/`,
                             description:
                                 "A portfolio and social platform for creators to show projects, experience and skills.",
                         },

@@ -7,7 +7,7 @@ export default function page() {
     return (
         <div className="w-full max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md px-8 py-12 space-y-8">
             <div className="space-y-8">
-                <ReturnButton href="/welcome" label="Welcome" />
+                <ReturnButton href="/" label="Welcome" />
                 <h1 className="text-3xl font-bold">Sign In</h1>
             </div>
 
