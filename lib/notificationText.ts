@@ -32,6 +32,8 @@ export function notificationText(input: {
             return `${who} published a new project${preview ? `: ${preview}` : "."}`;
         case "views":
             return `Your ${thing} reached ${Number(preview).toLocaleString()} views.`;
+        case "tip":
+            return `${who} bought you a coffee ☕${preview ? ` "${preview.slice(0, 100)}"` : ""}`;
         default:
             return "You have a new notification.";
     }
@@ -46,4 +48,5 @@ export const NOTIFICATION_TYPES = [
     { type: "friend_post", label: "Friends' posts", hint: "A friend shares a new post" },
     { type: "friend_project", label: "Friends' projects", hint: "A friend publishes a new project" },
     { type: "views", label: "View milestones", hint: "Your post or project reaches 100 views, 1,000 views…" },
+    { type: "tip", label: "Coffees", hint: "Someone buys you a coffee" },
 ] as const;

@@ -5,6 +5,7 @@ import {
     Shield,
     BookUser,
     CalendarCheck,
+    Coffee,
     Brain,
     BriefcaseBusiness,
     Building2,
@@ -88,6 +89,11 @@ export const SETTINGS_LINKS = [
         icon: Bell,
         id: "notifications",
         label: "Notifications",
+    },
+    {
+        icon: Coffee,
+        id: "payments",
+        label: "Payments",
     },
 ];
 

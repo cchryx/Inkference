@@ -534,3 +534,59 @@ model UserPreference {
 
   @@map("user_preferences")
 }
+
+// ---------- Tips ("Buy me a coffee") ----------
+// Written so the payment company can change later (e.g. our own system):
+// `provider` says who handled it, `externalId` is their id for it.
+
+// Where someone gets paid (their account with the payment provider).
+model PayoutAccount {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId     String @unique
+  provider   String // "stripe" for now
+  externalId String @unique // e.g. the Stripe connected account id (acct_...)
+
+  // Filled in from the provider:
+  canReceive  Boolean @default(false) // can take payments
+  canPayout   Boolean @default(false) // can send money to their bank
+  setupDone   Boolean @default(false) // finished the provider's sign-up
+  country     String?
+  currency    String?
+
+  // Their own switch: show the coffee button on their profile.
+  tipsEnabled Boolean @default(true)
+
+  @@map("payout_accounts")
+}
+
+// One coffee someone bought for someone else.
+model Tip {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  provider   String
+  externalId String? @unique // e.g. the Stripe Checkout session id
+
+  fromUserId String? // null if the supporter's account was deleted
+  toUserId   String
+
+  // Money, in cents (smallest unit) of `currency`:
+  amount        Int // the coffee price the supporter picked
+  processingFee Int // card processing, paid by the supporter
+  platformFee   Int // Inkference's cut
+  total         Int // what the supporter's card is charged
+  toRecipient   Int // what the recipient gets
+  currency      String
+
+  message String? @db.VarChar(200)
+  status  String  @default("pending") // pending | paid | failed | refunded
+  paidAt  DateTime?
+
+  @@index([toUserId, status, createdAt])
+  @@index([fromUserId, createdAt])
+  @@map("tips")
+}

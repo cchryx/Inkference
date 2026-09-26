@@ -8,7 +8,7 @@ import JsonLd from "@/components/general/JsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
-    title: { absolute: "Inkference: build your portfolio, share your work" },
+    title: { absolute: "Inkference: build your portfolio, plan your work" },
     alternates: { canonical: "/" },
     description:
         "Inkference is a portfolio and social platform for builders. Show off your projects and skills, post your work, plan your week on real dates, and connect with people who make things.",

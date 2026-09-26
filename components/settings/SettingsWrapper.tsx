@@ -8,6 +8,7 @@ import { Settings } from "lucide-react";
 import User from "@/components/settings/User";
 import Privacy from "@/components/settings/Privacy";
 import NotificationSettings from "@/components/settings/NotificationSettings";
+import Payments from "@/components/settings/Payments";
 import type { LinkedAccount } from "@/actions/auth/getLinkedAccounts";
 
 type Props = {
@@ -194,6 +195,7 @@ const SettingsWrapper = ({
                             )}
                             {activeSection === "privacy" && <Privacy />}
                             {activeSection === "notifications" && <NotificationSettings />}
+                            {activeSection === "payments" && <Payments />}
                         </div>
                     </div>
                 </div>

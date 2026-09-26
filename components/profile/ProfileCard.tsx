@@ -28,6 +28,7 @@ import { acceptFriendRequest } from "@/actions/users/acceptFriendRequest";
 import { removeFriend } from "@/actions/users/removeFriend";
 import { UserIcon } from "../general/UserIcon";
 import { previewUrl } from "@/lib/imageUrl";
+import CoffeeButton from "@/components/tips/CoffeeButton";
 
 type ProfileCardProps = {
     tUser: any;
@@ -339,6 +340,14 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                             <Share2 className="w-4 h-4" />
                             Share Profile
                         </button>
+
+                        {/* Only shows when this person can receive coffees */}
+                        <CoffeeButton
+                            userId={tUser.id}
+                            name={tUser.name || `@${tUser.username}`}
+                            isOwn={currentUserId === tUser.id}
+                            signedIn={!!session}
+                        />
 
                         {/* Your own profile: jump to the profile settings */}
                         {session && currentUserId === tUser.id && (

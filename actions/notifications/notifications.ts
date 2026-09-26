@@ -79,6 +79,8 @@ export async function getNotifications(cursor?: string) {
             href = `/project/${project.id}`;
         } else if (n.type === "friend_request") {
             href = "/inbox?tab=requests";
+        } else if (n.type === "tip") {
+            href = "/settings?section=payments";
         } else if (actors[0]?.username) {
             href = `/profile/${actors[0].username}`;
         }

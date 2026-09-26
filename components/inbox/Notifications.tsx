@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+    Coffee,
     Eye,
     Folder,
     Heart,
@@ -32,6 +33,7 @@ const ICONS: Record<string, { icon: LucideIcon; className: string }> = {
     friend_post: { icon: ImageIcon, className: "bg-purple-500" },
     friend_project: { icon: Folder, className: "bg-amber-500" },
     views: { icon: Eye, className: "bg-neutral-500" },
+    tip: { icon: Coffee, className: "bg-amber-600" },
 };
 
 // "Sam", "Sam and Alex", "Sam, Alex and 12 others"
@@ -65,6 +67,8 @@ function message(n: NotificationItem) {
             return "shared a new post.";
         case "friend_project":
             return `published a new project${n.target?.title ? `: ${n.target.title}` : "."}`;
+        case "tip":
+            return `bought you a coffee${n.preview ? `: “${n.preview}”` : "."}`;
         default:
             return "";
     }

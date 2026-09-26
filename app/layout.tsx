@@ -49,24 +49,18 @@ export async function generateMetadata(): Promise<Metadata> {
         verification: process.env.GOOGLE_SITE_VERIFICATION
             ? { google: process.env.GOOGLE_SITE_VERIFICATION }
             : undefined,
+        // The preview picture comes from app/opengraph-image.tsx (themed, live counts).
         openGraph: {
-            title: `Inkference — ${userCount} users & ${projectCount} projects`,
-            description: `Showcase your work, plan it, and connect with builders.`,
+            title: `Inkference · ${userCount} builders, ${projectCount} projects`,
+            description: "Build your portfolio, plan your work on real dates, and find your people.",
             siteName: "Inkference",
-            images: [
-                {
-                    url: "/icon512_maskable.png",
-                    alt: "Inkference Icon",
-                },
-            ],
             locale: "en_US",
             type: "website",
         },
         twitter: {
             card: "summary_large_image",
-            title: `Inkference — ${userCount} users & ${projectCount} projects`,
-            description: `Showcase your work, plan it, and connect with builders.`,
-            images: ["/assets/welcome/welcomeBg.jpg"],
+            title: `Inkference · ${userCount} builders, ${projectCount} projects`,
+            description: "Build your portfolio, plan your work on real dates, and find your people.",
         },
     };
 }
