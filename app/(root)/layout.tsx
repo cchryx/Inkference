@@ -8,6 +8,7 @@ import { ReactNode, Suspense } from "react";
 import NavigationLoader from "@/components/general/NavigationLoader";
 import UploadQueue from "@/components/general/UploadQueue";
 import PushPrompt from "@/components/general/PushPrompt";
+import RealtimeProvider from "@/components/messages/RealtimeProvider";
 
 type LayoutProps = {
     children: ReactNode;
@@ -24,7 +25,7 @@ export default async function Layout({ children }: LayoutProps) {
     }
     const isAdmin = isAdminAccount(account);
 
-    return (
+    const page = (
         <div className="flex flex-col md:flex-row h-full w-full fixed">
             {session && (
                 <div className="hidden md:flex max-w-[250px]">
@@ -65,4 +66,7 @@ export default async function Layout({ children }: LayoutProps) {
             </div>
         </div>
     );
+
+    // Live chat connection (only when signed in).
+    return session?.user.username ? <RealtimeProvider userId={session.user.id}>{page}</RealtimeProvider> : page;
 }

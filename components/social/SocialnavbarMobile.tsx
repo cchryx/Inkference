@@ -1,5 +1,6 @@
 "use client";
 
+import { MessagesBadge } from "@/components/messages/RealtimeProvider";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -72,6 +73,9 @@ const SocialnavbarMobile = () => {
                                 className="relative flex flex-col items-center p-2"
                             >
                                 <Icon className="size-5 transition" />
+                                {link.route === "/social/messages" && (
+                                    <MessagesBadge className="absolute right-1 top-1" />
+                                )}
                                 <span
                                     className={`absolute bg-gray-200 top-full mt-2 text-xs py-1 px-2 rounded-lg shadow-lg 
                                         transition-all duration-200 

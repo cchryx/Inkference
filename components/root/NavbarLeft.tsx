@@ -1,5 +1,6 @@
 "use client";
 
+import { MessagesBadge } from "@/components/messages/RealtimeProvider";
 import { Menu, User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -98,12 +99,15 @@ const NavbarLeft = ({ session, isAdmin = false }: NavbarLeftProps) => {
                         <Link
                             key={link.route}
                             href={link.route}
-                            className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors bg-gray-200
+                            className={`relative flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors bg-gray-200
                 ${isOpen ? "" : "justify-center"}
                 ${isActive ? "brightness-80" : "hover:brightness-90"}
             `}
                         >
                             <Icon className="w-5 h-5 text-black" />
+                            {link.route.startsWith("/social") && (
+                                <MessagesBadge className={isOpen ? "absolute right-3 top-1/2 -translate-y-1/2" : "absolute right-1.5 top-1.5"} />
+                            )}
                             {isOpen && (
                                 <span className="text-black">{link.label}</span>
                             )}

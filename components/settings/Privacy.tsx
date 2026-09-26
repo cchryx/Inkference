@@ -15,6 +15,9 @@ import {
     updateHiddenFrom,
 } from "@/actions/privacy/privacy";
 import { unblockUser } from "@/actions/users/blockUser";
+import { getMessagePrivacy, updateMessagePrivacy } from "@/actions/messages";
+import Dropdown from "@/components/general/Dropdown";
+import type { MessageSetting } from "@/lib/messaging";
 import type { Audience } from "@/lib/visibility";
 
 export const AUDIENCE_OPTIONS: { value: Audience; label: string; hint: string; icon: typeof Globe }[] = [
@@ -33,6 +36,85 @@ const Card = ({ title, text, children }: { title: string; text: string; children
         {children}
     </div>
 );
+
+const MESSAGE_OPTIONS: { value: MessageSetting; label: string; hint: string }[] = [
+    { value: "EVERYONE", label: "Everyone", hint: "Anyone on Inkference" },
+    { value: "FOLLOWING", label: "People you follow", hint: "People you follow, and friends" },
+    { value: "FRIENDS", label: "Friends", hint: "Only your friends" },
+    { value: "NOBODY", label: "No one", hint: "Nobody can start a new chat with you" },
+];
+
+/** Who can message you, and whether everyone else can send a request. */
+const MessagePrivacyCard = () => {
+    const queryClient = useQueryClient();
+    const { data } = useQuery({ queryKey: ["messagePrivacy"], queryFn: () => getMessagePrivacy() });
+    const [saving, setSaving] = useState(false);
+
+    const save = async (input: { messagesFrom?: MessageSetting; messageRequests?: boolean }) => {
+        setSaving(true);
+        queryClient.setQueryData(["messagePrivacy"], { ...data, ...input });
+        const { error } = await updateMessagePrivacy(input);
+        setSaving(false);
+        if (error) toast.error(error);
+        else toast.success("Saved.");
+        queryClient.invalidateQueries({ queryKey: ["messagePrivacy"] });
+    };
+
+    const from = data?.messagesFrom ?? "FRIENDS";
+    const requests = data?.messageRequests ?? true;
+
+    return (
+        <Card
+            title="Messages"
+            text="Choose who can message you directly. Everyone else can send a message request, which you can accept or delete. They aren't told if you delete it."
+        >
+            {!data ? (
+                <Skeleton className="h-20 w-full rounded-md" />
+            ) : (
+                <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-sm font-medium">Who can message you</span>
+                        <Dropdown
+                            value={from}
+                            options={MESSAGE_OPTIONS}
+                            onChange={(v) => save({ messagesFrom: v as MessageSetting })}
+                            disabled={saving}
+                            aria-label="Who can message you"
+                            className="w-52"
+                        />
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                        <span>
+                            <span className="block text-sm font-medium">Allow message requests</span>
+                            <span className="block text-xs text-gray-500">
+                                {requests
+                                    ? "Anyone else can send you a request."
+                                    : "Only the people above can reach you. Nobody else can send a request."}
+                            </span>
+                        </span>
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={requests}
+                            aria-label="Allow message requests"
+                            disabled={saving}
+                            onClick={() => save({ messageRequests: !requests })}
+                            className={`relative h-6 w-11 shrink-0 rounded-full transition cursor-pointer disabled:opacity-50 ${
+                                requests ? "bg-neutral-900" : "bg-gray-300"
+                            }`}
+                        >
+                            <span
+                                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                                    requests ? "left-[22px]" : "left-0.5"
+                                }`}
+                            />
+                        </button>
+                    </div>
+                </div>
+            )}
+        </Card>
+    );
+};
 
 const Privacy = () => {
     const queryClient = useQueryClient();
@@ -126,6 +208,9 @@ const Privacy = () => {
                     })}
                 </div>
             </Card>
+
+            {/* Messages */}
+            <MessagePrivacyCard />
 
             {/* Hidden from */}
             <Card

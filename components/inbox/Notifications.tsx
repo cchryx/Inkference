@@ -38,6 +38,7 @@ const ICONS: Record<string, { icon: LucideIcon; className: string }> = {
     tip: { icon: Coffee, className: "bg-amber-600" },
     moderation: { icon: ShieldAlert, className: "bg-red-600" },
     report: { icon: Flag, className: "bg-orange-500" },
+    message_request: { icon: MessageCircle, className: "bg-blue-600" },
 };
 
 // "Sam", "Sam and Alex", "Sam, Alex and 12 others"
@@ -73,6 +74,10 @@ function message(n: NotificationItem) {
             return `published a new project${n.target?.title ? `: ${n.target.title}` : "."}`;
         case "tip":
             return `bought you a coffee${n.preview ? `: “${n.preview}”` : "."}`;
+        case "message_request":
+            return n.preview?.startsWith("group:")
+                ? `added you to the group “${n.preview.slice(6)}”.`
+                : `sent you a message request${n.preview ? `: “${n.preview}”` : "."}`;
         default:
             return "";
     }

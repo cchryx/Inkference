@@ -31,6 +31,7 @@ import { removeFriend } from "@/actions/users/removeFriend";
 import { UserIcon } from "../general/UserIcon";
 import { previewUrl } from "@/lib/imageUrl";
 import CoffeeButton from "@/components/tips/CoffeeButton";
+import MessageButton from "@/components/messages/MessageButton";
 
 type ProfileCardProps = {
     tUser: any;
@@ -475,6 +476,7 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                                     )}
                                 </button>
 
+                                <MessageButton userId={tUser.id} isFriend={isFriend} />
                             </>
                         )}
                     </div>

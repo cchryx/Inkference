@@ -38,6 +38,10 @@ export function notificationText(input: {
             return preview || "Something was reported.";
         case "moderation":
             return preview || "An admin reviewed something you posted.";
+        case "message_request":
+            return preview?.startsWith("group:")
+                ? `${who} added you to the group "${preview.slice(6)}".`
+                : `${who} sent you a message request${preview ? `: "${preview.slice(0, 100)}"` : "."}`;
         default:
             return "You have a new notification.";
     }
@@ -53,6 +57,8 @@ export const NOTIFICATION_TYPES = [
     { type: "friend_project", label: "Friends' projects", hint: "A friend publishes a new project" },
     { type: "views", label: "View milestones", hint: "Your post or project reaches 100 views, 1,000 views…" },
     { type: "tip", label: "Coffees", hint: "Someone buys you a coffee" },
+    { type: "message_request", label: "Message requests", hint: "Someone who isn't your friend wants to message you, or adds you to a group" },
+    { type: "message", label: "Messages", hint: "New messages and message requests", pushOnly: true },
     { type: "reminder", label: "Reminders", hint: "Reminders you set on planner cards and to-dos", pushOnly: true },
     { type: "weekly", label: "Weekly summary", hint: "What's due in your week, every Sunday evening", pushOnly: true },
 ] as const;

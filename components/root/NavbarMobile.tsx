@@ -1,5 +1,6 @@
 "use client";
 
+import { MessagesBadge } from "@/components/messages/RealtimeProvider";
 import { User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -78,11 +79,14 @@ const NavbarMobile = ({ session, isAdmin = false }: NavbarMobileProps) => {
                         <Link
                             key={link.route}
                             href={link.route}
-                            className={`flex min-w-0 flex-1 basis-0 flex-col items-center rounded-md py-1 text-xs ${
+                            className={`relative flex min-w-0 flex-1 basis-0 flex-col items-center rounded-md py-1 text-xs ${
                                 isActive ? "bg-gray-300" : "hover:brightness-95"
                             }`}
                         >
                             <Icon className="w-5 h-5 text-black" />
+                            {link.route.startsWith("/social") && (
+                                <MessagesBadge className="absolute left-1/2 top-0.5 ml-1.5" />
+                            )}
                             <span className="mt-1 w-full truncate text-center text-[10px] leading-3 text-black">
                                 {link.shortLabel ?? link.label}
                             </span>

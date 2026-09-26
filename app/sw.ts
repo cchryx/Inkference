@@ -1,6 +1,6 @@
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist } from "serwist";
+import { NetworkOnly, Serwist } from "serwist";
 
 declare global {
     interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -15,7 +15,11 @@ const serwist = new Serwist({
     skipWaiting: true,
     clientsClaim: true,
     navigationPreload: true,
-    runtimeCaching: defaultCache,
+    runtimeCaching: [
+        // Live updates stream: never cache it or wrap it.
+        { matcher: ({ url }) => url.pathname.startsWith("/api/realtime"), handler: new NetworkOnly() },
+        ...defaultCache,
+    ],
     fallbacks: {
         entries: [
             {
@@ -43,13 +47,20 @@ self.addEventListener("push", (event) => {
     }
 
     event.waitUntil(
-        self.registration.showNotification(data.title || "Inkference", {
-            body: data.body,
-            icon: "/icon512_rounded.png",
-            badge: "/assets/brand/logo-mark-white.png",
-            tag: data.tag, // same tag replaces the old one instead of stacking
-            data: { url: data.url || "/inbox" },
-        })
+        (async () => {
+            // Chat messages: if the app is open on screen, it already shows its own pop-up.
+            if (data.tag?.startsWith("chat:")) {
+                const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+                if (windows.some((w) => w.visibilityState === "visible")) return;
+            }
+            await self.registration.showNotification(data.title || "Inkference", {
+                body: data.body,
+                icon: "/icon512_rounded.png",
+                badge: "/assets/brand/logo-mark-white.png",
+                tag: data.tag, // same tag replaces the old one instead of stacking
+                data: { url: data.url || "/inbox" },
+            });
+        })()
     );
 });
 

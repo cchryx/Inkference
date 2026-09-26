@@ -84,6 +84,8 @@ export async function getNotifications(cursor?: string) {
             href = "/moderation";
         } else if (n.type === "report") {
             href = "/admin?tab=reports";
+        } else if (n.type === "message_request" && n.targetId) {
+            href = `/social/messages?tab=requests&c=${n.targetId}`;
         } else if (actors[0]?.username) {
             href = `/profile/${actors[0].username}`;
         }

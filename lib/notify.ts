@@ -25,7 +25,8 @@ export type NotificationType =
     | "views"
     | "tip"
     | "moderation"
-    | "report";
+    | "report"
+    | "message_request";
 
 type Target = { targetType?: "post" | "project"; targetId?: string };
 
@@ -59,6 +60,7 @@ function linkFor(type: NotificationType, t: Target, actorUsername?: string | nul
     if (type === "tip") return "/settings?section=payments";
     if (type === "moderation") return "/moderation";
     if (type === "report") return "/admin?tab=reports";
+    if (type === "message_request" && t.targetId) return `/social/messages?tab=requests&c=${t.targetId}`;
     if (actorUsername) return `/profile/${actorUsername}`;
     return "/inbox";
 }
@@ -114,6 +116,8 @@ export function groupKeyFor(type: NotificationType, actorId: string | null, t: T
             return `moderation:${t.targetId}`; // one per case
         case "report":
             return `report:${t.targetId}`; // one per reported thing
+        case "message_request":
+            return `message_request:${t.targetId}`; // one per chat
     }
 }
 

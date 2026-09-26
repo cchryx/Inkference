@@ -6,6 +6,7 @@ import { Inbox } from "lucide-react";
 import Notifications from "@/components/inbox/Notifications";
 import { useSearchParams } from "next/navigation";
 import Requests from "@/components/inbox/Requests";
+import MessageRequestsRow from "@/components/inbox/MessageRequestsRow";
 
 export default function Page() {
     // /inbox?tab=requests opens the Requests tab (used by friend request notifications).
@@ -173,7 +174,12 @@ export default function Page() {
                         </div>
                         <div className="mt-4">
                             {activeSection === "general" && <Notifications />}
-                            {activeSection === "requests" && <Requests />}
+                            {activeSection === "requests" && (
+                                <>
+                                    <MessageRequestsRow />
+                                    <Requests />
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

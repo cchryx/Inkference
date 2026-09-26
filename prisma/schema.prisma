@@ -485,6 +485,12 @@ model PrivacySettings {
   // People who can't see ANY of your posts, projects or galleries.
   hiddenFrom        String[] @default([])
 
+  // Who can message you straight into your chats: EVERYONE | FOLLOWING | FRIENDS | NOBODY
+  // (FOLLOWING = people you follow, and friends). Anyone else sends a request,
+  // if you allow requests.
+  messagesFrom    String  @default("FRIENDS") @db.VarChar(10)
+  messageRequests Boolean @default(true)
+
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -710,4 +716,60 @@ model Report {
   @@index([status, createdAt])
   @@index([targetType, targetId])
   @@map("reports")
+}
+
+////////// MESSAGES //////////
+// A chat: two people (dmKey is set so there's only ever one per pair) or a group.
+model Conversation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  isGroup       Boolean  @default(false)
+  dmKey         String?  @unique // "<userA>:<userB>" (sorted) for 1-on-1 chats
+  name          String?  @db.VarChar(80) // groups only
+  createdById   String?
+  lastMessageAt DateTime @default(now())
+
+  members  ConversationMember[]
+  messages Message[]
+
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationMember {
+  id       String   @id @default(uuid())
+  joinedAt DateTime @default(now())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+
+  role       String    @default("member") @db.VarChar(10) // owner | member
+  status     String    @default("active") @db.VarChar(10) // active | request | left
+  lastReadAt DateTime?
+  hiddenAt   DateTime? // "delete chat" for yourself: hidden until a new message
+  muted      Boolean   @default(false)
+
+  @@unique([conversationId, userId])
+  @@index([userId, status])
+  @@map("conversation_members")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String? // null for system lines ("Sam added Alex")
+
+  kind      String    @default("text") @db.VarChar(10) // text | system
+  text      String    @db.VarChar(4000)
+  editedAt  DateTime?
+  deletedAt DateTime? // unsent: shows "Message unsent"
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
 }
