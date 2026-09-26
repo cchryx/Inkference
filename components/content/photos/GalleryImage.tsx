@@ -1,208 +1,72 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { MoreVertical, Trash2 } from "lucide-react";
 import Img from "@/components/general/Img";
-import ProgressiveImg from "@/components/general/ProgressiveImg";
 import { previewUrl } from "@/lib/imageUrl";
-import Modal from "@/components/general/Modal";
-import ConfirmModal from "@/components/general/ConfirmModal";
-import { MoreVertical, Trash2, Eye } from "lucide-react";
-import { deletePhoto } from "@/actions/content/photos/deletePhoto";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
-const GalleryImage = ({
-    photo,
-    isOwner = false,
-    galleryImages,
-    currentIndex,
-}: any) => {
-    const router = useRouter();
+type Props = {
+    photo: { id: string; image: string };
+    isOwner?: boolean;
+    /** Open the full-screen viewer on this photo. */
+    onOpen: () => void;
+    onDelete: () => void;
+};
+
+/** One photo in the gallery grid. Tap it to open the viewer. */
+const GalleryImage = ({ photo, isOwner = false, onOpen, onDelete }: Props) => {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [confirmMOpen, setConfirmMOpen] = useState(false);
-    const [viewModalOpen, setViewModalOpen] = useState(false);
-    const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
-    const [isPending, setIsPending] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(currentIndex);
-
-    const handleDeletePhoto = async () => {
-        setIsPending(true);
-        const { error } = await deletePhoto(photo.id);
-        if (error) {
-            toast.error(error);
-        } else {
-            toast.success("Photo deleted successfully.");
-            router.refresh();
-        }
-        setIsPending(false);
-    };
-
-    // While the viewer is open, download the next/previous full images in
-    // the background so swiping between them is instant.
-    useEffect(() => {
-        if (!viewModalOpen) return;
-        for (const i of [selectedIndex - 1, selectedIndex + 1]) {
-            const url = galleryImages[i]?.image;
-            if (!url) continue;
-            new Image().src = previewUrl(url, 640);
-            new Image().src = url;
-        }
-    }, [viewModalOpen, selectedIndex, galleryImages]);
-
-    const prevImage = () =>
-        selectedIndex > 0 && setSelectedIndex(selectedIndex - 1);
-    const nextImage = () =>
-        selectedIndex < galleryImages.length - 1 &&
-        setSelectedIndex(selectedIndex + 1);
 
     return (
-        <>
-            <div
-                key={photo.id}
-                className="relative group masonry-item rounded-lg overflow-hidden bg-gray-200"
-                onMouseLeave={() => setMenuOpen(false)}
-                onClick={() => setMobileActionsOpen(!mobileActionsOpen)}
-            >
-                {photo.image && (
-                    <Img
-                        src={previewUrl(photo.image, 640)}
-                        placeholderClassName="aspect-[4/5]"
-                        fallbackSrc="/assets/general/fillers/skill.png"
-                        alt="Gallery image"
-                        className="w-full h-full object-cover rounded-lg"
-                    />
-                )}
+        <div
+            className="relative group masonry-item rounded-lg overflow-hidden bg-gray-200 cursor-zoom-in"
+            onMouseLeave={() => setMenuOpen(false)}
+            onClick={onOpen}
+        >
+            {photo.image && (
+                <Img
+                    src={previewUrl(photo.image, 640)}
+                    placeholderClassName="aspect-[4/5]"
+                    fallbackSrc="/assets/general/fillers/skill.png"
+                    alt="Gallery image"
+                    className="w-full h-full object-cover rounded-lg"
+                />
+            )}
 
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity sm:block hidden" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block pointer-events-none" />
 
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setMenuOpen(!menuOpen);
-                    }}
-                    className="hidden sm:flex absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition"
-                >
-                    <MoreVertical size={18} />
-                </button>
-
-                {menuOpen && (
-                    <div className="hidden sm:block absolute top-11 right-2 bg-black/70 text-white shadow-md rounded-md py-2 px-3 z-20 space-y-2">
-                        {isOwner && (
+            {/* Owner menu (computers; on phones delete from the viewer) */}
+            {isOwner && (
+                <>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpen(!menuOpen);
+                        }}
+                        aria-label="Photo options"
+                        className="hidden sm:flex absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                    >
+                        <MoreVertical size={18} />
+                    </button>
+                    {menuOpen && (
+                        <div className="hidden sm:block absolute top-11 right-2 z-20 rounded-lg bg-white p-1 text-sm shadow-lg ring-1 ring-black/10">
                             <button
-                                onClick={() => {
-                                    setMenuOpen(false);
-                                    setConfirmMOpen(true);
-                                }}
-                                className="flex items-center gap-2 text-red-400 hover:text-red-300"
-                            >
-                                <Trash2 size={16} />
-                                Remove
-                            </button>
-                        )}
-                        <button
-                            onClick={() => {
-                                setMenuOpen(false);
-                                setSelectedIndex(currentIndex);
-                                setViewModalOpen(true);
-                            }}
-                            className="flex items-center gap-2 text-white hover:text-gray-300"
-                        >
-                            <Eye size={16} />
-                            View
-                        </button>
-                    </div>
-                )}
-
-                {mobileActionsOpen && (
-                    <div className="sm:hidden absolute bottom-2 right-2 gap-2 flex z-20">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedIndex(currentIndex);
-                                setViewModalOpen(true);
-                                setMobileActionsOpen(false);
-                            }}
-                            className="bg-black/60 text-white px-3 py-1 rounded-md flex items-center gap-1"
-                        >
-                            <Eye size={14} />
-                            View
-                        </button>
-                        {isOwner && (
-                            <button
+                                type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setConfirmMOpen(true);
-                                    setMobileActionsOpen(false);
+                                    setMenuOpen(false);
+                                    onDelete();
                                 }}
-                                className="bg-red-600 text-white px-3 py-1 rounded-md flex items-center gap-1"
+                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-red-600 hover:bg-red-50 cursor-pointer"
                             >
-                                <Trash2 size={14} />
+                                <Trash2 size={16} /> Remove
                             </button>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            <ConfirmModal
-                isPending={isPending}
-                open={confirmMOpen}
-                title="Delete this photo?"
-                text="This action cannot be undone."
-                confirmText="Delete"
-                cancelText="Cancel"
-                onConfirm={() => {
-                    handleDeletePhoto();
-                    setConfirmMOpen(false);
-                }}
-                onClose={() => setConfirmMOpen(false)}
-            />
-
-            <Modal open={viewModalOpen} onClose={() => setViewModalOpen(false)}>
-                {/* Fixed-size box so the viewer doesn't jump between photos */}
-                <div className="relative rounded-lg flex items-center justify-center w-[95vw] lg:w-[85vw] h-[75vh] lg:h-[85vh] overflow-hidden group">
-                    {/* Previous Button (Desktop Only) */}
-                    {selectedIndex > 0 && (
-                        <button
-                            onClick={prevImage}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/50 px-3 py-2 rounded opacity-0 sm:group-hover:opacity-100 transition hidden sm:block"
-                        >
-                            &lt;
-                        </button>
+                        </div>
                     )}
-
-                    {/* Next Button (Desktop Only) */}
-                    {selectedIndex < galleryImages.length - 1 && (
-                        <button
-                            onClick={nextImage}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/50 px-3 py-2 rounded opacity-0 sm:group-hover:opacity-100 transition hidden sm:block"
-                        >
-                            &gt;
-                        </button>
-                    )}
-
-                    {/* Mobile Transparent Overlays */}
-                    {selectedIndex > 0 && (
-                        <div
-                            onClick={prevImage}
-                            className="sm:hidden absolute left-0 top-0 h-full w-1/2 z-10"
-                        />
-                    )}
-                    {selectedIndex < galleryImages.length - 1 && (
-                        <div
-                            onClick={nextImage}
-                            className="sm:hidden absolute right-0 top-0 h-full w-1/2 z-10"
-                        />
-                    )}
-
-                    {galleryImages[selectedIndex]?.image && (
-                        <ProgressiveImg
-                            src={galleryImages[selectedIndex].image}
-                            alt="Gallery image"
-                        />
-                    )}
-                </div>
-            </Modal>
-        </>
+                </>
+            )}
+        </div>
     );
 };
 

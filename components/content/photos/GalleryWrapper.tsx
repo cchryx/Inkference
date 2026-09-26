@@ -1,11 +1,18 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import GalleryImage from "./GalleryImage";
+import PhotoViewer from "./PhotoViewer";
+import ConfirmModal from "@/components/general/ConfirmModal";
+import { deletePhoto } from "@/actions/content/photos/deletePhoto";
+
+type Photo = { id: string; image: string };
 
 interface GalleryWrapperProps {
-    photos: any[];
-    galleryImages: any[];
+    photos: Photo[];
+    galleryImages: Photo[];
     isOwner: boolean;
 }
 
@@ -13,13 +20,13 @@ interface GalleryWrapperProps {
 // scrolls near the bottom.
 const PAGE_SIZE = 20;
 
-export const GalleryWrapper = ({
-    photos,
-    galleryImages,
-    isOwner,
-}: GalleryWrapperProps) => {
+export const GalleryWrapper = ({ photos, galleryImages, isOwner }: GalleryWrapperProps) => {
+    const router = useRouter();
     const [columns, setColumns] = useState(5);
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+    const [viewing, setViewing] = useState<number | null>(null);
+    const [toDelete, setToDelete] = useState<Photo | null>(null);
+    const [deleting, setDeleting] = useState(false);
     const sentinelRef = useRef<HTMLDivElement>(null);
 
     // Update columns based on screen size
@@ -55,28 +62,36 @@ export const GalleryWrapper = ({
         return () => observer.disconnect();
     }, [hasMore, photos.length, visibleCount]);
 
+    const confirmDelete = async () => {
+        if (!toDelete) return;
+        setDeleting(true);
+        const { error } = await deletePhoto(toDelete.id);
+        setDeleting(false);
+        setToDelete(null);
+        if (error) return toast.error(error);
+        toast.success("Photo deleted.");
+        router.refresh();
+    };
+
     // Distribute the visible photos into columns. Keeping the original index
     // means photos never move between columns when more are added.
-    const distributedPhotos: { photo: any; index: number }[][] = Array.from(
-        { length: columns },
-        () => []
-    );
+    const distributedPhotos: { photo: Photo; index: number }[][] = Array.from({ length: columns }, () => []);
     photos.slice(0, visibleCount).forEach((photo, index) => {
         distributedPhotos[index % columns].push({ photo, index });
     });
 
     return (
         <>
-            <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
                 {distributedPhotos.map((columnPhotos, colIndex) => (
-                    <div key={colIndex} className="flex flex-col gap-4">
+                    <div key={colIndex} className="flex flex-col gap-2 sm:gap-4">
                         {columnPhotos.map(({ photo, index }) => (
                             <GalleryImage
                                 key={photo.id}
                                 photo={photo}
-                                galleryImages={galleryImages}
-                                currentIndex={index}
                                 isOwner={isOwner}
+                                onOpen={() => setViewing(index)}
+                                onDelete={() => setToDelete(photo)}
                             />
                         ))}
                     </div>
@@ -85,6 +100,34 @@ export const GalleryWrapper = ({
 
             {/* Invisible marker: loads the next batch when scrolled near */}
             {hasMore && <div ref={sentinelRef} className="h-px w-full" />}
+
+            {viewing !== null && (
+                <PhotoViewer
+                    photos={galleryImages}
+                    index={viewing}
+                    onIndex={setViewing}
+                    onClose={() => setViewing(null)}
+                    onDelete={
+                        isOwner
+                            ? (p) => {
+                                  setViewing(null);
+                                  setToDelete(p);
+                              }
+                            : undefined
+                    }
+                />
+            )}
+
+            <ConfirmModal
+                isPending={deleting}
+                open={!!toDelete}
+                title="Delete this photo?"
+                text="This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={confirmDelete}
+                onClose={() => setToDelete(null)}
+            />
         </>
     );
 };
