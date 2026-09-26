@@ -52,7 +52,8 @@ async function work() {
             // Done jobs tidy themselves away after a moment.
             setTimeout(() => dismiss(job.id), 4000);
         } catch (err) {
-            console.error("upload job failed:", err);
+            // Expected problems (like being out of space) were already shown.
+            if (!(err as { quiet?: boolean })?.quiet) console.error("upload job failed:", err);
             update(job.id, {
                 status: "failed",
                 progress: null,

@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -103,6 +104,17 @@ export default async function Page({
 
     const topPhotos = gallery.photos.slice(0, 4);
 
+    // File sizes (only the owner sees them), from our storage records.
+    const sizes: Record<string, number> = {};
+    if (isOwner && gallery.photos.length) {
+        const rows = await prisma.storedFile.findMany({
+            where: { url: { in: gallery.photos.map((p) => p.image) } },
+            select: { url: true, bytes: true },
+        });
+        for (const r of rows) sizes[r.url] = r.bytes;
+    }
+    const totalBytes = Object.values(sizes).reduce((a, b) => a + b, 0);
+
     return (
         <div className="w-full flex flex-col gap-5 my-5 px-[2%]">
             <JsonLd
@@ -128,6 +140,7 @@ export default async function Page({
                     photos={gallery.photos}
                     isOwner={isOwner}
                     numOfPhotos={gallery.photos.length}
+                    totalBytes={isOwner ? totalBytes : undefined}
                     currentUserId={gallery.userData.user.id}
                 />
 
@@ -166,6 +179,7 @@ export default async function Page({
                 photos={gallery.photos}
                 galleryImages={gallery.photos}
                 isOwner={isOwner}
+                sizes={sizes}
             />
         </div>
     );

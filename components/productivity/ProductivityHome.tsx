@@ -80,11 +80,11 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
                     href="/productivity/todos"
                     className={`${TILE} bg-amber-50 ring-1 ring-amber-100 hover:bg-amber-100`}
                 >
-                    <span className="rounded-lg bg-amber-100 p-1.5 sm:p-2 text-amber-600">
-                        <Sun className="size-4 sm:size-5" />
+                    <span className="rounded-lg bg-amber-100 p-1 sm:p-2 text-amber-600">
+                        <Sun className="size-3.5 sm:size-5" />
                     </span>
                     <span className="min-w-0">
-                        <span className="block truncate text-sm sm:text-base font-semibold">My day</span>
+                        <span className="block truncate text-[13px] sm:text-base font-semibold">My day</span>
                         <span className="hidden sm:block text-xs text-gray-600">
                             {todayCount ? `${todayCount} due today or overdue` : "Nothing due today"}
                         </span>
@@ -96,12 +96,12 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
                     disabled={!!creating}
                     className={`${TILE} bg-gray-100 text-left hover:bg-gray-200 cursor-pointer disabled:opacity-60`}
                 >
-                    <span className="rounded-lg bg-sky-100 p-1.5 sm:p-2 text-sky-700">
-                        {planner.creating ? <Loader size={4} color="text-sky-700" /> : <Kanban className="size-4 sm:size-5" />}
+                    <span className="rounded-lg bg-sky-100 p-1 sm:p-2 text-sky-700">
+                        {planner.creating ? <Loader size={4} color="text-sky-700" /> : <Kanban className="size-3.5 sm:size-5" />}
                     </span>
                     <span className="min-w-0">
-                        <span className="flex items-center gap-1 truncate text-sm sm:text-base font-semibold">
-                            <Plus className="size-3.5 shrink-0" /> Planner
+                        <span className="flex items-center gap-1 truncate text-[13px] sm:text-base font-semibold">
+                            <Plus className="hidden sm:block size-3.5 shrink-0" /> Planner
                         </span>
                         <span className="hidden sm:block text-xs text-gray-500">Board and calendar for a project or schedule</span>
                     </span>
@@ -112,12 +112,12 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
                     disabled={!!creating}
                     className={`${TILE} bg-gray-100 text-left hover:bg-gray-200 cursor-pointer disabled:opacity-60`}
                 >
-                    <span className="rounded-lg bg-emerald-100 p-1.5 sm:p-2 text-emerald-700">
-                        {creating === "todo" ? <Loader size={4} color="text-emerald-700" /> : <ListTodo className="size-4 sm:size-5" />}
+                    <span className="rounded-lg bg-emerald-100 p-1 sm:p-2 text-emerald-700">
+                        {creating === "todo" ? <Loader size={4} color="text-emerald-700" /> : <ListTodo className="size-3.5 sm:size-5" />}
                     </span>
                     <span className="min-w-0">
-                        <span className="flex items-center gap-1 truncate text-sm sm:text-base font-semibold">
-                            <Plus className="size-3.5 shrink-0" /> To-do<span className="hidden sm:inline">&nbsp;list</span>
+                        <span className="flex items-center gap-1 truncate text-[13px] sm:text-base font-semibold">
+                            <Plus className="hidden sm:block size-3.5 shrink-0" /> To-do<span className="hidden sm:inline">&nbsp;list</span>
                         </span>
                         <span className="hidden sm:block text-xs text-gray-500">A simple checklist with due dates</span>
                     </span>
@@ -234,7 +234,7 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
 }
 
 const TILE =
-    "flex items-center gap-2 sm:gap-3 rounded-xl p-2 sm:p-4 transition-colors min-w-0";
+    "flex items-center justify-center sm:justify-start gap-1.5 sm:gap-3 rounded-xl px-1.5 py-2 sm:p-4 transition-colors min-w-0";
 
 function Empty({ text, action, onClick }: { text: string; action: string; onClick: () => void }) {
     return (

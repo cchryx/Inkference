@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ensureRoom } from "@/lib/storageToast";
 import StepModal from "@/components/general/StepModal";
 import { createPost } from "@/actions/content/post/createPost";
 import PhotoEditor from "@/components/general/photo-editor/PhotoEditor";
@@ -93,11 +94,12 @@ export default function CreatePostModal({ onCloseModal }: Props) {
 
     // Hand the upload to the background queue and close right away, so you
     // can keep using the app while it posts.
-    const submit = () => {
+    const submit = async () => {
         if (!cropped.length) {
             toast.error("Add at least one photo.");
             return;
         }
+        if (!(await ensureRoom(cropped.reduce((sum, c) => sum + c.file.size, 0)))) return;
         const files = cropped.map((c) => c.file);
         const previews = cropped.map((c) => c.url);
         const post = { description, location };
@@ -134,7 +136,6 @@ export default function CreatePostModal({ onCloseModal }: Props) {
 
         // Close now; the cropped photos stay alive until the upload finishes.
         images.forEach((i) => URL.revokeObjectURL(i.url));
-        toast("Uploading in the background. You can keep browsing.");
         onCloseModal();
     };
 

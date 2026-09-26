@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { syncFromCloudinary } from "@/lib/storage";
+import { getUsageBytes, syncFromCloudinary } from "@/lib/storage";
 import { deleteUnusedUploads } from "@/lib/cleanupUploads";
 import { STORAGE_LIMIT_BYTES } from "@/lib/storageConfig";
 import { getPreferences, setPreferences } from "@/actions/preferences";
@@ -100,4 +100,13 @@ export async function cleanUpMyStorage(): Promise<{ error: string | null; delete
         deleted += await deleteUnusedUploads(files.slice(i, i + 100).map((f) => f.url), userId);
     }
     return { error: null, deleted };
+}
+
+/** Is there room for `incoming` more bytes? (Checked before a background upload starts.) */
+export async function checkStorageRoom(incoming = 0): Promise<{ ok: boolean }> {
+    const userId = await me();
+    if (!userId) return { ok: false };
+    const used = await getUsageBytes(userId);
+    const bytes = Math.max(0, Number(incoming) || 0);
+    return { ok: used < STORAGE_LIMIT_BYTES && used + bytes <= STORAGE_LIMIT_BYTES };
 }

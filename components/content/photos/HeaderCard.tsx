@@ -5,6 +5,7 @@ import Img from "@/components/general/Img";
 import { Eye, Pencil, Share2, Trash2, UploadIcon } from "lucide-react";
 import VisibilityModal from "@/components/general/VisibilityModal";
 import VisibilityBadge from "@/components/general/VisibilityBadge";
+import { formatBytes } from "@/lib/storageConfig";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { deleteGallery } from "@/actions/content/photos/deleteGallery";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,8 @@ type Props = {
     photos: Photo[];
     isOwner: boolean;
     numOfPhotos: number;
+    /** Total file size (owner only). */
+    totalBytes?: number;
     currentUserId: string;
 };
 
@@ -37,6 +40,7 @@ const HeaderCard = ({
     photos,
     isOwner,
     numOfPhotos,
+    totalBytes,
     currentUserId,
 }: Props) => {
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -137,6 +141,7 @@ const HeaderCard = ({
                         <span className="text-sm text-gray-600 mt-1 block">
                             {numOfPhotos}{" "}
                             {numOfPhotos === 1 ? "Photo" : "Photos"}
+                            {!!totalBytes && <span className="text-gray-500"> · {formatBytes(totalBytes)}</span>}
                         </span>
                         {isOwner && (
                             <VisibilityBadge

@@ -14,13 +14,15 @@ interface GalleryWrapperProps {
     photos: Photo[];
     galleryImages: Photo[];
     isOwner: boolean;
+    /** File size of each photo by link (owner only). */
+    sizes?: Record<string, number>;
 }
 
 // How many photos to show at first, and how many more each time the user
 // scrolls near the bottom.
 const PAGE_SIZE = 20;
 
-export const GalleryWrapper = ({ photos, galleryImages, isOwner }: GalleryWrapperProps) => {
+export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: GalleryWrapperProps) => {
     const router = useRouter();
     const [columns, setColumns] = useState(5);
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -107,6 +109,7 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner }: GalleryWrappe
                     index={viewing}
                     onIndex={setViewing}
                     onClose={() => setViewing(null)}
+                    sizes={sizes}
                     onDelete={
                         isOwner
                             ? (p) => {

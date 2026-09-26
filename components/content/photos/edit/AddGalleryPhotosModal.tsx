@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ensureRoom } from "@/lib/storageToast";
 import StepModal from "@/components/general/StepModal";
 import PhotoEditor from "@/components/general/photo-editor/PhotoEditor";
 import { exportPhotos } from "@/components/general/photo-editor/exportPhotos";
@@ -29,8 +30,9 @@ export default function AddGalleryPhotosModal({ onCloseModal, galleryId }: Props
     };
 
     // Upload in the background; the popup closes right away.
-    const submit = () => {
+    const submit = async () => {
         if (!images.length) return;
+        if (!(await ensureRoom())) return;
         const picked = images;
         let urls: string[] | null = null;
 
@@ -56,7 +58,6 @@ export default function AddGalleryPhotosModal({ onCloseModal, galleryId }: Props
             cleanup: () => picked.forEach((i) => URL.revokeObjectURL(i.url)),
         });
 
-        toast("Uploading in the background. You can keep browsing.");
         onCloseModal();
     };
 

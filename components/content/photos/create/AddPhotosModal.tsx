@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ensureRoom } from "@/lib/storageToast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import StepModal from "@/components/general/StepModal";
@@ -34,11 +35,12 @@ export default function AddPhotosModal({ onCloseModal }: Props) {
     };
 
     // Upload in the background; the popup closes right away.
-    const submit = () => {
+    const submit = async () => {
         if (!name.trim()) {
             toast.error("Give your gallery a name.");
             return;
         }
+        if (!(await ensureRoom())) return;
         const picked = images;
         const galleryName = name.trim();
         let urls: string[] | null = null;
@@ -65,7 +67,6 @@ export default function AddPhotosModal({ onCloseModal }: Props) {
             cleanup: () => picked.forEach((i) => URL.revokeObjectURL(i.url)),
         });
 
-        toast("Uploading in the background. You can keep browsing.");
         onCloseModal();
     };
 
