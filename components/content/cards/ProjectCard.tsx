@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Heart, Eye, CalendarDays, Bookmark } from "lucide-react";
 import { useNavigate } from "@/lib/navigation";
 import { previewUrl } from "@/lib/imageUrl";
+import UpdatedAgo from "@/components/general/UpdatedAgo";
 
 type ProjectCardProps = {
     project: any;
@@ -164,6 +165,7 @@ export default function ProjectCard({
                         <CalendarDays className="w-4 h-4" /> Posted:{" "}
                         {formattedDate}
                     </div>
+                    <UpdatedAgo updated={project.updatedAt} created={project.createdAt} className="!text-white/60" />
                 </div>
             </div>
         </div>

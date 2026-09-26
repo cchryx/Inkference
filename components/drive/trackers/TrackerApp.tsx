@@ -21,6 +21,7 @@ import {
     type TrackerStatus,
 } from "@/lib/drive";
 import ShowRow from "./ShowRow";
+import UpdatedAgo from "@/components/general/UpdatedAgo";
 
 type Props = { initialTrackers: TrackerData[]; initialId: string | null };
 type Filter = TrackerStatus | "all";
@@ -207,6 +208,10 @@ export default function TrackerApp({ initialTrackers, initialId }: Props) {
     }, [current, filter, search]);
 
     const band = current ? BOARD_COLORS[current.tracker.color].band : "bg-black";
+    // Newest change: a show you updated, or the tracker itself.
+    const lastUpdated = current
+        ? [current.updatedAt, ...current.tracker.items.map((i) => i.updatedAt)].sort().at(-1)
+        : null;
 
     return (
         <div className="flex h-full w-full">
@@ -338,6 +343,7 @@ export default function TrackerApp({ initialTrackers, initialId }: Props) {
                                 )}
                             </div>
                         </header>
+                        <UpdatedAgo updated={lastUpdated} prefix="Last updated" className="px-4 pl-[3.25rem] md:px-8 md:pl-[3.25rem]" />
 
                         {/* Add a show */}
                         <div className="px-4 pt-4 md:px-8">

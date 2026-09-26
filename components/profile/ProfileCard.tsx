@@ -353,15 +353,27 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                         </button>
 
                         {tUser.resumeUrl && (
-                            <a
-                                href={tUser.resumeUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm"
-                            >
-                                <FileText className="w-4 h-4" />
-                                Resume
-                            </a>
+                            <div className="flex flex-col items-center gap-0.5 md:items-end">
+                                <a
+                                    href={tUser.resumeUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    Resume
+                                </a>
+                                {tUser.resumeUpdatedAt && (
+                                    <span className="text-[10px] text-gray-400">
+                                        Updated{" "}
+                                        {new Date(tUser.resumeUpdatedAt).toLocaleDateString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}
+                                    </span>
+                                )}
+                            </div>
                         )}
 
                         {/* Only shows when this person can receive coffees */}

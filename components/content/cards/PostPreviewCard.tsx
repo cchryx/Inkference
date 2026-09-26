@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "@/lib/navigation";
 import { previewUrl } from "@/lib/imageUrl";
+import UpdatedAgo from "@/components/general/UpdatedAgo";
 
 type PostPreviewCardProps = {
     type: string; // "project", "experience", "education", "post", etc.
@@ -107,6 +108,7 @@ export default function PostPreviewCard({
                         <CalendarDays className="size-3 md:size-4" />
                         {formattedDate}
                     </div>
+                    <UpdatedAgo updated={content.updatedAt} created={content.createdAt} className="!text-white/60 !text-[10px]" />
                 </div>
             </div>
         </div>

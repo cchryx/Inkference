@@ -45,6 +45,7 @@ export async function getProfileData(username?: string | null) {
                     bannerImage: undefined,
                     resumeUrl: null as string | null,
                     resumeName: null as string | null,
+                    resumeUpdatedAt: null as string | null,
                 },
                 relationships: null,
             };
@@ -86,6 +87,7 @@ export async function getProfileData(username?: string | null) {
                 bannerImage: true,
                 resumeUrl: true,
                 resumeName: true,
+                resumeUpdatedAt: true,
             },
         }),
     ]);
@@ -100,6 +102,7 @@ export async function getProfileData(username?: string | null) {
             bannerImage: profile?.bannerImage ?? undefined,
             resumeUrl: profile?.resumeUrl ?? null,
             resumeName: profile?.resumeName ?? null,
+            resumeUpdatedAt: profile?.resumeUpdatedAt?.toISOString() ?? null,
         },
         relationships,
     };

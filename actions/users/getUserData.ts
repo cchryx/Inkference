@@ -32,6 +32,7 @@ const projectSelect = {
     startDate: true,
     endDate: true,
     createdAt: true,
+    updatedAt: true,
     iconImage: true,
     bannerImage: true,
     skills: { select: { id: true, name: true, iconImage: true } },

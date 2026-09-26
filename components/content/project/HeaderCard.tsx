@@ -32,6 +32,7 @@ import { viewProject } from "@/actions/content/project/viewProject";
 import { saveProject } from "@/actions/content/project/saveProject";
 import { createPost } from "@/actions/content/post/createPost";
 import { previewUrl } from "@/lib/imageUrl";
+import UpdatedAgo from "@/components/general/UpdatedAgo";
 
 type Props = {
     isOwner: boolean;
@@ -334,6 +335,7 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                                 <span className="text-gray-500">
                                     Posted on {postedAt}
                                 </span>
+                                <UpdatedAgo updated={project.updatedAt} created={project.createdAt} />
                                 {isOwner && (
                                     <VisibilityBadge
                                         kind="project"
