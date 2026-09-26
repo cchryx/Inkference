@@ -16,11 +16,15 @@ import { getViewerContext } from "@/lib/visibility";
 import BlockedNotice from "@/components/profile/BlockedNotice";
 import JsonLd from "@/components/general/JsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
+import { getHiddenSections } from "@/lib/profilePrefs";
 
 // Deduped within one request.
 const loadProfile = cache(getProfileData);
 
-type PageProps = { params: Promise<{ username: string }> };
+type PageProps = {
+    params: Promise<{ username: string }>;
+    searchParams?: Promise<{ tab?: string; section?: string }>;
+};
 
 // Link previews only need a name, bio and picture: one small cached query
 // instead of loading the whole profile.
@@ -61,8 +65,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params, searchParams }: PageProps) {
     const { username } = await params;
+    const query = (await searchParams) ?? {};
 
     // Session and profile load at the same time.
     const [session, profileData] = await Promise.all([
@@ -94,7 +99,10 @@ export default async function Page({ params }: PageProps) {
         );
     }
 
-    const userData: any = await getUserData(profileData.user.id, { viewer });
+    const [userData, hiddenSections]: [any, string[]] = await Promise.all([
+        getUserData(profileData.user.id, { viewer }),
+        getHiddenSections(profileData.user.id),
+    ]);
 
     const tUser: any = {
         ...profileData.user,
@@ -195,7 +203,7 @@ export default async function Page({ params }: PageProps) {
 
             {/* Bottom section */}
             <div className="px-[2%]">
-                <Content userData={tUser} />
+                <Content userData={tUser} initialTab={query.section ?? query.tab} hiddenSections={hiddenSections} />
             </div>
         </div>
     );

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
+import { PROFILE_SECTIONS } from "@/lib/profileSections";
 
 // Every preference we store, with what values are allowed.
 const PrefsSchema = z
@@ -16,6 +17,8 @@ const PrefsSchema = z
         timeZone: z.string().max(60),
         /** When the last weekly summary was sent (ms). */
         weeklySentAt: z.number(),
+        /** Tabs hidden from your profile and Build page. */
+        hiddenSections: z.array(z.enum(PROFILE_SECTIONS)).max(PROFILE_SECTIONS.length),
     })
     .partial();
 

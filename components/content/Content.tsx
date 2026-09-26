@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { BUILD_TAB_COOKIE, pickSection, shownSections } from "@/lib/profileSections";
+import StorageMeter from "@/components/general/StorageMeter";
 
 import ContentsBar from "./Contentsbar";
 import Projects from "./sections/Projects";
@@ -23,17 +25,36 @@ import CreatePostModal from "./post/create/CreatePostModal";
 type Props = {
     userData: any;
     rootUser?: boolean;
+    /** Tab to open first (from the link, or the one you had open last). */
+    initialTab?: string;
+    /** Tabs the owner hid in Settings. */
+    hiddenSections?: string[];
 };
 
-const Content = ({ userData, rootUser = false }: Props) => {
-    const [active, setActive] = useState("projects");
+const Content = ({ userData, rootUser = false, initialTab, hiddenSections }: Props) => {
+    const shown = useMemo(() => shownSections(hiddenSections), [hiddenSections]);
+    const [active, setActiveState] = useState<string>(() => pickSection(initialTab, shown));
+
+    // Remember the tab: in the link (so Back returns to it) and, on your own
+    // Build page, in a cookie (so it's still open next time you come back).
+    const setActive = (id: string) => {
+        setActiveState(id);
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", id);
+        url.searchParams.delete("section");
+        window.history.replaceState(null, "", url);
+        if (rootUser) document.cookie = `${BUILD_TAB_COOKIE}=${id}; path=/; max-age=31536000; samesite=lax`;
+    };
     const [openModal, setOpenModal] = useState<string | null>(null);
     const [projectView, setProjectView] = useState("myProjects");
 
     return (
         <div className="w-full">
             {/* Sticky ContentsBar */}
-            <ContentsBar active={active} setActive={setActive} />
+            <ContentsBar active={active} setActive={setActive} shown={shown} />
+
+            {/* Your photo space (gallery, posts, projects), on your own Build page */}
+            {rootUser && <StorageMeter compact className="mt-3" />}
 
             {/* Content below */}
             {active === "projects" && (

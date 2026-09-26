@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import ChangeSocialsForm from "./forms/ChangeSocialsForm";
 import ChangeProfileImageForm from "./forms/ChangeProfileImageForm";
 import ChangeBannerImageForm from "./forms/ChangeBannerImageForm";
+import ProfileSectionsForm from "./forms/ProfileSectionsForm";
 
 const Profile = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -62,6 +63,7 @@ const Profile = () => {
                 address={profile?.address ?? ""}
                 isLoading={isLoading}
             />
+            <ProfileSectionsForm />
         </div>
     );
 };

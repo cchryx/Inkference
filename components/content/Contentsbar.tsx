@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { PROFILE_LINKS } from "@/constants";
 
 const ContentsBar = ({
     active,
     setActive,
+    shown,
 }: {
     active: string;
-    setActive: React.Dispatch<React.SetStateAction<string>>;
+    setActive: (id: string) => void;
+    /** Tabs to show (the rest were hidden in Settings). */
+    shown?: readonly string[];
 }) => {
     const [visibleLabel, setVisibleLabel] = useState<string | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-
-    const router = useRouter();
-    const searchParams = useSearchParams();
 
     // Close tooltip when clicking outside
     useEffect(() => {
@@ -45,34 +44,9 @@ const ContentsBar = ({
         }
     }, [visibleLabel]);
 
-    // On mount → sync from search param if exists
-    useEffect(() => {
-        const section = searchParams.get("section");
-        if (section && PROFILE_LINKS.some((link) => link.id === section)) {
-            setActive(section);
-
-            // Clean the URL (remove ?section=) but keep state
-            const params = new URLSearchParams(searchParams.toString());
-            params.delete("section");
-
-            const query = params.toString();
-            const url = query ? `?${query}` : "";
-
-            router.replace(url, { scroll: false });
-        }
-    }, [searchParams, setActive, router]);
-
     const handleClick = (id: string) => {
         setActive(id);
         setVisibleLabel(id);
-
-        const params = new URLSearchParams(searchParams.toString());
-        if (params.has("section")) {
-            params.delete("section");
-            const query = params.toString();
-            const url = query ? `?${query}` : "";
-            router.replace(url, { scroll: false });
-        }
     };
 
     return (
@@ -82,7 +56,7 @@ const ContentsBar = ({
         >
             <div className="w-full p-2 flex justify-center">
                 <div className="flex gap-6 md:gap-10">
-                    {PROFILE_LINKS.map((link) => {
+                    {PROFILE_LINKS.filter((l) => !shown || shown.includes(l.id)).map((link) => {
                         const isActive = active === link.id;
                         const isLabelVisible = visibleLabel === link.id;
 
