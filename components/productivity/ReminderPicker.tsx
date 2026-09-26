@@ -1,9 +1,10 @@
 "use client";
 
-import { useSyncExternalStore, useState } from "react";
+import { useEffect, useSyncExternalStore, useState } from "react";
 import { Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
-import { REMIND_OPTIONS } from "@/lib/drive";
+import { format, isToday, isTomorrow } from "date-fns";
+import { REMIND_OPTIONS, reminderAt } from "@/lib/drive";
 import Dropdown from "@/components/general/Dropdown";
 import { getRegistration, subscribeThisDevice } from "@/lib/pushClient";
 
@@ -70,6 +71,7 @@ export default function ReminderPicker({ due, time, value, onChange, compact }: 
                     ]}
                 />
             </div>
+            {on && due && <When at={reminderAt(due, time, value)} />}
             {on && permission === "default" && (
                 <button
                     type="button"
@@ -90,5 +92,29 @@ export default function ReminderPicker({ due, time, value, onChange, compact }: 
                 </p>
             )}
         </div>
+    );
+}
+
+/** "Reminds you today at 9:00 AM", or a warning if that time already passed. */
+function When({ at }: { at: string | null }) {
+    // The current time, refreshed every 30 seconds.
+    const [now, setNow] = useState(() => Date.now());
+    useEffect(() => {
+        const t = setInterval(() => setNow(Date.now()), 30_000);
+        return () => clearInterval(t);
+    }, []);
+    if (!at) return null;
+    const d = new Date(at);
+    const day = isToday(d) ? "today" : isTomorrow(d) ? "tomorrow" : format(d, "EEE, MMM d");
+    if (d.getTime() < now)
+        return (
+            <p className="text-xs font-normal normal-case tracking-normal text-amber-700">
+                That time already passed ({day} at {format(d, "h:mm a")}). Pick a later time.
+            </p>
+        );
+    return (
+        <p className="text-xs font-normal normal-case tracking-normal text-gray-500">
+            Reminds you {day} at {format(d, "h:mm a")}
+        </p>
     );
 }

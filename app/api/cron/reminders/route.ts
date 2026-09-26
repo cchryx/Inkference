@@ -9,10 +9,32 @@ export const maxDuration = 60;
 
 const LATE_LIMIT_MS = 12 * 60 * 60 * 1000; // older than this = skip it, too late to be useful
 
+/** ?check=1: what's waiting and what was sent lately (for fixing problems). */
+async function status(now: Date) {
+    const [waiting, upcoming, recent, devices] = await Promise.all([
+        prisma.driveReminder.count({ where: { sentAt: null, remindAt: { gt: now } } }),
+        prisma.driveReminder.findMany({
+            where: { sentAt: null },
+            orderBy: { remindAt: "asc" },
+            take: 5,
+            select: { title: true, remindAt: true },
+        }),
+        prisma.driveReminder.findMany({
+            where: { sentAt: { not: null } },
+            orderBy: { sentAt: "desc" },
+            take: 5,
+            select: { title: true, remindAt: true, sentAt: true },
+        }),
+        prisma.pushSubscription.count(),
+    ]);
+    return Response.json({ now, waiting, upcoming, recentlySent: recent, pushDevices: devices });
+}
+
 async function run(req: Request) {
     if (!isCronRequest(req)) return unauthorized();
 
     const now = new Date();
+    if (new URL(req.url).searchParams.has("check")) return status(now);
     const due = await prisma.driveReminder.findMany({
         where: { sentAt: null, remindAt: { lte: now, gte: new Date(now.getTime() - LATE_LIMIT_MS) } },
         orderBy: { remindAt: "asc" },

@@ -117,7 +117,7 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
                     </span>
                     <span className="min-w-0">
                         <span className="flex items-center gap-1 truncate text-[13px] sm:text-base font-semibold">
-                            <Plus className="hidden sm:block size-3.5 shrink-0" /> To-do<span className="hidden sm:inline">&nbsp;list</span>
+                            <Plus className="hidden sm:block size-3.5 shrink-0" /> To-do<span className="hidden sm:inline -ml-0.5">&nbsp;list</span>
                         </span>
                         <span className="hidden sm:block text-xs text-gray-500">A simple checklist with due dates</span>
                     </span>
@@ -234,7 +234,7 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
 }
 
 const TILE =
-    "flex items-center justify-center sm:justify-start gap-1.5 sm:gap-3 rounded-xl px-1.5 py-2 sm:p-4 transition-colors min-w-0";
+    "flex items-center justify-start gap-1.5 sm:gap-3 rounded-xl px-2 py-2 sm:p-4 text-left transition-colors min-w-0";
 
 function Empty({ text, action, onClick }: { text: string; action: string; onClick: () => void }) {
     return (
