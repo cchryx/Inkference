@@ -10,6 +10,7 @@ const protectedRoutes = [
     "/inbox",
     "/portfolio",
     "/drive",
+    "/productivity",
 ];
 
 export async function proxy(req: NextRequest) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { MENU, MENU_ITEM_DANGER } from "@/lib/menuStyles";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
 import {
@@ -262,13 +263,13 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                                 <MoreHorizontal className="h-5 w-5" />
                             </button>
                             {menuOpen && (
-                                <div className="absolute right-0 top-11 w-40 overflow-hidden rounded-md bg-gray-100 text-sm shadow-lg">
+                                <div className={`absolute right-0 top-11 z-20 w-40 ${MENU}`}>
                                     <button
                                         onClick={() => {
                                             setMenuOpen(false);
                                             setConfirmBlock(true);
                                         }}
-                                        className="flex w-full items-center gap-2 px-3 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
+                                        className={MENU_ITEM_DANGER}
                                     >
                                         <Ban className="h-4 w-4" /> Block
                                     </button>

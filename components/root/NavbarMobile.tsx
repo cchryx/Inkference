@@ -73,7 +73,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                         <Link
                             key={link.route}
                             href={link.route}
-                            className={`flex flex-col items-center text-xs py-1 px-2 ${
+                            className={`flex flex-col items-center text-xs py-1 px-1.5 ${
                                 isActive
                                     ? "bg-gray-300 rounded-md"
                                     : "hover:brightness-95"
@@ -81,7 +81,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                         >
                             <Icon className="w-5 h-5 text-black" />
                             <span className="text-[10px] text-black mt-1">
-                                {link.label}
+                                {link.shortLabel ?? link.label}
                             </span>
                         </Link>
                     );

@@ -161,6 +161,24 @@
         display: block;
     }
 
+    /* Slim, see-through scrollbar that gets a bit darker on hover. */
+    .scroll-thin {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+    }
+    .scroll-thin:hover {
+        scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    }
+    /* Phones: no scrollbar at all (fades show there's more instead). */
+    @media (max-width: 767px) {
+        .scroll-thin {
+            scrollbar-width: none;
+        }
+        .scroll-thin::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
     @keyframes shimmer {
         0% {
             transform: translateX(-100%);

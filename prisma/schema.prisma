@@ -92,6 +92,7 @@ model User {
   UserData      UserData?
   Relationships Relationships?
   PrivacySettings PrivacySettings?
+  DriveFiles      DriveFile[]
 
   @@map("users")
 }
@@ -498,4 +499,38 @@ model PushSubscription {
 
   @@index([userId])
   @@map("push_subscriptions")
+}
+
+// A file in someone's Drive. One table for every kind of file, so new kinds
+// (docs, sheets, to-dos) can be added later without a new table.
+//   type "note":    content = { text }
+//   type "planner": content = { color, labels[], lists[{ cards[] }] }  (Trello-style board)
+// Private to the owner for now.
+model DriveFile {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    String
+  title   String  @default("") @db.VarChar(200)
+  content Json    @default("{}")
+  pinned  Boolean @default(false)
+
+  @@index([userId, type, updatedAt])
+  @@map("drive_files")
+}
+
+// Small per-person app preferences (e.g. the planner view you used last).
+// Stored as JSON so new preferences don't need a new column.
+model UserPreference {
+  id        String   @id @default(uuid())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  data   Json   @default("{}")
+
+  @@map("user_preferences")
 }

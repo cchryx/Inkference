@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: { absolute: "Inkference: build your portfolio, share your work" },
     alternates: { canonical: "/" },
     description:
-        "Inkference is a portfolio and social platform for creators. Show off your projects, experience and skills, post photos, and connect with other creators.",
+        "Inkference is a portfolio and social platform for builders. Show off your projects and skills, post your work, plan your week on real dates, and connect with people who make things.",
 };
 
 // Counted at most every 10 minutes instead of on every visit.
@@ -47,7 +47,7 @@ export default async function WelcomePage() {
                             alternateName: ["inkference.app", "Inkference App"],
                             url: `${SITE_URL}/`,
                             description:
-                                "A portfolio and social platform for creators to show projects, experience and skills.",
+                                "A portfolio, planner and social platform for builders to show projects, experience and skills.",
                         },
                         {
                             "@type": "Organization",

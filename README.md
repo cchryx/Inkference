@@ -4,7 +4,7 @@
 
 # Inkference
 
-**Build your portfolio. Share your work. Meet other creators.**
+**Build your portfolio. Plan your work. Find your people.**
 
 [![Live site](https://img.shields.io/badge/live-inkference.app-000000?style=for-the-badge&logo=googlechrome&logoColor=white)](https://inkference.app)
 &nbsp;
@@ -40,7 +40,7 @@
 
 ## ✨ What is Inkference?
 
-Inkference is a portfolio **and** social platform for creators. Instead of a boring resume, you get a living profile that shows what you've built, what you know, and what you're up to, and a feed to share it with people who care.
+Inkference is a portfolio **and** social platform for builders. Instead of a boring resume, you get a living profile that shows what you've built, what you know, and what you're up to, and a feed to share it with people who care.
 
 <table>
 <tr>
@@ -58,7 +58,7 @@ Inkference is a portfolio **and** social platform for creators. Instead of a bor
 ### 💬 Social
 - **Home feed** with "For you" and "Following", infinite scroll, unseen posts first
 - **Posts** with multi-photo carousels, likes, saves and comments
-- **Friends and followers**, suggested creators, and trending posts
+- **Friends and followers**, suggested builders, and trending posts
 - **Explore** search for people, posts and projects
 
 </td>
@@ -78,6 +78,24 @@ Inkference is a portfolio **and** social platform for creators. Instead of a bor
 - Per-post and per-project **visibility**: public, followers, friends, custom or private
 - **Block** people and hide content from specific users
 - Every server action checks who you are and what you own
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### 🗓️ Productivity
+- **Planners** with Board, Week and Month views on real dates
+- Drag cards between days, add times, see everything **overdue**
+- **To-dos** with Today, Upcoming and Important lists
+
+</td>
+<td width="50%" valign="top">
+
+### 🗃️ Drive
+- **Notes** that save as you type, pinned and searchable
+- Private to you
+- Docs and sheets coming soon
 
 </td>
 </tr>

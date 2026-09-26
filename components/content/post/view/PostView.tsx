@@ -1,5 +1,6 @@
 "use client";
 
+import { MENU, MENU_ITEM, MENU_ITEM_DANGER } from "@/lib/menuStyles";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -157,13 +158,13 @@ const PostView = ({ post, currentUserId }: Props) => {
                         <MoreHorizontal className="w-5 h-5" />
                     </button>
                     {menuOpen && (
-                        <div className="absolute right-0 top-9 z-20 w-48 bg-gray-100 rounded-md shadow-lg overflow-hidden text-sm">
+                        <div className={`absolute right-0 top-9 z-20 w-48 ${MENU}`}>
                             <button
                                 onClick={() => {
                                     setMenuOpen(false);
                                     setVisibilityOpen(true);
                                 }}
-                                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-200 cursor-pointer"
+                                className={MENU_ITEM}
                             >
                                 <Eye className="w-4 h-4" /> Who can see this
                             </button>
@@ -172,7 +173,7 @@ const PostView = ({ post, currentUserId }: Props) => {
                                     setMenuOpen(false);
                                     setConfirmDelete(true);
                                 }}
-                                className="flex items-center gap-2 w-full px-3 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
+                                className={MENU_ITEM_DANGER}
                             >
                                 <Trash2 className="w-4 h-4" /> Delete
                             </button>

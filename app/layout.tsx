@@ -42,8 +42,8 @@ export async function generateMetadata(): Promise<Metadata> {
         // Page titles become "Page name | Inkference".
         title: { default: "Inkference", template: "%s | Inkference" },
         applicationName: "Inkference",
-        description: `Join ${userCount} creators and explore ${projectCount} amazing projects on Inkference.`,
-        keywords: ["portfolio", "creators", "projects", "showcase", "social network", "Inkference"],
+        description: `Join ${userCount} builders and explore ${projectCount} projects on Inkference. Show your work, plan it, and connect.`,
+        keywords: ["portfolio", "builders", "projects", "showcase", "planner", "social network", "Inkference"],
         robots: { index: true, follow: true },
         // Optional: paste Google Search Console's HTML-tag code into this env var.
         verification: process.env.GOOGLE_SITE_VERIFICATION
@@ -51,7 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
             : undefined,
         openGraph: {
             title: `Inkference — ${userCount} users & ${projectCount} projects`,
-            description: `Showcase your work and connect with creators.`,
+            description: `Showcase your work, plan it, and connect with builders.`,
             siteName: "Inkference",
             images: [
                 {
@@ -65,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
         twitter: {
             card: "summary_large_image",
             title: `Inkference — ${userCount} users & ${projectCount} projects`,
-            description: `Showcase your work and connect with creators.`,
+            description: `Showcase your work, plan it, and connect with builders.`,
             images: ["/assets/welcome/welcomeBg.jpg"],
         },
     };

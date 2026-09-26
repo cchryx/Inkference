@@ -1,5 +1,6 @@
 "use client";
 
+import { MENU, MENU_ITEM, MENU_ITEM_DANGER } from "@/lib/menuStyles";
 import { useState, useRef, useEffect } from "react";
 import ProjectCard from "../content/cards/ProjectCard";
 import PostCard from "../content/cards/PostCard";
@@ -260,10 +261,10 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                     {menuOpen && (
                         <div
                             ref={menuRef}
-                            className="absolute text-sm right-4 top-12 bg-gray-200 rounded-md shadow-lg flex flex-col w-32 z-20"
+                            className={`absolute right-4 top-12 z-20 flex w-36 flex-col ${MENU}`}
                         >
                             <button
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md"
+                                className={MENU_ITEM}
                                 onClick={() => setMenuOpen(false)}
                             >
                                 <Pen className="size-4" />
@@ -271,7 +272,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                             </button>
 
                             <button
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md whitespace-nowrap"
+                                className={MENU_ITEM}
                                 onClick={() => {
                                     setVisibilityOpen(true);
                                     setMenuOpen(false);
@@ -282,7 +283,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                             </button>
 
                             <button
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-red-600 rounded-md"
+                                className={MENU_ITEM_DANGER}
                                 onClick={() => {
                                     setConfirmDeleteOpen(true);
                                     setMenuOpen(false);

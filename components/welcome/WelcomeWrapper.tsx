@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
     ArrowRight,
+    BellRing,
     BriefcaseBusiness,
     Compass,
     Flame,
     Images,
-    Smartphone,
-    Users,
+    KanbanSquare,
+    ListChecks,
+    ShieldCheck,
+    StickyNote,
 } from "lucide-react";
 
 /*
@@ -40,13 +43,13 @@ const FEATURES = [
         code: "02",
         icon: Images,
         title: "Posts & galleries",
-        text: "Share photo posts with captions, tags and locations, and organise your work into galleries.",
+        text: "Share photo posts, crop them to the perfect shape, and organise your best shots into galleries.",
     },
     {
         code: "03",
         icon: Compass,
         title: "A feed made for you",
-        text: "For You, Following and Friends feeds that skip what you've already seen and scroll forever.",
+        text: "For You, Following and Friends feeds that skip what you've already seen, with comments and likes.",
     },
     {
         code: "04",
@@ -56,22 +59,43 @@ const FEATURES = [
     },
     {
         code: "05",
-        icon: Users,
-        title: "Connect with creators",
-        text: "Follow people, add friends, and get recommended accounts based on your skills and projects.",
+        icon: KanbanSquare,
+        title: "Planners on real dates",
+        text: "Trello-style boards with a board, week and month view. Drag cards between days, add times, and catch anything overdue.",
+        isNew: true,
     },
     {
         code: "06",
-        icon: Smartphone,
-        title: "Install it like an app",
-        text: "Add Inkference to your phone's home screen. It works on mobile and desktop.",
+        icon: ListChecks,
+        title: "To-dos that keep up",
+        text: "Today, Upcoming and Important lists, due dates and stars, plus one place for everything coming up.",
+        isNew: true,
+    },
+    {
+        code: "07",
+        icon: StickyNote,
+        title: "Drive & notes",
+        text: "Quick notes that save as you type, searchable and private. Docs and sheets are on the way.",
+        isNew: true,
+    },
+    {
+        code: "08",
+        icon: ShieldCheck,
+        title: "Privacy you control",
+        text: "Choose who sees each post and project, hide things from certain people, and block anyone, anytime.",
+    },
+    {
+        code: "09",
+        icon: BellRing,
+        title: "Push notifications, like an app",
+        text: "Install Inkference on your phone's home screen and get notified about likes, comments and friends.",
     },
 ];
 
 const STEPS = [
     { title: "Create your account", text: "Sign up with email, Google or GitHub, then pick a username." },
     { title: "Build your profile", text: "Add projects, experience, skills and photos in a few minutes." },
-    { title: "Share & connect", text: "Post your work, follow creators and climb the trending page." },
+    { title: "Share, plan & connect", text: "Post your work, plan your week, and find builders who make things like you." },
 ];
 
 // Counts up from 0 when the number scrolls into view.
@@ -140,7 +164,7 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
     const primaryLabel = signedInAs ? "Open Inkference" : "Get started free";
 
     const STAT_ITEMS = [
-        { label: "Creators", value: stats.users },
+        { label: "Builders", value: stats.users },
         { label: "Projects", value: stats.projects },
         { label: "Posts", value: stats.posts },
     ];
@@ -213,12 +237,12 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
                     </svg>
 
                     <div className="relative max-w-2xl space-y-6">
-                        <Label>System online // v2</Label>
+                        <Label>System online // v3</Label>
 
                         <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
                             Build your portfolio.
                             <br />
-                            Share your work.
+                            Plan your work.
                             <br />
                             <span className="relative inline-block">
                                 Find your people.
@@ -227,9 +251,9 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
                         </h1>
 
                         <p className="max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-                            Inkference is a portfolio and social network for creators. Put your
-                            projects, experience and skills on one profile, post your work, and
-                            connect with people who build things too.
+                            Inkference is where builders show their work and get it done. Put your
+                            projects and skills on one profile, share posts, plan your week on real
+                            dates, and connect with people who make things too.
                         </p>
 
                         {signedInAs && (
@@ -297,11 +321,11 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
                     <Label>Modules</Label>
                     <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">What you can do</h2>
                     <p className="mt-2 max-w-xl text-neutral-600">
-                        Everything a creator needs to show their work and grow, in one app.
+                        Show your work, plan it, and grow. Nine modules, one app.
                     </p>
 
                     <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
-                        {FEATURES.map(({ code, icon: Icon, title, text }) => (
+                        {FEATURES.map(({ code, icon: Icon, title, text, isNew }) => (
                             <div
                                 key={code}
                                 className={`group relative border border-neutral-900/20 bg-white p-6 transition hover:-translate-y-0.5 hover:border-neutral-900 ${CUT}`}
@@ -310,7 +334,14 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
                                     <span className={`grid h-11 w-11 place-items-center bg-neutral-900 text-white ${CUT_SM}`}>
                                         <Icon className="h-5 w-5" />
                                     </span>
-                                    <span className="font-mono text-xs text-neutral-400">MOD-{code}</span>
+                                    <span className="flex items-center gap-2 font-mono text-xs text-neutral-400">
+                                        {isNew && (
+                                            <span className={`bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold tracking-widest text-white ${CUT_SM}`}>
+                                                NEW
+                                            </span>
+                                        )}
+                                        MOD-{code}
+                                    </span>
                                 </div>
                                 <h3 className="mt-5 text-lg font-bold">{title}</h3>
                                 <p className="mt-1.5 text-sm leading-relaxed text-neutral-600">{text}</p>
@@ -349,10 +380,10 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
                         <Brackets />
                         <Label>Ready</Label>
                         <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight sm:text-5xl">
-                            Join {stats.users.toLocaleString()} creators on Inkference
+                            Join {stats.users.toLocaleString()} builders on Inkference
                         </h2>
                         <p className="mx-auto mt-3 max-w-lg text-neutral-600">
-                            It&apos;s free. Set up your profile today and share your first project.
+                            It&apos;s free. Set up your profile, share your first project, and plan what&apos;s next.
                         </p>
                         <Link
                             href={primaryHref}

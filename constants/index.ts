@@ -4,6 +4,7 @@ import {
     Bell,
     Shield,
     BookUser,
+    CalendarCheck,
     Brain,
     BriefcaseBusiness,
     Building2,
@@ -48,6 +49,12 @@ export const NAVBARLEFT_LINKS = [
         icon: Library,
         route: "/drive",
         label: "Drive",
+    },
+    {
+        icon: CalendarCheck,
+        route: "/productivity",
+        label: "Productivity",
+        shortLabel: "Plan",
     },
     {
         icon: BookUser,
