@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { Bell, CalendarDays, ChevronDown, Star, Trash2 } from "lucide-react";
-import { BOARD_COLORS, dayKey, todayKey, type BoardColor, type Todo } from "@/lib/drive";
+import { BOARD_COLORS, dayKey, formatTime, isOverdue, todayKey, type BoardColor, type Todo } from "@/lib/drive";
 import { parseDay } from "@/components/productivity/planner/dates";
 import ReminderPicker from "../ReminderPicker";
 
@@ -27,7 +27,7 @@ type Props = {
 export default function TodoRow({ todo, listName, listColor, onChange, onDelete }: Props) {
     const [open, setOpen] = useState(false);
     const set = (patch: Partial<Todo>) => onChange({ ...todo, ...patch });
-    const overdue = !todo.done && !!todo.due && todo.due < todayKey();
+    const overdue = isOverdue(todo);
 
     return (
         <li className="group rounded-lg bg-white shadow-sm ring-1 ring-black/5">
@@ -58,6 +58,7 @@ export default function TodoRow({ todo, listName, listColor, onChange, onDelete 
                             {todo.due && (
                                 <span className={`flex items-center gap-1 ${overdue ? "font-medium text-red-600" : todo.due === todayKey() && !todo.done ? "text-amber-600" : ""}`}>
                                     <CalendarDays className="size-3" /> {dueText(todo.due)}
+                                    {todo.time && <span className="tabular-nums">{formatTime(todo.time)}</span>}
                                     {todo.remind != null && !todo.done && <Bell className="size-3" aria-label="Reminder set" />}
                                 </span>
                             )}
@@ -107,13 +108,22 @@ export default function TodoRow({ todo, listName, listColor, onChange, onDelete 
                         <input
                             type="date"
                             value={todo.due ?? ""}
-                            onChange={(e) => set({ due: e.target.value || null })}
+                            onChange={(e) => set({ due: e.target.value || null, ...(e.target.value ? {} : { time: null }) })}
                             className="rounded-md px-2 py-0.5 text-xs ring-1 ring-gray-300 outline-none focus:ring-2 focus:ring-black"
+                        />
+                        <input
+                            type="time"
+                            aria-label="Time (optional)"
+                            title={todo.due ? "Time (optional)" : "Pick a date first"}
+                            disabled={!todo.due}
+                            value={todo.time ?? ""}
+                            onChange={(e) => set({ time: e.target.value || null })}
+                            className="rounded-md px-2 py-0.5 text-xs ring-1 ring-gray-300 outline-none focus:ring-2 focus:ring-black disabled:opacity-40"
                         />
                         {todo.due && (
                             <button
                                 type="button"
-                                onClick={() => set({ due: null })}
+                                onClick={() => set({ due: null, time: null })}
                                 className="text-xs text-gray-500 hover:text-black hover:underline cursor-pointer"
                             >
                                 Clear
@@ -123,7 +133,7 @@ export default function TodoRow({ todo, listName, listColor, onChange, onDelete 
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-semibold text-gray-500">Remind</span>
                         <div className="min-w-44">
-                            <ReminderPicker compact due={todo.due} value={todo.remind} onChange={(remind) => set({ remind })} />
+                            <ReminderPicker compact due={todo.due} time={todo.time} value={todo.remind} onChange={(remind) => set({ remind })} />
                         </div>
                     </div>
                     <textarea

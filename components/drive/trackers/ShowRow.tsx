@@ -28,16 +28,20 @@ export default function ShowRow({ item, band, open, onToggleOpen, onChange, onDe
     const currentUrl = item.episode > 0 ? episodeLink(item.link, item.episode) : null;
     const pct = item.total ? Math.min(100, (item.episode / item.total) * 100) : null;
 
-    // Open the next episode (if there's a link) and count it.
+    // Just opens the next episode. You count it yourself with + when you're done.
     const watchNext = () => {
         if (nextUrl) window.open(nextUrl, "_blank", "noopener,noreferrer");
+    };
+
+    // One more episode watched (reaching the total marks it completed).
+    const countUp = () => {
         const finished = !!item.total && next >= item.total;
         set({ episode: next, status: finished ? "completed" : item.status === "planned" ? "watching" : item.status });
     };
 
     return (
         <li className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 ${done ? "opacity-75" : ""}`}>
-            <div className="flex items-center gap-3 px-3 py-2.5 md:px-4">
+            <div className="flex items-center gap-2 px-3 py-2.5 sm:gap-3 md:px-4">
                 <span className={`h-10 w-1 shrink-0 rounded-full ${band}`} />
                 <button type="button" onClick={onToggleOpen} className="min-w-0 flex-1 text-left cursor-pointer">
                     <span className="flex items-center gap-1.5">
@@ -53,12 +57,12 @@ export default function ShowRow({ item, band, open, onToggleOpen, onChange, onDe
                 </button>
 
                 {/* Episode counter */}
-                <div className="hidden items-center rounded-lg bg-gray-100 sm:flex">
+                <div className="flex shrink-0 items-center rounded-lg bg-gray-100">
                     <button
                         type="button"
                         onClick={() => item.episode > 0 && set({ episode: item.episode - 1 })}
                         aria-label="One episode back"
-                        className="rounded-l-lg p-1.5 text-gray-600 hover:bg-gray-200 cursor-pointer disabled:opacity-40"
+                        className="rounded-l-lg p-2 text-gray-600 hover:bg-gray-200 cursor-pointer disabled:opacity-40 sm:p-1.5"
                         disabled={item.episode === 0}
                     >
                         <Minus className="size-3.5" />
@@ -82,16 +86,16 @@ export default function ShowRow({ item, band, open, onToggleOpen, onChange, onDe
                             type="button"
                             onClick={() => setEditingEp(true)}
                             title="Type an episode number"
-                            className="min-w-10 px-1.5 text-center text-sm font-semibold tabular-nums cursor-text"
+                            className="min-w-8 px-1 text-center text-sm font-semibold tabular-nums cursor-text sm:min-w-10 sm:px-1.5"
                         >
                             {item.episode}
                         </button>
                     )}
                     <button
                         type="button"
-                        onClick={() => set({ episode: next })}
+                        onClick={countUp}
                         aria-label="One episode forward"
-                        className="rounded-r-lg p-1.5 text-gray-600 hover:bg-gray-200 cursor-pointer"
+                        className="rounded-r-lg p-2 text-gray-600 hover:bg-gray-200 cursor-pointer sm:p-1.5"
                     >
                         <Plus className="size-3.5" />
                     </button>
@@ -106,20 +110,20 @@ export default function ShowRow({ item, band, open, onToggleOpen, onChange, onDe
                     >
                         <RotateCcw className="size-3.5" /> <span className="hidden sm:inline">Rewatch</span>
                     </button>
-                ) : (
+                ) : nextUrl ? (
                     <button
                         type="button"
                         onClick={watchNext}
-                        title={nextUrl ? `Open episode ${next}` : `Mark episode ${next} watched`}
-                        className="flex shrink-0 items-center gap-1 rounded-lg bg-black px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-gray-800 cursor-pointer"
+                        title={`Open episode ${next} (press + when you've watched it)`}
+                        className="flex shrink-0 items-center gap-1 rounded-lg bg-black px-2.5 py-2 text-xs font-semibold text-white hover:bg-gray-800 cursor-pointer sm:py-1.5"
                     >
-                        {nextUrl ? <Play className="size-3.5 fill-current" /> : <Plus className="size-3.5" />}
+                        <Play className="size-3.5 fill-current" />
                         <span className="tabular-nums">
                             <span className="hidden sm:inline">Ep </span>
                             {next}
                         </span>
                     </button>
-                )}
+                ) : null}
 
                 <button
                     type="button"

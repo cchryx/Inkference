@@ -179,11 +179,13 @@ export type Todo = {
     done: boolean;
     /** "YYYY-MM-DD" or null */
     due: string | null;
+    /** "HH:MM" (24h) or null. Only used when there's a due date. */
+    time?: string | null;
     important: boolean;
     notes: string;
     /** When it was ticked off (ISO), for "completed" sorting. */
     doneAt: string | null;
-    /** Same as on planner cards. To-dos have no time, so 9 AM is used. */
+    /** Same as on planner cards (no time set = 9 AM). */
     remind?: number | null;
     remindAt?: string | null;
 };
@@ -192,7 +194,7 @@ export type TodoList = { color: BoardColor; items: Todo[] };
 export const TODO_LIMIT = 1000;
 
 export function newTodo(text: string, due: string | null = null): Todo {
-    return { id: newId(), text, done: false, due, important: false, notes: "", doneAt: null };
+    return { id: newId(), text, done: false, due, time: null, important: false, notes: "", doneAt: null };
 }
 
 export function defaultTodoList(): TodoList {
@@ -363,5 +365,5 @@ export function withBoardReminders(board: Board): Board {
 
 /** Fills in `remindAt` on every to-do. Run right before saving. */
 export function withTodoReminders(list: TodoList): TodoList {
-    return { ...list, items: list.items.map((t) => ({ ...t, remindAt: reminderAt(t.due, null, t.remind) })) };
+    return { ...list, items: list.items.map((t) => ({ ...t, remindAt: reminderAt(t.due, t.time, t.remind) })) };
 }

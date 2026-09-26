@@ -31,6 +31,7 @@ import {
     defaultTodoList,
     newTodo,
     todayKey,
+    isOverdue,
     withTodoReminders,
     type BoardColor,
     type Todo,
@@ -50,6 +51,15 @@ const SMART = [
 const SAVE_DELAY = 600;
 
 /** Microsoft To Do style: smart views and your lists on the left, tasks on the right. */
+/** By day, then timed ones first (earliest first). */
+function byDueThenTime(a: { todo: Todo }, b: { todo: Todo }) {
+    const d = (a.todo.due ?? "").localeCompare(b.todo.due ?? "");
+    if (d) return d;
+    const at = a.todo.time ?? null;
+    const bt = b.todo.time ?? null;
+    return at && bt ? at.localeCompare(bt) : at ? -1 : bt ? 1 : 0;
+}
+
 export default function TodosApp({ initialLists, initialListId }: { initialLists: TodoListData[]; initialListId?: string | null }) {
     const [lists, setLists] = useState(initialLists);
     const [view, setView] = useState<View | null>(() =>
@@ -202,7 +212,7 @@ export default function TodosApp({ initialLists, initialListId }: { initialLists
         if (view.kind === "list") return all.filter((r) => r.listId === view.id);
         if (view.id === "today") return all.filter((r) => r.todo.due && r.todo.due <= today);
         if (view.id === "upcoming")
-            return all.filter((r) => r.todo.due && r.todo.due > today).sort((a, b) => a.todo.due!.localeCompare(b.todo.due!));
+            return all.filter((r) => r.todo.due && r.todo.due > today).sort(byDueThenTime);
         return all.filter((r) => r.todo.important);
     }, [all, view, today]);
 
@@ -224,8 +234,9 @@ export default function TodosApp({ initialLists, initialListId }: { initialLists
             return out;
         }
         if (view?.kind === "smart" && view.id === "today") {
-            const overdue = open.filter((r) => r.todo.due! < today);
-            const due = open.filter((r) => r.todo.due === today);
+            // (isOverdue also counts things due earlier today whose time passed.)
+            const overdue = open.filter((r) => isOverdue(r.todo, today)).sort(byDueThenTime);
+            const due = open.filter((r) => r.todo.due === today && !isOverdue(r.todo, today)).sort(byDueThenTime);
             return [
                 ...(overdue.length ? [{ name: "Overdue", rows: overdue }] : []),
                 ...(due.length ? [{ name: overdue.length ? "Today" : "", rows: due }] : []),

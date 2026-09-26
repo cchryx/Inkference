@@ -105,6 +105,11 @@ const TodoListSchema = z.object({
                 text: z.string().max(500),
                 done: z.boolean(),
                 due: day,
+                time: z
+                    .string()
+                    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+                    .nullable()
+                    .optional(),
                 important: z.boolean(),
                 notes: z.string().max(5000),
                 doneAt: z.string().max(40).nullable(),
@@ -271,7 +276,7 @@ export async function saveTodoList(fileId: string, list: TodoList) {
     await syncReminders(
         userId,
         fileId,
-        parsed.data.items.map((t) => ({ id: t.id, title: t.text, due: t.due, time: null, done: t.done, remindAt: t.remindAt }))
+        parsed.data.items.map((t) => ({ id: t.id, title: t.text, due: t.due, time: t.time ?? null, done: t.done, remindAt: t.remindAt }))
     ).catch((err) => console.error("syncReminders failed:", err));
     return { error: null };
 }
@@ -322,6 +327,7 @@ export async function getDueItems(untilDays = 14): Promise<DueItem[]> {
                         color: list.color,
                         title: t.text,
                         due: t.due,
+                        time: t.time ?? null,
                         done: t.done,
                     });
         }
