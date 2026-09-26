@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
+import { deleteUnusedUploads } from "@/lib/cleanupUploads";
 import { APIError } from "better-auth/api";
 
 export async function deleteMerit(meritId: string) {
@@ -9,11 +10,20 @@ export async function deleteMerit(meritId: string) {
         const userData = await getCurrentUserData();
         if (!userData || "error" in userData) return { error: "Unauthorized." };
 
+        const old = await prisma.merit.findFirst({
+            where: { id: meritId, userDataId: userData.id },
+            select: { image: true },
+        });
+
         // Only deletes it if it belongs to the signed-in user.
         const { count } = await prisma.merit.deleteMany({
             where: { id: meritId, userDataId: userData.id },
         });
         if (!count) return { error: "You can't delete this merit." };
+
+        if (old?.image && userData.userId) {
+            await deleteUnusedUploads([old.image], userData.userId).catch(() => {});
+        }
 
         return { error: null };
     } catch (error) {

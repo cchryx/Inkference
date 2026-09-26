@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import StepModal from "@/components/general/StepModal";
 import { createPost } from "@/actions/content/post/createPost";
-import { uploadPhotos } from "@/actions/content/photos/uploadPhotos";
 import PhotoEditor from "@/components/general/photo-editor/PhotoEditor";
 import { exportPhotos } from "@/components/general/photo-editor/exportPhotos";
+import { uploadInBatches } from "@/components/general/photo-editor/uploadInBatches";
+import { enqueueUpload } from "@/lib/uploadQueue";
 import Step2 from "./Step2";
 import Preview from "./Preview";
 import {
@@ -25,7 +26,7 @@ const STEPS = ["Crop photos", "Add details", "Preview"];
 
 type Cropped = { file: File; url: string };
 
-export default function CreatePostModal({ onCloseModal, currentUserId }: Props) {
+export default function CreatePostModal({ onCloseModal }: Props) {
     const router = useRouter();
     const [step, setStep] = useState(0);
 
@@ -41,7 +42,6 @@ export default function CreatePostModal({ onCloseModal, currentUserId }: Props) 
     const [locationSelected, setLocationSelected] = useState(false);
 
     const [working, setWorking] = useState(false);
-    const [isPending, setIsPending] = useState(false);
 
     const changeAspect = (key: AspectKey) => {
         setAspectKey(key);
@@ -91,51 +91,51 @@ export default function CreatePostModal({ onCloseModal, currentUserId }: Props) 
 
     const back = () => setStep((s) => Math.max(0, s - 1));
 
-    const submit = async () => {
+    // Hand the upload to the background queue and close right away, so you
+    // can keep using the app while it posts.
+    const submit = () => {
         if (!cropped.length) {
             toast.error("Add at least one photo.");
             return;
         }
-        setIsPending(true);
-        try {
-            const results = await uploadPhotos(
-                cropped.map((c) => c.file),
-                currentUserId,
-                "posts"
-            );
-            const urls = results.filter((r) => r.url).map((r) => r.url!);
-            if (urls.length < cropped.length) {
-                toast.error(
-                    urls.length
-                        ? `${cropped.length - urls.length} photo(s) failed to upload.`
-                        : "Upload failed. Please try again."
-                );
-                if (!urls.length) return;
-            }
+        const files = cropped.map((c) => c.file);
+        const previews = cropped.map((c) => c.url);
+        const post = { description, location };
+        let urls: string[] | null = null; // kept, so a retry doesn't upload twice
 
-            const res = await createPost({
-                type: "post",
-                dataId: "",
-                content: urls,
-                description,
-                location,
-                mentions: [],
-                tags: [],
-            });
+        enqueueUpload({
+            label: `New post (${files.length} photo${files.length > 1 ? "s" : ""})`,
+            run: async (report) => {
+                if (!urls) {
+                    const result = await uploadInBatches(files, "posts", (done, total) =>
+                        report(`Uploading photos ${done}/${total}`)
+                    );
+                    if (!result.urls.length) throw new Error("Photos didn't upload. Try again.");
+                    if (result.failed) toast.error(`${result.failed} photo(s) failed to upload.`);
+                    urls = result.urls;
+                }
+                report("Posting...");
+                const res = await createPost({
+                    type: "post",
+                    dataId: "",
+                    content: urls,
+                    ...post,
+                    mentions: [],
+                    tags: [],
+                });
+                if (res.error) throw new Error(res.error);
+            },
+            onDone: () => {
+                toast.success("Posted!");
+                router.refresh();
+            },
+            cleanup: () => previews.forEach((u) => URL.revokeObjectURL(u)),
+        });
 
-            if (res.error) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success("Posted!");
-            close();
-            router.refresh();
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to create post.");
-        } finally {
-            setIsPending(false);
-        }
+        // Close now; the cropped photos stay alive until the upload finishes.
+        images.forEach((i) => URL.revokeObjectURL(i.url));
+        toast("Uploading in the background. You can keep browsing.");
+        onCloseModal();
     };
 
     return (
@@ -152,7 +152,7 @@ export default function CreatePostModal({ onCloseModal, currentUserId }: Props) 
             onNext={next}
             onSubmit={submit}
             submitLabel="Share"
-            pending={isPending || working}
+            pending={working}
             disabled={step === 0 && !images.length}
         >
             {step === 0 && (

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { CalendarDays, ChevronDown, Star, Trash2 } from "lucide-react";
+import { Bell, CalendarDays, ChevronDown, Star, Trash2 } from "lucide-react";
 import { BOARD_COLORS, dayKey, todayKey, type BoardColor, type Todo } from "@/lib/drive";
 import { parseDay } from "@/components/productivity/planner/dates";
+import ReminderPicker from "../ReminderPicker";
 
 export function dueText(due: string) {
     if (due === todayKey()) return "Today";
@@ -57,6 +58,7 @@ export default function TodoRow({ todo, listName, listColor, onChange, onDelete 
                             {todo.due && (
                                 <span className={`flex items-center gap-1 ${overdue ? "font-medium text-red-600" : todo.due === todayKey() && !todo.done ? "text-amber-600" : ""}`}>
                                     <CalendarDays className="size-3" /> {dueText(todo.due)}
+                                    {todo.remind != null && !todo.done && <Bell className="size-3" aria-label="Reminder set" />}
                                 </span>
                             )}
                             {todo.notes && <span className="truncate max-w-40">{todo.notes.split("\n")[0]}</span>}
@@ -117,6 +119,12 @@ export default function TodoRow({ todo, listName, listColor, onChange, onDelete 
                                 Clear
                             </button>
                         )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-500">Remind</span>
+                        <div className="min-w-44">
+                            <ReminderPicker compact due={todo.due} value={todo.remind} onChange={(remind) => set({ remind })} />
+                        </div>
                     </div>
                     <textarea
                         value={todo.notes}

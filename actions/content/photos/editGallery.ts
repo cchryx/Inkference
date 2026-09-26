@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { v2 as cloudinary } from "cloudinary";
+import { forgetUploads } from "@/lib/storage";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -84,6 +85,8 @@ export async function editGallery(
                 where: { id: { in: photosToRemove.map((p) => p.id) }, galleryId },
             }),
         ]);
+
+        await forgetUploads(photosToRemove.map((p) => p.image)).catch(() => {});
 
         return { error: null, removed: photosToRemove.length };
     } catch (err) {

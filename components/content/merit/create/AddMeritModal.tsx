@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import StepModal from "@/components/general/StepModal";
 import { useRouter } from "next/navigation";
 import { addMerit } from "@/actions/content/merit/addMerit";
+import { commitStaged, release } from "@/lib/pendingUploads";
 
 const STEP_NAMES = ["Details", "Dates", "Image", "Preview"];
 
@@ -78,18 +79,26 @@ export default function AddMeritModal({ onCloseModal }: Props) {
         setIsPending(true);
         if (step === totalSteps - 1) {
             try {
+                // The picture is only uploaded now, when the merit is saved.
+                const images = await commitStaged([image]);
+                if (images.error !== undefined) {
+                    toast.error(images.error);
+                    setIsPending(false);
+                    return;
+                }
                 const result = await addMerit({
                     title,
                     issuer,
                     meritType,
                     summary,
                     timeline,
-                    image,
+                    image: images.urls[0],
                 });
 
                 if ("error" in result) {
                     toast.error(result.error);
                 } else {
+                    release([image]);
                     toast.success("Merit added successfully.");
                     onCloseModal();
                     router.refresh();

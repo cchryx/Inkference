@@ -15,6 +15,8 @@ import {
 import { LABEL_COLORS, LIMITS, newId, type Card, type Label } from "@/lib/drive";
 import BoardDialog from "./BoardDialog";
 import { DUE_STYLES, dueState, dueWithTime } from "./dates";
+import ReminderPicker from "../ReminderPicker";
+import Dropdown from "@/components/general/Dropdown";
 
 type Props = {
     card: Card;
@@ -82,17 +84,13 @@ export default function CardModal({ card, listId, lists, labels, onChange, onMov
                         <span className="flex items-center gap-2">
                             <MoveRight className="size-4" /> List
                         </span>
-                        <select
+                        <Dropdown
                             value={listId}
-                            onChange={(e) => onMove(e.target.value)}
-                            className="rounded-md bg-white px-2 py-2 text-sm font-normal normal-case tracking-normal text-black ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-black cursor-pointer"
-                        >
-                            {lists.map((l) => (
-                                <option key={l.id} value={l.id}>
-                                    {l.title}
-                                </option>
-                            ))}
-                        </select>
+                            options={lists.map((l) => ({ value: l.id, label: l.title || "Untitled list" }))}
+                            onChange={onMove}
+                            aria-label="List"
+                            className="w-full"
+                        />
                     </label>
 
                     <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -134,6 +132,12 @@ export default function CardModal({ card, listId, lists, labels, onChange, onMov
                                 </button>
                             )}
                         </div>
+                        <ReminderPicker
+                            due={card.due}
+                            time={card.time}
+                            value={card.remind}
+                            onChange={(remind) => set({ remind })}
+                        />
                     </div>
                 </div>
 
@@ -154,7 +158,7 @@ export default function CardModal({ card, listId, lists, labels, onChange, onMov
                                     }
                                     className={`rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition ${
                                         on
-                                            ? `${LABEL_COLORS[l.color]} text-white ring-2 ring-black ring-offset-1 ring-offset-gray-100`
+                                            ? `${LABEL_COLORS[l.color]} text-white shadow-sm`
                                             : `${LABEL_COLORS[l.color]} text-white opacity-40 hover:opacity-70`
                                     }`}
                                 >
@@ -223,13 +227,26 @@ export default function CardModal({ card, listId, lists, labels, onChange, onMov
                                             ),
                                         })
                                     }
+                                    // Emptied out? It removes itself when you click away,
+                                    // or right away with Backspace on an empty line.
+                                    onBlur={(e) =>
+                                        !e.target.value.trim() &&
+                                        set({ checklist: card.checklist.filter((i) => i.id !== item.id) })
+                                    }
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Backspace" && !item.text) {
+                                            e.preventDefault();
+                                            set({ checklist: card.checklist.filter((i) => i.id !== item.id) });
+                                        }
+                                    }}
                                     className={`min-w-0 flex-1 bg-transparent py-1 text-sm outline-none ${item.done ? "text-gray-500 line-through" : ""}`}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => set({ checklist: card.checklist.filter((i) => i.id !== item.id) })}
                                     aria-label="Remove item"
-                                    className="rounded p-1 text-gray-400 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:text-black cursor-pointer"
+                                    title="Remove item"
+                                    className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-red-600 cursor-pointer md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
                                 >
                                     <X className="size-3.5" />
                                 </button>

@@ -9,6 +9,7 @@ import User from "@/components/settings/User";
 import Privacy from "@/components/settings/Privacy";
 import NotificationSettings from "@/components/settings/NotificationSettings";
 import Payments from "@/components/settings/Payments";
+import Storage from "@/components/settings/Storage";
 import type { LinkedAccount } from "@/actions/auth/getLinkedAccounts";
 
 type Props = {
@@ -178,8 +179,8 @@ const SettingsWrapper = ({
                     </div>
 
                     {/* Section Content */}
-                    <div className="flex-1 p-6 pt-6 overflow-y-scroll no-scrollbar">
-                        <div className="hidden md:block text-xl font-semibold capitalize">
+                    <div className="flex-1 p-4 md:p-5 overflow-y-scroll no-scrollbar">
+                        <div className="hidden md:block text-lg font-semibold capitalize">
                             {activeSection}
                         </div>
                         <div className="mt-4">
@@ -196,6 +197,7 @@ const SettingsWrapper = ({
                             {activeSection === "privacy" && <Privacy />}
                             {activeSection === "notifications" && <NotificationSettings />}
                             {activeSection === "payments" && <Payments />}
+                            {activeSection === "storage" && <Storage />}
                         </div>
                     </div>
                 </div>

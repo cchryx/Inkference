@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Globe, Lock, Settings2, UserCheck, UserRoundCog, Users, X } from "lucide-react";
 import { toast } from "sonner";
@@ -42,6 +42,7 @@ const OPTIONS: { value: Visibility; label: string; hint: string; icon: typeof Gl
  */
 const VisibilityModal = ({ kind, id, onClose }: Props) => {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { data, isLoading, isError } = useQuery({
         queryKey: ["visibility", kind, id],
         queryFn: () => getContentVisibility(kind, id),
@@ -68,6 +69,7 @@ const VisibilityModal = ({ kind, id, onClose }: Props) => {
         setSaving(false);
         if (error) return toast.error(error);
         toast.success("Visibility updated.");
+        void queryClient.invalidateQueries({ queryKey: ["visibility", kind, id] });
         router.refresh();
         onClose();
     };

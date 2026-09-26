@@ -97,9 +97,9 @@ const ChangeSigninForm = ({ accounts, linkError, linked }: Props) => {
     }
 
     return (
-        <div className="w-full space-y-4 border-2 border-gray-200 p-6 rounded-md">
+        <div className="w-full space-y-3 border border-gray-200 p-4 rounded-md">
             <div className="space-y-1">
-                <h1 className="text-lg font-semibold">Sign-in Methods</h1>
+                <h1 className="text-base font-semibold">Sign-in Methods</h1>
                 <p className="text-sm text-muted-foreground">
                     Link Google or GitHub to sign in to this same account with
                     any of them.

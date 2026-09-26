@@ -130,7 +130,7 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
 
     if (isLoading) {
         return (
-            <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
+            <div className="w-full space-y-3 border-gray-200 border p-4 rounded-md">
                 <Skeleton className="h-6 w-1/4 rounded-md" />
                 <Skeleton className="h-10 w-2/5 rounded-md" />
                 <Skeleton className="h-10 w-full rounded-md" />
@@ -144,9 +144,9 @@ const ChangeSocialsForm = ({ socialLinks, isLoading }: Props) => {
     return (
         <form
             onSubmit={handleSubmit}
-            className="w-full flex flex-col space-y-4 border-gray-200 border-2 p-6 rounded-md"
+            className="w-full flex flex-col space-y-3 border-gray-200 border p-4 rounded-md"
         >
-            <h1 className="text-lg">Social Links</h1>
+            <h1 className="text-base font-semibold">Social Links</h1>
 
             <div className="flex flex-col gap-2 relative">
                 {" "}

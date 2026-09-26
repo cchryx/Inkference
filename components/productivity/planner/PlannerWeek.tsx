@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useMemo, useRef, useState, useId } from "react";
-import { addDays, format, startOfDay } from "date-fns";
+import { addDays, differenceInCalendarDays, format, startOfDay } from "date-fns";
 import {
     DndContext,
     DragOverlay,
@@ -15,8 +15,10 @@ import {
     type DragEndEvent,
 } from "@dnd-kit/core";
 import { CalendarX2, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import Dropdown from "@/components/general/Dropdown";
 import { BOARD_COLORS, LIMITS, sortDayCards, todayKey, type Board, type Card } from "@/lib/drive";
 import { CardFace } from "./BoardCard";
+import { parseDay } from "./dates";
 import { useScrollFade } from "@/hooks/useScrollFade";
 
 type Props = {
@@ -26,6 +28,8 @@ type Props = {
     onToggleDone: (card: Card) => void;
     /** `atTop`: phones show the newest card first. */
     onAddCard: (listId: string, title: string, due: string | null, atTop?: boolean) => void;
+    /** "YYYY-MM-DD" to open on (first column after "No date"). Default: today. */
+    startDay?: string;
 };
 
 const NO_DATE = "no-date";
@@ -47,13 +51,19 @@ const MAX_RANGE = 730; // up to about two years either way
  * days are added as you get close to either end. Drag a card to another
  * day to reschedule it.
  */
-export default function PlannerWeek({ board, onOpenCard, onSetDue, onToggleDone, onAddCard }: Props) {
+export default function PlannerWeek({ board, onOpenCard, onSetDue, onToggleDone, onAddCard, startDay }: Props) {
     // Stable id so the server and browser agree (avoids a hydration warning).
     const dndId = useId();
     const today = todayKey();
     const todayDate = useMemo(() => startOfDay(new Date()), []);
+    // Where to open (days from today), e.g. a day picked in "Coming up".
+    const [start] = useState(() => {
+        if (!startDay) return 0;
+        const n = differenceInCalendarDays(parseDay(startDay), todayDate);
+        return Number.isFinite(n) ? Math.max(-MAX_RANGE + PAST, Math.min(MAX_RANGE - 21, n)) : 0;
+    });
     // Days shown, as offsets from today (negative = past).
-    const [range, setRange] = useState({ from: -PAST, to: 21 });
+    const [range, setRange] = useState({ from: Math.min(-PAST, start - PAST), to: Math.max(21, start + 21) });
     const [showUndated, setShowUndated] = useState(true);
     const [listId, setListId] = useState(board.lists[0]?.id ?? "");
     const [dragging, setDragging] = useState<Card | null>(null);
@@ -99,7 +109,7 @@ export default function PlannerWeek({ board, onOpenCard, onSetDue, onToggleDone,
         el.scrollTo({ left: (offset - rangeRef.current.from) * w, behavior: smooth ? "smooth" : "auto" });
     };
 
-    // Start with today right next to "No date".
+    // Start with today (or the chosen day) right next to "No date".
     // The page can still be laying out on the first frame, so keep trying
     // for a few frames until today really is the first column.
     useLayoutEffect(() => {
@@ -108,7 +118,7 @@ export default function PlannerWeek({ board, onOpenCard, onSetDue, onToggleDone,
         const place = () => {
             const el = scroller.current;
             const w = measure();
-            const want = (0 - rangeRef.current.from) * w;
+            const want = (start - rangeRef.current.from) * w;
             if (el && w) el.scrollLeft = want;
             if (el && w && Math.abs(el.scrollLeft - want) < 2) {
                 ready.current = true;
@@ -119,6 +129,7 @@ export default function PlannerWeek({ board, onOpenCard, onSetDue, onToggleDone,
         };
         place();
         return () => cancelAnimationFrame(frame);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // After new days render: keep the same days in view (days added on the
@@ -252,18 +263,14 @@ export default function PlannerWeek({ board, onOpenCard, onSetDue, onToggleDone,
                 {board.lists.length > 0 && (
                     <label className="flex items-center gap-1 text-[11px] sm:text-xs text-gray-500">
                         Add to
-                        <select
+                        <Dropdown
+                            size="sm"
                             value={target?.id ?? ""}
-                            onChange={(e) => setListId(e.target.value)}
+                            options={board.lists.map((l) => ({ value: l.id, label: l.title || "Untitled list" }))}
+                            onChange={setListId}
                             aria-label="List new cards go to"
-                            className="max-w-28 rounded-md bg-white px-1.5 py-0.5 text-[11px] sm:text-xs text-black ring-1 ring-black/10 cursor-pointer"
-                        >
-                            {board.lists.map((l) => (
-                                <option key={l.id} value={l.id}>
-                                    {l.title}
-                                </option>
-                            ))}
-                        </select>
+                            className="max-w-32"
+                        />
                     </label>
                 )}
             </div>

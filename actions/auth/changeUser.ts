@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { normalizeName } from "@/lib/utils";
+import { deleteUnusedUploads } from "@/lib/cleanupUploads";
 
 // Cooldown settings per field (in minutes)
 const COOLDOWN_MINUTES: Record<string, number> = {
@@ -113,6 +114,11 @@ export async function changeUserAction(formData: FormData, type: string) {
                 [`${type}UpdatedAt`]: new Date(),
             },
         });
+
+        // Old profile picture isn't used anymore: free its space.
+        if (type === "image" && typeof user.image === "string") {
+            await deleteUnusedUploads([user.image], userId).catch(() => {});
+        }
 
         return { error: null };
     } catch (error) {

@@ -1,4 +1,6 @@
 import { uploadPhotos } from "@/actions/content/photos/uploadPhotos";
+import { discardUploads } from "@/actions/content/photos/discardUploads";
+import { showStorageFull } from "@/lib/storageToast";
 
 const BATCH = 5;
 
@@ -13,6 +15,7 @@ export async function uploadInBatches(
 ) {
     const urls: string[] = [];
     let failed = 0;
+    let storageFull: string | undefined;
     onProgress?.(0, files.length);
 
     for (let i = 0; i < files.length; i += BATCH) {
@@ -20,6 +23,13 @@ export async function uploadInBatches(
         for (const r of results) {
             if (r.url) urls.push(r.url);
             else failed++;
+            if (r.code === "storage_full") storageFull = r.error;
+        }
+        if (storageFull) {
+            // Out of space: undo the part that did upload and say why.
+            for (let j = 0; j < urls.length; j += 20) void discardUploads(urls.slice(j, j + 20));
+            showStorageFull(storageFull);
+            throw new Error("Out of photo storage.");
         }
         onProgress?.(Math.min(i + BATCH, files.length), files.length);
     }

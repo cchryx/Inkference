@@ -118,11 +118,11 @@ const Step2 = ({
                         autoComplete="off"
                     />
                     {focused && suggestions.length > 0 && (
-                        <ul className="absolute left-0 right-0 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-md max-h-48 overflow-y-auto z-20 text-sm">
+                        <ul className="scroll-thin absolute left-0 right-0 top-full mt-1 w-full rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/10 max-h-56 overflow-y-auto z-20 text-sm">
                             {suggestions.map((s) => (
                                 <li
                                     key={s.place_id}
-                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    className="cursor-pointer rounded-lg px-2.5 py-1.5 hover:bg-gray-100"
                                     onMouseDown={() => {
                                         setInput(s.description);
                                         setLocation(s.description);

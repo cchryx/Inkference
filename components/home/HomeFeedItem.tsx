@@ -212,7 +212,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
         <div ref={rootRef} className="snap-start h-full flex flex-col w-full">
             {/* Author info (mobile top bar) */}
             {author?.username && (
-                <div className="flex items-center justify-between w-full p-3 md:hidden bg-gray-100 relative">
+                <div className="flex items-center justify-between w-full px-3 py-2 md:hidden bg-gray-100 relative">
                     {/* Left side user info */}
                     <div className="flex items-center gap-2">
                         <Link href={`/profile/${author.username}`}>
@@ -326,6 +326,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                                 handleSave={handleSave}
                                 commentCount={commentCount}
                                 onComment={() => setCommentsOpen(true)}
+                                views={content.stats?.views ?? 0}
                                 href={href}
                             />
                         </div>
@@ -345,6 +346,7 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
                     handleSave={handleSave}
                     commentCount={commentCount}
                     onComment={() => setCommentsOpen(true)}
+                    views={content.stats?.views ?? 0}
                     href={href}
                 />
             </div>
@@ -404,6 +406,10 @@ const HomeFeedItem = ({ item, currentUserId }: Props) => {
     );
 };
 
+// Short numbers: 1234 -> 1.2K
+const compact = (n: number) =>
+    new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
+
 const ActionButtons = ({
     isProject,
     isLiked,
@@ -414,120 +420,105 @@ const ActionButtons = ({
     handleSave,
     commentCount,
     onComment,
+    views,
     href,
 }: any) => (
     <>
-        {/* Mobile bottom bar */}
-        <div className="flex md:hidden justify-between items-center w-full p-3 text-black bg-gray-100">
-            <div className="flex items-center gap-6">
-                {/* Like */}
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={isProject ? handleLike : undefined}
-                        className={`transition-colors cursor-pointer ${
-                            isLiked ? "text-red-500" : "hover:text-blue-500"
-                        } ${!isProject ? "cursor-default opacity-50" : ""}`}
-                        aria-label="Like"
-                        disabled={!isProject}
-                        tabIndex={isProject ? 0 : -1}
-                    >
-                        <Heart
-                            className="size-7"
-                            fill={isLiked ? "currentColor" : "none"}
-                        />
-                    </button>
-                    <span className="text-sm">{likes}</span>
-                </div>
-
-                {/* Comments */}
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={onComment}
-                        className="hover:text-blue-500 transition-colors cursor-pointer"
-                        aria-label="Comments"
-                    >
-                        <MessageCircle className="size-7" />
-                    </button>
-                    <span className="text-sm">{commentCount}</span>
-                </div>
-
-                {/* Open the full post page */}
-                <Link
-                    href={href}
-                    aria-label="Open post"
-                    className="hover:text-blue-500 transition-colors"
-                >
-                    <Maximize2 className="size-6" />
-                </Link>
-            </div>
-
-            {/* Save */}
-            <div className="flex items-center gap-1">
-                <span className="text-sm">{saves}</span>{" "}
-                <button
-                    onClick={isProject ? handleSave : undefined}
-                    className={`transition-colors cursor-pointer ${
-                        isSaved ? "text-yellow-500" : "hover:text-blue-500"
-                    } ${!isProject ? "cursor-default opacity-50" : ""}`}
-                    aria-label="Save"
-                    disabled={!isProject}
-                    tabIndex={isProject ? 0 : -1}
-                >
-                    <Bookmark
-                        className="size-7"
-                        fill={isSaved ? "currentColor" : "none"}
-                    />
-                </button>
-            </div>
-        </div>
-
-        {/* Desktop sidebar */}
-        <div className="hidden md:flex flex-col items-center gap-6 text-black">
-            <div className="flex flex-col items-center">
+        {/* Mobile bottom bar: compact row */}
+        <div className="flex md:hidden items-center justify-between w-full px-3 py-2 text-black bg-gray-100">
+            <div className="flex items-center gap-4">
                 <button
                     onClick={isProject ? handleLike : undefined}
-                    className={`transition-colors cursor-pointer ${
-                        isLiked ? "text-red-500" : "hover:text-blue-500"
+                    className={`flex items-center gap-1 transition-colors cursor-pointer ${
+                        isLiked ? "text-red-500" : "active:text-gray-500"
                     } ${!isProject ? "cursor-default opacity-50" : ""}`}
                     aria-label="Like"
                     disabled={!isProject}
                     tabIndex={isProject ? 0 : -1}
                 >
-                    <Heart
-                        className="size-8"
-                        fill={isLiked ? "currentColor" : "none"}
-                    />
+                    <Heart className="size-[22px]" fill={isLiked ? "currentColor" : "none"} />
+                    <span className="text-xs font-medium text-black">{compact(likes)}</span>
                 </button>
-                <span className="text-sm mt-1">{likes}</span>
+
+                <button
+                    onClick={onComment}
+                    className="flex items-center gap-1 active:text-gray-500 transition-colors cursor-pointer"
+                    aria-label="Comments"
+                >
+                    <MessageCircle className="size-[22px]" />
+                    <span className="text-xs font-medium">{compact(commentCount)}</span>
+                </button>
+
+                <span className="flex items-center gap-1 text-gray-500" title="Views">
+                    <Eye className="size-5" />
+                    <span className="text-xs">{compact(views)}</span>
+                </span>
+
+                <Link href={href} aria-label="Open post" className="active:text-gray-500 transition-colors">
+                    <Maximize2 className="size-5" />
+                </Link>
+            </div>
+
+            <button
+                onClick={isProject ? handleSave : undefined}
+                className={`flex items-center gap-1 transition-colors cursor-pointer ${
+                    isSaved ? "text-yellow-500" : "active:text-gray-500"
+                } ${!isProject ? "cursor-default opacity-50" : ""}`}
+                aria-label="Save"
+                disabled={!isProject}
+                tabIndex={isProject ? 0 : -1}
+            >
+                <span className="text-xs font-medium text-black">{compact(saves)}</span>
+                <Bookmark className="size-[22px]" fill={isSaved ? "currentColor" : "none"} />
+            </button>
+        </div>
+
+        {/* Desktop sidebar */}
+        <div className="hidden md:flex flex-col items-center gap-5 text-black">
+            <div className="flex flex-col items-center">
+                <button
+                    onClick={isProject ? handleLike : undefined}
+                    className={`transition-colors cursor-pointer ${
+                        isLiked ? "text-red-500" : "hover:text-gray-500"
+                    } ${!isProject ? "cursor-default opacity-50" : ""}`}
+                    aria-label="Like"
+                    disabled={!isProject}
+                    tabIndex={isProject ? 0 : -1}
+                >
+                    <Heart className="size-7" fill={isLiked ? "currentColor" : "none"} />
+                </button>
+                <span className="text-xs font-medium mt-1">{compact(likes)}</span>
             </div>
 
             <div className="flex flex-col items-center">
                 <button
                     onClick={onComment}
-                    className="hover:text-blue-500 transition-colors cursor-pointer"
+                    className="hover:text-gray-500 transition-colors cursor-pointer"
                     aria-label="Comments"
                 >
-                    <MessageCircle className="size-8" />
+                    <MessageCircle className="size-7" />
                 </button>
-                <span className="text-sm mt-1">{commentCount}</span>
+                <span className="text-xs font-medium mt-1">{compact(commentCount)}</span>
             </div>
 
             <div className="flex flex-col items-center">
                 <button
                     onClick={isProject ? handleSave : undefined}
                     className={`transition-colors cursor-pointer ${
-                        isSaved ? "text-yellow-500" : "hover:text-blue-500"
+                        isSaved ? "text-yellow-500" : "hover:text-gray-500"
                     } ${!isProject ? "cursor-default opacity-50" : ""}`}
                     aria-label="Save"
                     disabled={!isProject}
                     tabIndex={isProject ? 0 : -1}
                 >
-                    <Bookmark
-                        className="size-8"
-                        fill={isSaved ? "currentColor" : "none"}
-                    />
+                    <Bookmark className="size-7" fill={isSaved ? "currentColor" : "none"} />
                 </button>
-                <span className="text-sm mt-1">{saves}</span>
+                <span className="text-xs font-medium mt-1">{compact(saves)}</span>
+            </div>
+
+            <div className="flex flex-col items-center text-gray-500" title="Views">
+                <Eye className="size-6" />
+                <span className="text-xs mt-1">{compact(views)}</span>
             </div>
 
             {/* Open the full post page */}
@@ -535,10 +526,10 @@ const ActionButtons = ({
                 href={href}
                 aria-label="Open post"
                 title="Open post"
-                className="flex flex-col items-center hover:text-blue-500 transition-colors"
+                className="flex flex-col items-center hover:text-gray-500 transition-colors"
             >
-                <Maximize2 className="size-7" />
-                <span className="text-xs mt-1">Open</span>
+                <Maximize2 className="size-6" />
+                <span className="text-[11px] mt-1">Open</span>
             </Link>
         </div>
     </>

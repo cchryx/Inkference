@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlignLeft, CalendarDays, CheckCircle2, Circle, ListChecks } from "lucide-react";
+import { AlignLeft, Bell, CalendarDays, CheckCircle2, Circle, ListChecks } from "lucide-react";
 import { LABEL_COLORS, type Card, type Label } from "@/lib/drive";
 import { DUE_STYLES, dueState, dueWithTime } from "./dates";
 
@@ -71,6 +71,7 @@ export function CardFace({ card, labels, onOpen, onToggleDone, dragging, overlay
                     {card.due && (
                         <span className={`flex items-center gap-1 rounded px-1.5 py-0.5 ${DUE_STYLES[dueState(card.due, card.done, card.time)]}`}>
                             <CalendarDays className="size-3" /> {dueWithTime(card.due, card.time)}
+                            {card.remind != null && !card.done && <Bell className="size-3" aria-label="Reminder set" />}
                         </span>
                     )}
                     {total > 0 && (

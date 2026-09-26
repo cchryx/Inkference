@@ -45,18 +45,21 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
     return (
         <div className="relative overflow-hidden fixed w-full pt-2 pb-5 bg-gray-200 border-t border-gray-300">
             {/* Menu bar */}
-            <div className="flex justify-around items-center h-full mx-2">
+            {/* Equal-width slots, so every icon lines up no matter how long its label is */}
+            <div className="flex items-center h-full px-1">
                 {/* User Icon on left */}
-                <div
-                    ref={avatarRef}
-                    className="flex flex-col items-center text-xs cursor-pointer border-black border-2 rounded-full"
-                    onClick={() => setShowUserMenu((prev) => !prev)}
-                >
-                    <span className="relative shrink-0">
-                        <UserIcon image={user.image} size="size-8" />
-                        {/* Red dot when there are unread notifications */}
-                        <UnreadBadge className="absolute -right-0.5 -top-0.5" />
-                    </span>
+                <div className="flex flex-1 basis-0 justify-center">
+                    <div
+                        ref={avatarRef}
+                        className="flex flex-col items-center text-xs cursor-pointer border-black border-2 rounded-full"
+                        onClick={() => setShowUserMenu((prev) => !prev)}
+                    >
+                        <span className="relative shrink-0">
+                            <UserIcon image={user.image} size="size-8" />
+                            {/* Red dot when there are unread notifications */}
+                            <UnreadBadge className="absolute -right-0.5 -top-0.5" />
+                        </span>
+                    </div>
                 </div>
 
                 {/* Main Nav Links */}
@@ -73,14 +76,12 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                         <Link
                             key={link.route}
                             href={link.route}
-                            className={`flex flex-col items-center text-xs py-1 px-1.5 ${
-                                isActive
-                                    ? "bg-gray-300 rounded-md"
-                                    : "hover:brightness-95"
+                            className={`flex min-w-0 flex-1 basis-0 flex-col items-center rounded-md py-1 text-xs ${
+                                isActive ? "bg-gray-300" : "hover:brightness-95"
                             }`}
                         >
                             <Icon className="w-5 h-5 text-black" />
-                            <span className="text-[10px] text-black mt-1">
+                            <span className="mt-1 w-full truncate text-center text-[10px] leading-3 text-black">
                                 {link.shortLabel ?? link.label}
                             </span>
                         </Link>

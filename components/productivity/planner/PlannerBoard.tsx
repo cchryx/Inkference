@@ -34,6 +34,7 @@ import {
     newCard,
     newId,
     todayKey,
+    withBoardReminders,
     type Board,
     type BoardColor,
     type Card,
@@ -48,13 +49,20 @@ import PlannerWeek from "./PlannerWeek";
 import OverdueModal from "./OverdueModal";
 
 export type PlannerView = "board" | "week" | "calendar";
-type Props = { id: string; initialTitle: string; initialBoard: Board; initialView?: PlannerView };
+type Props = {
+    id: string;
+    initialTitle: string;
+    initialBoard: Board;
+    initialView?: PlannerView;
+    /** Open the week view on this day ("YYYY-MM-DD"). */
+    initialDay?: string;
+};
 type SaveState = "saved" | "saving" | "error";
 
 const SAVE_DELAY = 700;
 
 /** A Trello-style planner: lists of cards you can drag around. Saves as you go. */
-export default function PlannerBoard({ id, initialTitle, initialBoard, initialView = "board" }: Props) {
+export default function PlannerBoard({ id, initialTitle, initialBoard, initialView = "board", initialDay }: Props) {
     // Stable id so the server and browser agree (avoids a hydration warning).
     const dndId = useId();
     const router = useRouter();
@@ -94,7 +102,7 @@ export default function PlannerBoard({ id, initialTitle, initialBoard, initialVi
     const saveNow = useCallback(async () => {
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = null;
-        const { error } = await savePlanner(id, boardRef.current);
+        const { error } = await savePlanner(id, withBoardReminders(boardRef.current));
         setSaveState(error ? "error" : saveTimer.current ? "saving" : "saved");
         if (error) toast.error(error);
     }, [id]);
@@ -124,7 +132,7 @@ export default function PlannerBoard({ id, initialTitle, initialBoard, initialVi
             window.removeEventListener("beforeunload", warn);
             if (saveTimer.current) {
                 clearTimeout(saveTimer.current);
-                void savePlanner(id, boardRef.current);
+                void savePlanner(id, withBoardReminders(boardRef.current));
             }
         };
     }, [id]);
@@ -500,6 +508,7 @@ export default function PlannerBoard({ id, initialTitle, initialBoard, initialVi
             {view === "week" && (
                 <PlannerWeek
                     board={shown}
+                    startDay={initialDay}
                     onOpenCard={setOpenCard}
                     onToggleDone={toggleDone}
                     onSetDue={(cardId, due) =>

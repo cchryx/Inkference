@@ -10,6 +10,12 @@ import type { Prisma } from "@/app/generated/prisma/client";
 const PrefsSchema = z
     .object({
         plannerView: z.enum(["board", "week", "calendar"]),
+        /** When photo storage was last recounted (ms). */
+        storageSyncedAt: z.number(),
+        /** Your timezone, for reminders and the weekly summary. */
+        timeZone: z.string().max(60),
+        /** When the last weekly summary was sent (ms). */
+        weeklySentAt: z.number(),
     })
     .partial();
 
@@ -43,4 +49,14 @@ export async function setPreferences(patch: Preferences) {
         create: { userId, data },
     });
     return { error: null };
+}
+
+/** Remembers your timezone (so reminders say "today" on the right day). */
+export async function saveTimeZone(timeZone: string) {
+    try {
+        new Intl.DateTimeFormat("en-US", { timeZone });
+    } catch {
+        return { error: "Unknown timezone." };
+    }
+    return setPreferences({ timeZone: String(timeZone).slice(0, 60) });
 }

@@ -9,6 +9,7 @@ import StepModal from "@/components/general/StepModal";
 import PhotoEditor from "@/components/general/photo-editor/PhotoEditor";
 import { exportPhotos } from "@/components/general/photo-editor/exportPhotos";
 import { uploadInBatches } from "@/components/general/photo-editor/uploadInBatches";
+import { enqueueUpload } from "@/lib/uploadQueue";
 import type { CroppableImage } from "@/components/general/photo-editor/aspects";
 import { createGallery } from "@/actions/content/photos/createGallery";
 
@@ -26,42 +27,46 @@ export default function AddPhotosModal({ onCloseModal }: Props) {
     const [step, setStep] = useState(0);
     const [images, setImages] = useState<CroppableImage[]>([]);
     const [name, setName] = useState("");
-    const [progress, setProgress] = useState<string | null>(null);
-    const isPending = progress !== null;
 
     const close = () => {
         images.forEach((i) => URL.revokeObjectURL(i.url));
         onCloseModal();
     };
 
-    const submit = async () => {
+    // Upload in the background; the popup closes right away.
+    const submit = () => {
         if (!name.trim()) {
             toast.error("Give your gallery a name.");
             return;
         }
-        try {
-            setProgress("Preparing...");
-            const files = await exportPhotos(images);
-            const { urls, failed } = await uploadInBatches(files, "photos", (done, total) =>
-                setProgress(`Uploading ${done}/${total}`)
-            );
-            if (failed) toast.error(`${failed} photo(s) failed to upload.`);
-            if (!urls.length) return;
+        const picked = images;
+        const galleryName = name.trim();
+        let urls: string[] | null = null;
 
-            const res = await createGallery({ name: name.trim(), photos: urls });
-            if (res.error) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success("Gallery created.");
-            close();
-            router.refresh();
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to create gallery.");
-        } finally {
-            setProgress(null);
-        }
+        enqueueUpload({
+            label: `Gallery "${galleryName}" (${picked.length} photo${picked.length > 1 ? "s" : ""})`,
+            run: async (report) => {
+                if (!urls) {
+                    report("Preparing photos...");
+                    const files = await exportPhotos(picked);
+                    const result = await uploadInBatches(files, "photos", (done, total) => report(`Uploading ${done}/${total}`));
+                    if (!result.urls.length) throw new Error("Photos didn't upload. Try again.");
+                    if (result.failed) toast.error(`${result.failed} photo(s) failed to upload.`);
+                    urls = result.urls;
+                }
+                report("Creating gallery...");
+                const res = await createGallery({ name: galleryName, photos: urls });
+                if (res.error) throw new Error(res.error);
+            },
+            onDone: () => {
+                toast.success("Gallery created.");
+                router.refresh();
+            },
+            cleanup: () => picked.forEach((i) => URL.revokeObjectURL(i.url)),
+        });
+
+        toast("Uploading in the background. You can keep browsing.");
+        onCloseModal();
     };
 
     return (
@@ -78,8 +83,6 @@ export default function AddPhotosModal({ onCloseModal }: Props) {
             onNext={() => setStep(1)}
             onSubmit={submit}
             submitLabel="Create gallery"
-            pending={isPending}
-            pendingLabel={progress ?? undefined}
             disabled={!images.length || (step === 1 && !name.trim())}
         >
             {step === 0 && (
@@ -97,9 +100,8 @@ export default function AddPhotosModal({ onCloseModal }: Props) {
                             autoFocus
                             placeholder="e.g. Summer in Toronto"
                             value={name}
-                            disabled={isPending}
                             onChange={(e) => setName(e.target.value.slice(0, MAX_NAME))}
-                            onKeyDown={(e) => e.key === "Enter" && !isPending && submit()}
+                            onKeyDown={(e) => e.key === "Enter" && submit()}
                         />
                         <span className="text-xs text-gray-500">
                             {MAX_NAME - name.length} characters left

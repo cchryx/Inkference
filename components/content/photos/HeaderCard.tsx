@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Img from "@/components/general/Img";
 import { Eye, Pencil, Share2, Trash2, UploadIcon } from "lucide-react";
 import VisibilityModal from "@/components/general/VisibilityModal";
+import VisibilityBadge from "@/components/general/VisibilityBadge";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { deleteGallery } from "@/actions/content/photos/deleteGallery";
 import { useRouter } from "next/navigation";
@@ -137,6 +138,14 @@ const HeaderCard = ({
                             {numOfPhotos}{" "}
                             {numOfPhotos === 1 ? "Photo" : "Photos"}
                         </span>
+                        {isOwner && (
+                            <VisibilityBadge
+                                kind="gallery"
+                                id={galleryId}
+                                onClick={() => setVisibilityOpen(true)}
+                                className="mt-1.5"
+                            />
+                        )}
                     </div>
                 </div>
 

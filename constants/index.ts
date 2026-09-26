@@ -6,6 +6,7 @@ import {
     BookUser,
     CalendarCheck,
     Coffee,
+    HardDrive,
     Brain,
     BriefcaseBusiness,
     Building2,
@@ -44,7 +45,7 @@ export const NAVBARLEFT_LINKS = [
     {
         icon: Layers,
         route: "/portfolio",
-        label: "Portfolio",
+        label: "Build",
     },
     {
         icon: Library,
@@ -94,6 +95,11 @@ export const SETTINGS_LINKS = [
         icon: Coffee,
         id: "payments",
         label: "Payments",
+    },
+    {
+        icon: HardDrive,
+        id: "storage",
+        label: "Storage",
     },
 ];
 

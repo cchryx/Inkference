@@ -39,7 +39,7 @@ const User = () => {
     }, []);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <ChangeNameForm name={user?.name ?? ""} isLoading={isLoading} />
             <ChangeUsernameForm
                 username={user?.username ?? ""}

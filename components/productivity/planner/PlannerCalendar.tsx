@@ -12,6 +12,7 @@ import {
     startOfWeek,
 } from "date-fns";
 import { CalendarX2, CheckCircle2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import Dropdown from "@/components/general/Dropdown";
 import { LABEL_COLORS, formatTime, isOverdue, sortDayCards, todayKey, type Board, type Card } from "@/lib/drive";
 import { parseDay } from "./dates";
 
@@ -277,17 +278,13 @@ export default function PlannerCalendar({ board, onOpenCard, onSetDue, onAddCard
                             </div>
                             <label className="flex items-center gap-2 text-xs text-gray-500">
                                 Add to
-                                <select
+                                <Dropdown
+                                    size="sm"
                                     value={listId}
-                                    onChange={(e) => setListId(e.target.value)}
-                                    className="rounded-md bg-white px-2 py-1 text-xs text-black ring-1 ring-black/10 cursor-pointer"
-                                >
-                                    {board.lists.map((l) => (
-                                        <option key={l.id} value={l.id}>
-                                            {l.title}
-                                        </option>
-                                    ))}
-                                </select>
+                                    options={board.lists.map((l) => ({ value: l.id, label: l.title || "Untitled list" }))}
+                                    onChange={setListId}
+                                    aria-label="List"
+                                />
                             </label>
                         </div>
                     )}

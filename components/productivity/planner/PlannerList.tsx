@@ -18,14 +18,14 @@ export default function PlannerList({ planners }: { planners: DriveFileSummary[]
                 </Link>
                 <div className="mt-2 flex items-center justify-between gap-3">
                     <div>
-                        <h1 className="text-2xl font-bold">Planners</h1>
-                        <p className="text-sm text-gray-500">Boards for schedules, plans and projects.</p>
+                        <h1 className="text-xl sm:text-2xl font-bold">Planners</h1>
+                        <p className="text-xs sm:text-sm text-gray-500">Boards for schedules, plans and projects.</p>
                     </div>
                     <button
                         type="button"
                         onClick={create}
                         disabled={creating}
-                        className="flex items-center gap-1.5 rounded-lg bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 cursor-pointer disabled:opacity-60"
+                        className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-black px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-gray-800 cursor-pointer disabled:opacity-60 sm:gap-1.5 sm:px-3 sm:py-2 sm:text-sm"
                     >
                         {creating ? <Loader size={4} /> : <Plus className="size-4" />} New planner
                     </button>

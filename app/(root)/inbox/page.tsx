@@ -108,7 +108,7 @@ export default function Page() {
 
             {/* Main Content */}
             <div className="flex items-center justify-center h-full no-drag select-none pt-10 md:pt-0">
-                <div className="bg-gray-100 w-[95%] md:w-[90%] h-[95%] rounded-md flex shadow-md">
+                <div className="bg-gray-100 w-full h-full md:w-[90%] md:h-[95%] md:rounded-md flex md:shadow-md">
                     {/* Sidebar */}
                     <div
                         ref={sidebarRef}
@@ -160,7 +160,7 @@ export default function Page() {
                     </div>
 
                     {/* Section Content */}
-                    <div className="flex-1 p-6 pt-6 overflow-y-scroll no-scrollbar">
+                    <div className="flex-1 px-1.5 py-3 md:p-6 overflow-y-scroll no-scrollbar">
                         <div className="hidden md:block text-xl font-semibold capitalize">
                             {sectionLabel}
                         </div>

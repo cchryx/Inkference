@@ -161,7 +161,7 @@ const NotificationSettings = () => {
 
     if (isLoading || !data) {
         return (
-            <div className="space-y-5">
+            <div className="space-y-3">
                 <Skeleton className="h-36 w-full rounded-md" />
                 <Skeleton className="h-96 w-full rounded-md" />
             </div>
@@ -171,11 +171,11 @@ const NotificationSettings = () => {
     const pushOn = pushState === "on";
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-3">
             {/* Push on this device */}
-            <div className="w-full space-y-4 rounded-md border-2 border-gray-200 p-6">
+            <div className="w-full space-y-3 rounded-md border border-gray-200 p-4">
                 <div className="space-y-1">
-                    <h1 className="flex items-center gap-2 text-lg font-semibold">
+                    <h1 className="flex items-center gap-2 text-base font-semibold">
                         <Smartphone className="h-5 w-5 shrink-0" />
                         Push notifications
                     </h1>
@@ -237,10 +237,10 @@ const NotificationSettings = () => {
             </div>
 
             {/* Per type */}
-            <div className="w-full space-y-4 rounded-md border-2 border-gray-200 p-6">
+            <div className="w-full space-y-3 rounded-md border border-gray-200 p-4">
                 <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
-                        <h1 className="text-lg font-semibold">What to notify me about</h1>
+                        <h1 className="text-base font-semibold">What to notify me about</h1>
                         <p className="text-sm text-muted-foreground">
                             &ldquo;In app&rdquo; is your Inbox. &ldquo;Push&rdquo; is your phone or computer.
                         </p>
@@ -254,24 +254,34 @@ const NotificationSettings = () => {
                         <span className="w-11 text-center">In app</span>
                         <span className="w-11 text-center">Push</span>
                     </div>
-                    {NOTIFICATION_TYPES.map(({ type, label, hint }) => (
+                    {NOTIFICATION_TYPES.map((t) => {
+                        const { type, label, hint } = t;
+                        const pushOnly = "pushOnly" in t && t.pushOnly;
+                        return (
                         <div key={type} className="flex items-center gap-3 px-3 py-3">
                             <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium">{label}</p>
                                 <p className="text-xs text-gray-500">{hint}</p>
                             </div>
-                            <Switch
-                                label={`${label} in app`}
-                                on={!data.inAppOff.includes(type)}
-                                onChange={() => toggle("inAppOff", type)}
-                            />
+                            {pushOnly ? (
+                                <span className="w-11 text-center text-xs text-gray-400" title="Push only">
+                                    -
+                                </span>
+                            ) : (
+                                <Switch
+                                    label={`${label} in app`}
+                                    on={!data.inAppOff.includes(type)}
+                                    onChange={() => toggle("inAppOff", type)}
+                                />
+                            )}
                             <Switch
                                 label={`${label} push`}
                                 on={!data.pushOff.includes(type)}
                                 onChange={() => toggle("pushOff", type)}
                             />
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

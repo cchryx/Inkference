@@ -11,7 +11,7 @@ type Props = {
 
 const Authentication = ({ accounts, hasPassword, linkError, linked }: Props) => {
     return (
-        <div className="space-y-5">
+        <div className="space-y-3">
             <ChangePasswordForm hasPassword={hasPassword} />
             <ChangeSigninForm
                 accounts={accounts}

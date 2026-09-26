@@ -43,6 +43,10 @@ export type Card = {
     labelIds: string[];
     checklist: ChecklistItem[];
     done: boolean;
+    /** Remind this many minutes before it's due (0 = at due time). null = no reminder. */
+    remind?: number | null;
+    /** The exact moment to remind (worked out on the device, so it's in your timezone). */
+    remindAt?: string | null;
 };
 export type List = { id: string; title: string; cards: Card[] };
 export type Board = { color: BoardColor; labels: Label[]; lists: List[]; hideDone?: boolean };
@@ -179,6 +183,9 @@ export type Todo = {
     notes: string;
     /** When it was ticked off (ISO), for "completed" sorting. */
     doneAt: string | null;
+    /** Same as on planner cards. To-dos have no time, so 9 AM is used. */
+    remind?: number | null;
+    remindAt?: string | null;
 };
 export type TodoList = { color: BoardColor; items: Todo[] };
 
@@ -237,3 +244,45 @@ export type DriveFileSummary = {
     stats?: ReturnType<typeof boardStats>;
     todoStats?: ReturnType<typeof todoStats>;
 };
+
+// ---------- Reminders ----------
+
+/** Things without a time get reminded at this time of day. */
+export const DEFAULT_REMIND_TIME = "09:00";
+
+export const REMIND_OPTIONS: { value: number; label: string; noTime: string; needsTime?: boolean }[] = [
+    { value: 0, label: "At due time", noTime: "Morning of (9 AM)" },
+    { value: 15, label: "15 min before", noTime: "15 min before 9 AM", needsTime: true },
+    { value: 60, label: "1 hour before", noTime: "1 hour before 9 AM", needsTime: true },
+    { value: 1440, label: "1 day before", noTime: "Day before (9 AM)" },
+    { value: 10080, label: "1 week before", noTime: "Week before (9 AM)" },
+];
+
+export const MAX_REMIND_MINUTES = 10080;
+
+/** When to send the reminder, as an ISO time (uses this device's timezone). */
+export function reminderAt(due: string | null, time: string | null | undefined, remind: number | null | undefined) {
+    if (remind == null || !due) return null;
+    const [y, m, d] = due.split("-").map(Number);
+    const [h, mi] = (time || DEFAULT_REMIND_TIME).split(":").map(Number);
+    const at = new Date(y, m - 1, d, h, mi);
+    if (Number.isNaN(at.getTime())) return null;
+    at.setMinutes(at.getMinutes() - remind);
+    return at.toISOString();
+}
+
+/** Fills in `remindAt` on every card. Run right before saving. */
+export function withBoardReminders(board: Board): Board {
+    return {
+        ...board,
+        lists: board.lists.map((l) => ({
+            ...l,
+            cards: l.cards.map((c) => ({ ...c, remindAt: reminderAt(c.due, c.time, c.remind) })),
+        })),
+    };
+}
+
+/** Fills in `remindAt` on every to-do. Run right before saving. */
+export function withTodoReminders(list: TodoList): TodoList {
+    return { ...list, items: list.items.map((t) => ({ ...t, remindAt: reminderAt(t.due, null, t.remind) })) };
+}

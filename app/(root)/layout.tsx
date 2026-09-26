@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ReactNode, Suspense } from "react";
 import NavigationLoader from "@/components/general/NavigationLoader";
+import UploadQueue from "@/components/general/UploadQueue";
+import PushPrompt from "@/components/general/PushPrompt";
 
 type LayoutProps = {
     children: ReactNode;
@@ -36,6 +38,12 @@ export default async function Layout({ children }: LayoutProps) {
                             children
                         )}
                     </section>
+
+                    {/* Uploads that keep going while you use the app */}
+                    {session && <UploadQueue />}
+
+                    {/* Asks once per device to turn on push notifications */}
+                    {session?.user.username && <PushPrompt />}
 
                     {/* Loading screen shown instantly when you open another page */}
                     <Suspense fallback={null}>

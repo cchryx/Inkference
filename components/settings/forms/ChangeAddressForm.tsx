@@ -108,7 +108,7 @@ export default function ChangeAddressForm({ address, isLoading }: Props) {
 
     if (isLoading) {
         return (
-            <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
+            <div className="w-full space-y-3 border-gray-200 border p-4 rounded-md">
                 <Skeleton className="h-6 w-32 rounded-md" />
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-20 rounded-md" />
@@ -122,10 +122,10 @@ export default function ChangeAddressForm({ address, isLoading }: Props) {
 
     return (
         <form
-            className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
+            className="w-full space-y-3 border-gray-200 border p-4 rounded-md"
             onSubmit={handleSubmit}
         >
-            <h1 className="text-lg">Change Address</h1>
+            <h1 className="text-base font-semibold">Change Address</h1>
 
             <div className="flex flex-col gap-2 relative" ref={wrapperRef}>
                 <Label htmlFor="address">New Address</Label>
@@ -147,11 +147,11 @@ export default function ChangeAddressForm({ address, isLoading }: Props) {
                     />
 
                     {focused && suggestions.length > 0 && (
-                        <ul className="absolute left-0 right-0 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-md max-h-48 overflow-y-auto z-20">
+                        <ul className="scroll-thin absolute left-0 right-0 top-full mt-1 w-full rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/10 max-h-56 overflow-y-auto z-20">
                             {suggestions.map((s) => (
                                 <li
                                     key={s.place_id}
-                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                                    className="cursor-pointer rounded-lg px-2.5 py-1.5 hover:bg-gray-100 text-sm"
                                     onMouseDown={() => {
                                         setInput(s.description);
                                         setSelected(s.description);

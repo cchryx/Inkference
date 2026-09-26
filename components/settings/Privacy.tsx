@@ -25,9 +25,9 @@ export const AUDIENCE_OPTIONS: { value: Audience; label: string; hint: string; i
 ];
 
 const Card = ({ title, text, children }: { title: string; text: string; children: React.ReactNode }) => (
-    <div className="w-full space-y-4 rounded-md border-2 border-gray-200 p-6">
+    <div className="w-full space-y-3 rounded-md border border-gray-200 p-4">
         <div className="space-y-1">
-            <h1 className="text-lg font-semibold">{title}</h1>
+            <h1 className="text-base font-semibold">{title}</h1>
             <p className="text-sm text-muted-foreground">{text}</p>
         </div>
         {children}
@@ -45,7 +45,7 @@ const Privacy = () => {
 
     if (isLoading || !data) {
         return (
-            <div className="space-y-5">
+            <div className="space-y-3">
                 {[0, 1, 2].map((i) => (
                     <Skeleton key={i} className="h-40 w-full rounded-md" />
                 ))}
@@ -89,7 +89,7 @@ const Privacy = () => {
     };
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-3">
             {/* Default audience */}
             <Card
                 title="Who can see your posts, projects and galleries"

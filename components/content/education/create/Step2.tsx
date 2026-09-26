@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import Dropdown from "@/components/general/Dropdown";
 import { Label } from "@radix-ui/react-label";
 import InfoTooltip from "@/components/general/InfoToolTip";
 
@@ -27,7 +27,11 @@ const DateRangePicker = ({ onChange, initialValue }: Props) => {
         };
     };
 
-    const start = toParts(initialValue?.startDate || null);
+    // New entries start on today's date.
+    const now = new Date();
+    const start = initialValue?.startDate
+        ? toParts(initialValue.startDate)
+        : { y: String(now.getFullYear()), m: String(now.getMonth() + 1), d: String(now.getDate()) };
     const end = toParts(initialValue?.endDate || null);
 
     const [startYear, setStartYear] = useState(start.y);
@@ -92,46 +96,31 @@ const DateRangePicker = ({ onChange, initialValue }: Props) => {
         });
     }, [startYear, startMonth, startDay, endYear, endMonth, endDay]);
 
+    // The custom dropdown (the list opens under the box).
+    const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const renderDropdown = (
         label: string | null,
         value: string,
         items: string[],
-        isOpen: boolean,
-        setOpen: (open: boolean) => void,
+        _isOpen: boolean,
+        _setOpen: (open: boolean) => void,
         onSelect: (val: string) => void,
         fullWidth?: boolean
-    ) => (
-        <div
-            className={`relative ${fullWidth ? "w-full" : "w-[100px]"} text-sm`}
-        >
-            {label && <Label className="mb-1 block">{label}</Label>}
-            <button
-                type="button"
-                onClick={() => setOpen(!isOpen)}
-                onBlur={() => setTimeout(() => setOpen(false), 150)}
-                className="w-full text-left px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border rounded-md flex justify-between items-center cursor-pointer"
-            >
-                {value || "Select"}
-                <ChevronDown className="w-4 h-4 opacity-60" />
-            </button>
-            {isOpen && (
-                <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border bg-white dark:bg-gray-800 text-sm shadow-md">
-                    {items.map((item) => (
-                        <li
-                            key={item}
-                            onClick={() => {
-                                onSelect(item);
-                                setOpen(false);
-                            }}
-                            className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            {item}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
+    ) => {
+        const show = (v: string) => (label === "Month" && v ? MONTH_NAMES[Number(v) - 1] : v);
+        return (
+            <div className={`${fullWidth ? "w-full" : "min-w-0 flex-1 sm:w-[110px] sm:flex-none"} text-sm`}>
+                {label && <Label className="mb-1 block">{label}</Label>}
+                <Dropdown
+                    value={value}
+                    options={items.map((item) => ({ value: item, label: show(item) }))}
+                    onChange={onSelect}
+                    aria-label={label ?? undefined}
+                    className="w-full"
+                />
+            </div>
+        );
+    };
 
     return (
         <div className="space-y-6">

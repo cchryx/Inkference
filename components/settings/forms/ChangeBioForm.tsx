@@ -76,7 +76,7 @@ const ChangeBioForm = ({
 
     if (isLoading) {
         return (
-            <div className="w-full space-y-4 border-2 border-gray-200 p-6 rounded-md">
+            <div className="w-full space-y-3 border border-gray-200 p-4 rounded-md">
                 <Skeleton className="h-6 w-1/4 rounded-md" />
                 <div className="flex flex-col gap-2">
                     <Skeleton className="h-4 w-20 rounded-md" />
@@ -90,10 +90,10 @@ const ChangeBioForm = ({
 
     return (
         <form
-            className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
+            className="w-full space-y-3 border-gray-200 border p-4 rounded-md"
             onSubmit={handleSubmit}
         >
-            <h1 className="text-lg">Change Bio</h1>
+            <h1 className="text-base font-semibold">Change Bio</h1>
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                     <Label htmlFor="bio">New Bio</Label>

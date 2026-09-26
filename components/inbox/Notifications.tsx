@@ -90,37 +90,37 @@ const Row = ({ n, isNew }: { n: NotificationItem; isNew: boolean }) => {
         <li>
             <Link
                 href={n.href}
-                className={`flex items-center gap-3 rounded-md px-3 py-3 transition hover:bg-gray-200 ${
+                className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition hover:bg-gray-200 md:gap-3 md:px-3 md:py-3 ${
                     isNew ? "bg-blue-50" : ""
                 }`}
             >
                 {/* Avatars (up to 2, overlapping) + type badge */}
-                <div className="relative h-11 w-11 shrink-0">
+                <div className="relative size-8 shrink-0 md:size-11">
                     {n.type === "views" ? (
-                        <div className="grid h-11 w-11 place-items-center rounded-full bg-gray-300">
-                            <Eye className="h-5 w-5 text-gray-700" />
+                        <div className="grid size-8 place-items-center rounded-full bg-gray-300 md:size-11">
+                            <Eye className="h-4 w-4 text-gray-700 md:h-5 md:w-5" />
                         </div>
                     ) : n.actors.length > 1 ? (
                         <>
                             <div className="absolute left-0 top-0">
-                                <UserIcon image={n.actors[1].image} size="size-8" />
+                                <UserIcon image={n.actors[1].image} size="size-5 md:size-8" />
                             </div>
                             <div className="absolute bottom-0 right-0 rounded-full ring-2 ring-gray-100">
-                                <UserIcon image={n.actors[0].image} size="size-8" />
+                                <UserIcon image={n.actors[0].image} size="size-5 md:size-8" />
                             </div>
                         </>
                     ) : (
-                        <UserIcon image={n.actors[0]?.image} size="size-11" />
+                        <UserIcon image={n.actors[0]?.image} size="size-8 md:size-11" />
                     )}
                     <span
-                        className={`absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-items-center rounded-full text-white ring-2 ring-gray-100 ${meta.className}`}
+                        className={`absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full text-white ring-2 ring-gray-100 md:size-5 ${meta.className}`}
                     >
-                        <Icon className="h-3 w-3" />
+                        <Icon className="size-2.5 md:size-3" />
                     </span>
                 </div>
 
                 {/* Text */}
-                <p className="min-w-0 flex-1 text-sm leading-snug">
+                <p className="min-w-0 flex-1 text-xs leading-snug md:text-sm">
                     {n.type === "views" ? (
                         <>
                             Your {n.target?.kind ?? "post"} reached{" "}
@@ -142,7 +142,7 @@ const Row = ({ n, isNew }: { n: NotificationItem; isNew: boolean }) => {
                         src={previewUrl(n.target.image, 120)}
                         alt=""
                         loading="lazy"
-                        className="h-11 w-11 shrink-0 rounded-md object-cover"
+                        className="size-8 shrink-0 rounded object-cover md:size-11 md:rounded-md"
                     />
                 )}
 
@@ -225,10 +225,10 @@ const Notifications = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             {sections.map((s, i) => (
                 <section key={`${s.title}-${i}`}>
-                    <h3 className="mb-1 px-3 text-sm font-semibold text-gray-600">{s.title}</h3>
+                    <h3 className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-gray-500 md:px-3">{s.title}</h3>
                     <ul>
                         {s.items.map((n) => (
                             <Row key={n.id} n={n} isNew={unreadAtOpen.has(n.id)} />

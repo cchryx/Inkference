@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import Dropdown from "@/components/general/Dropdown";
 import InfoTooltip from "@/components/general/InfoToolTip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -97,36 +97,12 @@ const Step3 = ({
     const renderDropdown = (
         value: string,
         options: string[],
-        isOpen: boolean,
-        setOpen: (v: boolean) => void,
+        _isOpen: boolean,
+        _setOpen: (v: boolean) => void,
         onSelect: (val: string) => void
     ) => (
-        <div className="relative w-full text-sm">
-            <button
-                type="button"
-                onClick={() => setOpen(!isOpen)}
-                onBlur={() => setTimeout(() => setOpen(false), 150)}
-                className="w-full text-left px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border rounded-md flex justify-between items-center cursor-pointer"
-            >
-                {value || "Please select"}
-                <ChevronDown className="w-4 h-4 opacity-60" />
-            </button>
-            {isOpen && (
-                <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border bg-white dark:bg-gray-800 text-sm shadow-md">
-                    {options.map((opt) => (
-                        <li
-                            key={opt}
-                            onMouseDown={() => {
-                                onSelect(opt);
-                                setOpen(false);
-                            }}
-                            className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            {opt}
-                        </li>
-                    ))}
-                </ul>
-            )}
+        <div className="w-full text-sm">
+            <Dropdown value={value} options={options} onChange={onSelect} placeholder="Please select" className="w-full" />
         </div>
     );
 
@@ -153,11 +129,11 @@ const Step3 = ({
                         autoComplete="off"
                     />
                     {focused && suggestions.length > 0 && (
-                        <ul className="absolute left-0 right-0 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-md max-h-48 overflow-y-auto z-20 text-sm">
+                        <ul className="scroll-thin absolute left-0 right-0 top-full mt-1 w-full rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/10 max-h-56 overflow-y-auto z-20 text-sm">
                             {suggestions.map((s) => (
                                 <li
                                     key={s.place_id}
-                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    className="cursor-pointer rounded-lg px-2.5 py-1.5 hover:bg-gray-100"
                                     onMouseDown={() => {
                                         setInput(s.description);
                                         setLocation(s.description);

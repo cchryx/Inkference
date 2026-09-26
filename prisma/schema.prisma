@@ -519,8 +519,34 @@ model DriveFile {
   content Json    @default("{}")
   pinned  Boolean @default(false)
 
+  reminders DriveReminder[]
+
   @@index([userId, type, updatedAt])
   @@map("drive_files")
+}
+
+// A reminder someone set on a planner card or to-do. The card/to-do itself
+// lives in DriveFile.content; this row is just so the reminder job can find
+// what's due quickly. Kept in sync every time the file is saved.
+model DriveReminder {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId String
+  fileId String
+  file   DriveFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  itemId   String    @db.VarChar(40)
+  title    String    @db.VarChar(200)
+  due      String    @db.VarChar(10) // "YYYY-MM-DD"
+  time     String?   @db.VarChar(5) // "HH:MM"
+  remindAt DateTime
+  sentAt   DateTime?
+
+  @@unique([fileId, itemId])
+  @@index([sentAt, remindAt])
+  @@index([userId])
+  @@map("drive_reminders")
 }
 
 // Small per-person app preferences (e.g. the planner view you used last).
@@ -589,4 +615,20 @@ model Tip {
   @@index([toUserId, status, createdAt])
   @@index([fromUserId, createdAt])
   @@map("tips")
+}
+
+// Every file someone uploaded to our image storage (Cloudinary), with its
+// size, so we can show usage and keep everyone under a fair limit.
+model StoredFile {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId   String
+  url      String @unique
+  publicId String
+  bytes    Int
+  kind     String // posts | photos | projects | merits | profile
+
+  @@index([userId])
+  @@map("stored_files")
 }

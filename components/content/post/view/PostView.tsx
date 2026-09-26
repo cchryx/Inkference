@@ -18,6 +18,7 @@ import {
     Eye,
 } from "lucide-react";
 import VisibilityModal from "@/components/general/VisibilityModal";
+import VisibilityBadge from "@/components/general/VisibilityBadge";
 import { toast } from "sonner";
 
 import { UserIcon } from "@/components/general/UserIcon";
@@ -257,7 +258,10 @@ const PostView = ({ post, currentUserId }: Props) => {
                 </p>
             )}
 
-            <p className="text-xs text-gray-500 uppercase tracking-wide">{timeAgo}</p>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <p className="text-[11px] text-gray-400">{timeAgo}</p>
+                {isOwner && <VisibilityBadge kind="post" id={post.id} onClick={() => setVisibilityOpen(true)} />}
+            </div>
         </div>
     );
 

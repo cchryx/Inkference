@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
 import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
+import { deleteUnusedUploads } from "@/lib/cleanupUploads";
 
 // The only project fields the edit screens are allowed to change.
 const EDITABLE_FIELDS = [
@@ -32,7 +33,12 @@ export async function editProject(projectId: string, input: any) {
         // Only the owner can edit a project.
         const existingProject = await prisma.project.findUnique({
             where: { id: projectId },
-            select: { userDataId: true },
+            select: {
+                userDataId: true,
+                iconImage: true,
+                bannerImage: true,
+                galleryImages: { select: { image: true } },
+            },
         });
 
         if (!existingProject) {
@@ -141,6 +147,18 @@ export async function editProject(projectId: string, input: any) {
                 where: { id: projectId },
                 data,
             });
+        }
+
+        // Free the space used by pictures that were swapped out or removed.
+        if (userData.userId) {
+            await deleteUnusedUploads(
+                [
+                    existingProject.iconImage,
+                    existingProject.bannerImage,
+                    ...existingProject.galleryImages.map((g) => g.image),
+                ],
+                userData.userId
+            ).catch(() => {});
         }
 
         return { error: null };

@@ -8,8 +8,11 @@ import { Skeleton } from "@/components/general/Skeleton";
 import { changeProfileAction } from "@/actions/profile/changeProfile";
 import { getProfileChangeStatus } from "@/actions/profile/getProfileChangeStatus";
 import { toast } from "sonner";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import Dropdown from "@/components/general/Dropdown";
 import { useRouter } from "next/navigation";
+
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 type Props = {
     birthdate: number | null;
@@ -22,9 +25,6 @@ const ChangeBirthdate = ({ birthdate, isLoading }: Props) => {
     const [year, setYear] = useState("");
     const [month, setMonth] = useState("");
     const [day, setDay] = useState("");
-    const [yearOpen, setYearOpen] = useState(false);
-    const [monthOpen, setMonthOpen] = useState(false);
-    const [dayOpen, setDayOpen] = useState(false);
     const [status, setStatus] = useState<{
         canChange: boolean;
         timeLeft: string | null;
@@ -81,7 +81,7 @@ const ChangeBirthdate = ({ birthdate, isLoading }: Props) => {
 
     if (isLoading) {
         return (
-            <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
+            <div className="w-full space-y-3 border-gray-200 border p-4 rounded-md">
                 <Skeleton className="h-6 w-1/4 rounded-md" />
                 <div className="flex flex-wrap gap-4">
                     <div className="flex flex-col gap-2">
@@ -105,133 +105,35 @@ const ChangeBirthdate = ({ birthdate, isLoading }: Props) => {
 
     return (
         <form
-            className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
+            className="w-full space-y-3 border-gray-200 border p-4 rounded-md"
             onSubmit={handleSubmit}
         >
-            <h1 className="text-lg">Change Birthdate</h1>
+            <h1 className="text-base font-semibold">Change Birthdate</h1>
 
             <div className="flex flex-wrap gap-2 relative">
-                {/* YEAR */}
-                <div className="relative w-[100px] text-sm">
-                    <Label
-                        htmlFor="year"
-                        className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200"
-                    >
-                        Year
-                    </Label>
-                    <button
-                        type="button"
-                        disabled={isPending || !status.canChange}
-                        onClick={() => {
-                            setYearOpen(!yearOpen);
-                            setMonthOpen(false);
-                            setDayOpen(false);
-                        }}
-                        onBlur={() => setTimeout(() => setYearOpen(false), 200)}
-                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 dark:text-white shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 w-full text-left flex justify-between items-center"
-                    >
-                        {year || "Year"}
-                        <ChevronDown className="w-4 h-4 opacity-60" />
-                    </button>
-                    {yearOpen && (
-                        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-300 bg-white dark:bg-gray-800 text-sm shadow-md">
-                            {years.map((y) => (
-                                <li
-                                    key={y}
-                                    onClick={() => {
-                                        setYear(y);
-                                        setYearOpen(false);
-                                    }}
-                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                >
-                                    {y}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-
-                {/* MONTH */}
-                <div className="relative w-[100px] text-sm">
-                    <Label
-                        htmlFor="month"
-                        className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200"
-                    >
-                        Month
-                    </Label>
-                    <button
-                        type="button"
-                        disabled={isPending || !status.canChange}
-                        onClick={() => {
-                            setMonthOpen(!monthOpen);
-                            setYearOpen(false);
-                            setDayOpen(false);
-                        }}
-                        onBlur={() =>
-                            setTimeout(() => setMonthOpen(false), 200)
-                        }
-                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 dark:text-white shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 w-full text-left flex justify-between items-center"
-                    >
-                        {month || "Month"}
-                        <ChevronDown className="w-4 h-4 opacity-60" />
-                    </button>
-                    {monthOpen && (
-                        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-300 bg-white dark:bg-gray-800 text-sm shadow-md">
-                            {months.map((m) => (
-                                <li
-                                    key={m}
-                                    onClick={() => {
-                                        setMonth(m);
-                                        setMonthOpen(false);
-                                    }}
-                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                >
-                                    {m}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-
-                {/* DAY */}
-                <div className="relative w-[100px] text-sm">
-                    <Label
-                        htmlFor="day"
-                        className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200"
-                    >
-                        Day
-                    </Label>
-                    <button
-                        type="button"
-                        disabled={isPending || !status.canChange}
-                        onClick={() => {
-                            setDayOpen(!dayOpen);
-                            setMonthOpen(false);
-                            setYearOpen(false);
-                        }}
-                        onBlur={() => setTimeout(() => setDayOpen(false), 200)}
-                        className="rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 dark:text-white shadow-inner focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 w-full text-left flex justify-between items-center"
-                    >
-                        {day || "Day"}
-                        <ChevronDown className="w-4 h-4 opacity-60" />
-                    </button>
-                    {dayOpen && (
-                        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-300 bg-white dark:bg-gray-800 text-sm shadow-md">
-                            {days.map((d) => (
-                                <li
-                                    key={d}
-                                    onClick={() => {
-                                        setDay(d);
-                                        setDayOpen(false);
-                                    }}
-                                    className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                >
-                                    {d}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+                {[
+                    { label: "Year", value: year, items: years.map((y) => ({ value: y, label: y })), set: setYear },
+                    {
+                        label: "Month",
+                        value: month,
+                        items: months.map((m) => ({ value: m, label: MONTH_NAMES[Number(m) - 1] })),
+                        set: setMonth,
+                    },
+                    { label: "Day", value: day, items: days.map((d) => ({ value: d, label: d })), set: setDay },
+                ].map((f) => (
+                    <div key={f.label} className="w-[100px] text-sm">
+                        <Label className="mb-1 text-sm font-medium text-gray-700">{f.label}</Label>
+                        <Dropdown
+                            value={f.value}
+                            options={f.items}
+                            onChange={f.set}
+                            placeholder={f.label}
+                            disabled={isPending || !status.canChange}
+                            aria-label={f.label}
+                            className="w-full"
+                        />
+                    </div>
+                ))}
 
                 <p className="text-xs text-muted-foreground">
                     <AlertCircle className="w-5 h-5 inline align-middle mr-1" />

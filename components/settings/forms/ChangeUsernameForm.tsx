@@ -51,7 +51,7 @@ const ChangeUsernameForm = ({ username, isLoading }: Props) => {
 
     if (isLoading) {
         return (
-            <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
+            <div className="w-full space-y-3 border-gray-200 border p-4 rounded-md">
                 <Skeleton className="h-6 w-32 rounded-md" /> {/* Title */}
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-20 rounded-md" /> {/* Label */}
@@ -67,10 +67,10 @@ const ChangeUsernameForm = ({ username, isLoading }: Props) => {
 
     return (
         <form
-            className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
+            className="w-full space-y-3 border-gray-200 border p-4 rounded-md"
             onSubmit={handleSubmit}
         >
-            <h1 className="text-lg">Change Username</h1>
+            <h1 className="text-base font-semibold">Change Username</h1>
             <div className="flex flex-col gap-2">
                 <Label htmlFor="username">New Username</Label>
                 <Input

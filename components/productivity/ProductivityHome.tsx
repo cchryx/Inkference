@@ -46,7 +46,21 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
     }, [due]);
 
     const todayCount = due.filter((d) => d.due <= todayKey()).length;
-    const weekCount = due.filter((d) => d.due <= dayKey(7)).length;
+    const weekCount = due.filter((d) => d.due >= todayKey() && d.due <= dayKey(6)).length;
+
+    // This week at a glance: how many things are due in each planner / list.
+    const weekByFile = useMemo(() => {
+        const today = todayKey();
+        const end = dayKey(6);
+        const map = new Map<string, { id: string; name: string; color: DueItem["color"]; kind: DueItem["kind"]; count: number }>();
+        for (const d of due) {
+            if (d.due < today || d.due > end) continue;
+            const e = map.get(d.fileId) ?? { id: d.fileId, name: d.fileTitle, color: d.color, kind: d.kind, count: 0 };
+            e.count++;
+            map.set(d.fileId, e);
+        }
+        return [...map.values()].sort((a, b) => b.count - a.count);
+    }, [due]);
 
     return (
         <div className="w-full max-w-5xl mx-auto px-4 md:px-6 py-6 pb-24 space-y-8">
@@ -61,17 +75,17 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
             </header>
 
             {/* Quick actions */}
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <section className="grid grid-cols-3 gap-2 sm:gap-3">
                 <Link
                     href="/productivity/todos"
-                    className="flex items-center gap-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-100 hover:bg-amber-100 transition-colors"
+                    className={`${TILE} bg-amber-50 ring-1 ring-amber-100 hover:bg-amber-100`}
                 >
-                    <span className="rounded-lg bg-amber-100 p-2 text-amber-600">
-                        <Sun className="size-5" />
+                    <span className="rounded-lg bg-amber-100 p-1.5 sm:p-2 text-amber-600">
+                        <Sun className="size-4 sm:size-5" />
                     </span>
-                    <span>
-                        <span className="block font-semibold">My day</span>
-                        <span className="block text-xs text-gray-600">
+                    <span className="min-w-0">
+                        <span className="block truncate text-sm sm:text-base font-semibold">My day</span>
+                        <span className="hidden sm:block text-xs text-gray-600">
                             {todayCount ? `${todayCount} due today or overdue` : "Nothing due today"}
                         </span>
                     </span>
@@ -80,32 +94,32 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
                     type="button"
                     onClick={() => create("planner")}
                     disabled={!!creating}
-                    className="flex items-center gap-3 rounded-xl bg-gray-100 p-4 text-left hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-60"
+                    className={`${TILE} bg-gray-100 text-left hover:bg-gray-200 cursor-pointer disabled:opacity-60`}
                 >
-                    <span className="rounded-lg bg-sky-100 p-2 text-sky-700">
-                        {planner.creating ? <Loader size={5} color="text-sky-700" /> : <Kanban className="size-5" />}
+                    <span className="rounded-lg bg-sky-100 p-1.5 sm:p-2 text-sky-700">
+                        {planner.creating ? <Loader size={4} color="text-sky-700" /> : <Kanban className="size-4 sm:size-5" />}
                     </span>
-                    <span>
-                        <span className="flex items-center gap-1 font-semibold">
-                            <Plus className="size-3.5" /> Planner
+                    <span className="min-w-0">
+                        <span className="flex items-center gap-1 truncate text-sm sm:text-base font-semibold">
+                            <Plus className="size-3.5 shrink-0" /> Planner
                         </span>
-                        <span className="block text-xs text-gray-500">Board and calendar for a project or schedule</span>
+                        <span className="hidden sm:block text-xs text-gray-500">Board and calendar for a project or schedule</span>
                     </span>
                 </button>
                 <button
                     type="button"
                     onClick={() => create("todo")}
                     disabled={!!creating}
-                    className="flex items-center gap-3 rounded-xl bg-gray-100 p-4 text-left hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-60"
+                    className={`${TILE} bg-gray-100 text-left hover:bg-gray-200 cursor-pointer disabled:opacity-60`}
                 >
-                    <span className="rounded-lg bg-emerald-100 p-2 text-emerald-700">
-                        {creating === "todo" ? <Loader size={5} color="text-emerald-700" /> : <ListTodo className="size-5" />}
+                    <span className="rounded-lg bg-emerald-100 p-1.5 sm:p-2 text-emerald-700">
+                        {creating === "todo" ? <Loader size={4} color="text-emerald-700" /> : <ListTodo className="size-4 sm:size-5" />}
                     </span>
-                    <span>
-                        <span className="flex items-center gap-1 font-semibold">
-                            <Plus className="size-3.5" /> To-do list
+                    <span className="min-w-0">
+                        <span className="flex items-center gap-1 truncate text-sm sm:text-base font-semibold">
+                            <Plus className="size-3.5 shrink-0" /> To-do<span className="hidden sm:inline">&nbsp;list</span>
                         </span>
-                        <span className="block text-xs text-gray-500">A simple checklist with due dates</span>
+                        <span className="hidden sm:block text-xs text-gray-500">A simple checklist with due dates</span>
                     </span>
                 </button>
             </section>
@@ -116,32 +130,51 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
                     <CalendarClock className="size-5" /> Coming up
                     {weekCount > 0 && <span className="text-sm font-normal text-gray-500">{weekCount} this week</span>}
                 </h2>
+                {weekByFile.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                        {weekByFile.map((f) => (
+                            <Link
+                                key={f.id}
+                                href={
+                                    f.kind === "card"
+                                        ? `/productivity/planners/${f.id}?view=week&day=${todayKey()}`
+                                        : `/productivity/todos?list=${f.id}`
+                                }
+                                className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-black/10 hover:ring-black/30"
+                            >
+                                <span className={`size-1.5 rounded-full ${BOARD_COLORS[f.color].band}`} />
+                                <span className="max-w-32 truncate">{f.name}</span>
+                                <span className="font-semibold tabular-nums">{f.count}</span>
+                            </Link>
+                        ))}
+                    </div>
+                )}
                 {groups.length ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 rounded-xl bg-gray-100 p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3 rounded-xl bg-gray-100 p-3">
                         {groups.map((g) => (
                             <div key={g.name}>
-                                <p className={`mb-1.5 text-xs font-semibold uppercase tracking-wide ${g.tone}`}>{g.name}</p>
+                                <p className={`mb-1 text-[11px] font-semibold uppercase tracking-wide ${g.tone}`}>{g.name}</p>
                                 <ul className="space-y-1">
                                     {g.items.map((item) => (
                                         <li key={`${item.kind}-${item.id}`}>
                                             <Link
                                                 href={
                                                     item.kind === "card"
-                                                        ? `/productivity/planners/${item.fileId}?view=calendar`
+                                                        ? `/productivity/planners/${item.fileId}?view=week&day=${item.due < todayKey() ? todayKey() : item.due}`
                                                         : `/productivity/todos?list=${item.fileId}`
                                                 }
-                                                className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-sm ring-1 ring-black/5 hover:ring-black/20"
+                                                className="flex items-center gap-2 rounded-md bg-white px-2.5 py-1.5 text-[13px] shadow-sm ring-1 ring-black/5 hover:ring-black/20"
                                             >
-                                                <span className={`size-2 shrink-0 rounded-full ${BOARD_COLORS[item.color].band}`} />
+                                                <span className={`size-1.5 shrink-0 rounded-full ${BOARD_COLORS[item.color].band}`} />
                                                 <span className="min-w-0 flex-1 truncate">
                                                     {item.time && (
                                                         <span className="mr-1.5 font-semibold tabular-nums">{formatTime(item.time)}</span>
                                                     )}
                                                     {item.title}
                                                 </span>
-                                                <span className="shrink-0 text-xs text-gray-400 flex items-center gap-1">
+                                                <span className="shrink-0 text-[11px] text-gray-400 flex items-center gap-1">
                                                     {item.kind === "card" ? <Kanban className="size-3" /> : <ListTodo className="size-3" />}
-                                                    <span className="max-w-28 truncate">{item.fileTitle}</span>
+                                                    <span className="max-w-24 truncate">{item.fileTitle}</span>
                                                 </span>
                                             </Link>
                                         </li>
@@ -199,6 +232,9 @@ export default function ProductivityHome({ planners, todoLists, due }: Props) {
         </div>
     );
 }
+
+const TILE =
+    "flex items-center gap-2 sm:gap-3 rounded-xl p-2 sm:p-4 transition-colors min-w-0";
 
 function Empty({ text, action, onClick }: { text: string; action: string; onClick: () => void }) {
     return (

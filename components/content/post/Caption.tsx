@@ -13,6 +13,8 @@ type Props = {
     onToggle?: (expanded: boolean) => void;
     /** Start expanded (e.g. inside an overlay). */
     expanded?: boolean;
+    /** Text size class (default text-sm). */
+    textSize?: string;
 };
 
 const CLAMP = { 1: "line-clamp-1", 2: "line-clamp-2", 3: "line-clamp-3" } as const;
@@ -53,7 +55,7 @@ function renderRichText(text: string) {
  * Post caption like Instagram: "username caption…" clamped to a few lines,
  * with "more" only when the text really overflows.
  */
-const Caption = ({ text, username, lines = 2, className = "", onToggle, expanded: forced }: Props) => {
+const Caption = ({ text, username, lines = 2, className = "", onToggle, expanded: forced, textSize = "text-sm" }: Props) => {
     const [open, setOpen] = useState(false);
     const [overflows, setOverflows] = useState(false);
     const ref = useRef<HTMLParagraphElement>(null);
@@ -80,7 +82,7 @@ const Caption = ({ text, username, lines = 2, className = "", onToggle, expanded
     if (!text) return null;
 
     return (
-        <div className={`text-sm leading-snug ${className}`}>
+        <div className={`${textSize} leading-snug ${className}`}>
             <p
                 ref={ref}
                 className={`whitespace-pre-wrap break-words ${expanded ? "" : CLAMP[lines]}`}

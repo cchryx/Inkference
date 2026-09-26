@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import Dropdown from "@/components/general/Dropdown";
 import InfoTooltip from "@/components/general/InfoToolTip";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,36 +35,12 @@ const Step1 = ({
     const renderDropdown = (
         value: string,
         options: string[],
-        isOpen: boolean,
-        setOpen: (v: boolean) => void,
+        _isOpen: boolean,
+        _setOpen: (v: boolean) => void,
         onSelect: (val: string) => void
     ) => (
-        <div className="relative w-full text-sm">
-            <button
-                type="button"
-                onClick={() => setOpen(!isOpen)}
-                onBlur={() => setTimeout(() => setOpen(false), 150)}
-                className="w-full text-left px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border rounded-md flex justify-between items-center cursor-pointer"
-            >
-                {value || "Please select"}
-                <ChevronDown className="w-4 h-4 opacity-60" />
-            </button>
-            {isOpen && (
-                <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border bg-white dark:bg-gray-800 text-sm shadow-md">
-                    {options.map((opt) => (
-                        <li
-                            key={opt}
-                            onMouseDown={() => {
-                                onSelect(opt);
-                                setOpen(false);
-                            }}
-                            className="cursor-pointer px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            {opt}
-                        </li>
-                    ))}
-                </ul>
-            )}
+        <div className="w-full text-sm">
+            <Dropdown value={value} options={options} onChange={onSelect} placeholder="Please select" className="w-full" />
         </div>
     );
 

@@ -14,6 +14,8 @@ import Step3 from "../create/Step3";
 import Step4 from "../create/Step4";
 import Step5 from "../create/Step5";
 import Loader from "@/components/general/Loader";
+import { UploadSessionProvider, useUploadSession } from "@/components/general/photo-editor/uploadSession";
+import { commitStaged, release } from "@/lib/pendingUploads";
 
 type Props = {
     open: boolean;
@@ -58,6 +60,7 @@ const EditHeaderModal = ({
     const [showLinkInput, setShowLinkInput] = useState(false);
 
     // Step4 states
+    const uploads = useUploadSession();
     const [iconImage, setIconImage] = useState(initialIconImage);
     const [bannerImage, setBannerImage] = useState(initialBannerImage);
 
@@ -86,13 +89,20 @@ const EditHeaderModal = ({
         }
 
         setIsPending(true);
+        // New pictures are only uploaded now, on save.
+        const images = await commitStaged([iconImage, bannerImage]);
+        if (images.error !== undefined) {
+            toast.error(images.error);
+            setIsPending(false);
+            return;
+        }
         const { error } = await editProject(projectId, {
             name,
             summary,
             description,
             projectLinks,
-            iconImage,
-            bannerImage,
+            iconImage: images.urls[0],
+            bannerImage: images.urls[1],
             status:
                 timeline.status === "In Progress" ? "IN_PROGRESS" : "COMPLETE",
             startDate: new Date(timeline.startDate * 1000),
@@ -105,13 +115,20 @@ const EditHeaderModal = ({
             toast.error(error);
         } else {
             toast.success("Project updated successfully.");
+            uploads.keepAll(); // saved: keep the new pictures
+            release([iconImage, bannerImage]);
+            setIconImage(images.urls[0]);
+            setBannerImage(images.urls[1]);
+            // (The server deletes the pictures that were swapped out.)
             router.refresh();
             onClose();
         }
         setIsPending(false);
     };
 
+    // Cancelled: delete pictures uploaded here, and reset the form.
     const handleClose = () => {
+        uploads.discardAll();
         setName(initialName);
         setSummary(initialSummary);
         setDescription(initialDescription);
@@ -126,13 +143,13 @@ const EditHeaderModal = ({
     };
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <Modal open={open} onClose={handleClose}>
             <div className="flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw] bg-gray-100 rounded-xl shadow-xl">
                 {/* Header */}
                 <div className="flex justify-between items-start p-5 border-b">
                     <h2 className="text-xl font-bold">Edit Project Header</h2>
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="text-gray-600 hover:text-black cursor-pointer"
                     >
                         <X className="w-5 h-5" />
@@ -183,12 +200,14 @@ const EditHeaderModal = ({
                     />
 
                     {/* Step4 (Icon & Banner) */}
+                    <UploadSessionProvider session={uploads}>
                     <Step4
                         iconImageUrl={iconImage}
                         setIconImageUrl={setIconImage}
                         bannerImageUrl={bannerImage}
                         setBannerImageUrl={setBannerImage}
                     />
+                    </UploadSessionProvider>
 
                     {/* Step5 (Status & Dates) */}
                     <Step5 onChange={setTimeline} initialValue={timeline} />

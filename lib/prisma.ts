@@ -1,11 +1,34 @@
 import { PrismaClient, Prisma } from "@/app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool, type PoolClient } from "pg";
 
 const globalForPrisma = global as unknown as { prisma?: PrismaClient };
 
+/*
+ * Inside a transaction Prisma sometimes sends a few queries at once on the
+ * same connection. pg handles that, but warns ("Calling client.query() when
+ * the client is already executing a query is deprecated"). This makes each
+ * connection run its queries one after another, which is what pg wants.
+ */
+function oneQueryAtATime(client: PoolClient) {
+    const original = client.query.bind(client) as (...args: unknown[]) => unknown;
+    let queue: Promise<unknown> = Promise.resolve();
+    (client as unknown as { query: (...args: unknown[]) => unknown }).query = (...args: unknown[]) => {
+        const last = args[args.length - 1];
+        const first = args[0] as { submit?: unknown } | undefined;
+        // Callback style or streaming queries: leave them alone.
+        if (typeof last === "function" || typeof first?.submit === "function") return original(...args);
+        const run = queue.then(() => original(...args));
+        queue = run.catch(() => undefined);
+        return run;
+    };
+}
+
 function createClient() {
     // The app talks to the database through the pooled URL.
-    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    pool.on("connect", oneQueryAtATime);
+    const adapter = new PrismaPg(pool);
     return new PrismaClient({ adapter });
 }
 

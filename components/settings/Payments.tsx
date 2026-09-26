@@ -14,7 +14,7 @@ import { getMyPayouts, getMyTips, openPayoutDashboard, setTipsEnabled, startPayo
 import { formatMoney, tipBreakdown } from "@/lib/payments/fees";
 
 const Card = ({ children }: { children: React.ReactNode }) => (
-    <div className="w-full space-y-4 rounded-md border-2 border-gray-200 p-6">{children}</div>
+    <div className="w-full space-y-3 rounded-md border border-gray-200 p-4">{children}</div>
 );
 
 /** Settings > Payments: turn on "Buy me a coffee" and see what you've received. */
@@ -58,7 +58,7 @@ export default function Payments() {
 
     if (payouts.isLoading || !payouts.data) {
         return (
-            <div className="space-y-5">
+            <div className="space-y-3">
                 <Skeleton className="h-48 w-full rounded-md" />
                 <Skeleton className="h-64 w-full rounded-md" />
             </div>
@@ -70,11 +70,11 @@ export default function Payments() {
     const example = tipBreakdown(500);
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-3">
             {/* ---------- Status / setup ---------- */}
             <Card>
                 <div className="space-y-1">
-                    <h1 className="flex items-center gap-2 text-lg font-semibold">
+                    <h1 className="flex items-center gap-2 text-base font-semibold">
                         <Coffee className="h-5 w-5 shrink-0" /> Buy me a coffee
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -135,7 +135,7 @@ export default function Payments() {
             {/* ---------- Where the money goes ---------- */}
             <Card>
                 <div className="space-y-1">
-                    <h2 className="text-lg font-semibold">Where the money goes</h2>
+                    <h2 className="text-base font-semibold">Where the money goes</h2>
                     <p className="text-sm text-muted-foreground">
                         Example: someone buys you a {formatMoney(example.amount)} coffee. The card fee is added on top for them, so it
                         doesn&apos;t come out of your coffee.
@@ -151,7 +151,7 @@ export default function Payments() {
             {p.connected && (
                 <Card>
                     <div className="flex items-baseline justify-between gap-3">
-                        <h2 className="text-lg font-semibold">Coffees received</h2>
+                        <h2 className="text-base font-semibold">Coffees received</h2>
                         {tips.data && (
                             <span className="text-sm text-gray-500">
                                 {tips.data.count} · {formatMoney(tips.data.totalEarned)} earned

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 import { v2 as cloudinary } from "cloudinary";
+import { forgetUploads } from "@/lib/storage";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -59,6 +60,7 @@ export async function deleteGallery(galleryId: string) {
         await prisma.gallery.delete({
             where: { id: galleryId },
         });
+        await forgetUploads(gallery.photos.map((p) => p.image)).catch(() => {});
 
         return { error: null };
     } catch (err) {

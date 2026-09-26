@@ -31,6 +31,7 @@ import {
     defaultTodoList,
     newTodo,
     todayKey,
+    withTodoReminders,
     type BoardColor,
     type Todo,
 } from "@/lib/drive";
@@ -77,7 +78,7 @@ export default function TodosApp({ initialLists, initialListId }: { initialLists
         timers.current.delete(id);
         const list = listsRef.current.find((l) => l.id === id);
         if (!list) return;
-        const { error } = await saveTodoList(id, list.list);
+        const { error } = await saveTodoList(id, withTodoReminders(list.list));
         if (error) toast.error(error);
     }, []);
 
@@ -101,7 +102,7 @@ export default function TodosApp({ initialLists, initialListId }: { initialLists
             for (const [id, t] of pending) {
                 clearTimeout(t);
                 const list = listsRef.current.find((l) => l.id === id);
-                if (list) void saveTodoList(id, list.list);
+                if (list) void saveTodoList(id, withTodoReminders(list.list));
             }
             pending.clear();
         };

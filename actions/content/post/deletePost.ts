@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 import { v2 as cloudinary } from "cloudinary";
+import { forgetUploads } from "@/lib/storage";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -58,6 +59,7 @@ export async function deletePost(postId: string) {
         await prisma.post.delete({
             where: { id: postId },
         });
+        await forgetUploads(post.content).catch(() => {});
 
         return { error: null };
     } catch (err) {

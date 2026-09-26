@@ -11,9 +11,9 @@ export default async function Page({
     searchParams,
 }: {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ view?: string }>;
+    searchParams: Promise<{ view?: string; day?: string }>;
 }) {
-    const [{ id }, { view }] = await Promise.all([params, searchParams]);
+    const [{ id }, { view, day }] = await Promise.all([params, searchParams]);
     const [planner, prefs] = await Promise.all([getPlanner(id), getPreferences()]);
     // A ?view= link wins; otherwise open the view you used last.
     const initialView = view === "board" || view === "week" || view === "calendar" ? view : (prefs.plannerView ?? "board");
@@ -24,6 +24,7 @@ export default async function Page({
             initialTitle={planner.title}
             initialBoard={planner.board}
             initialView={initialView}
+            initialDay={day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : undefined}
         />
     );
 }

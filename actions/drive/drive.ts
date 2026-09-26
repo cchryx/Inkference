@@ -5,11 +5,13 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
+import { syncReminders } from "@/lib/reminders";
 import {
     BOARD_COLORS,
     LABEL_COLORS,
     LIMITS,
     MAX_NOTE_CHARS,
+    MAX_REMIND_MINUTES,
     TODO_LIMIT,
     boardStats,
     defaultBoard,
@@ -36,6 +38,8 @@ async function me() {
 const DriveTypeSchema = z.enum(["note", "planner", "todo"]);
 
 const id = z.string().min(1).max(40);
+const remind = z.number().int().min(0).max(MAX_REMIND_MINUTES).nullable().optional();
+const remindAt = z.string().max(40).nullable().optional();
 const BoardSchema = z.object({
     hideDone: z.boolean().optional(),
     color: z.enum(Object.keys(BOARD_COLORS) as [BoardColor, ...BoardColor[]]),
@@ -74,6 +78,8 @@ const BoardSchema = z.object({
                                 .array(z.object({ id, text: z.string().max(300), done: z.boolean() }))
                                 .max(LIMITS.checklist),
                             done: z.boolean(),
+                            remind,
+                            remindAt,
                         })
                     )
                     .max(LIMITS.cardsPerList),
@@ -99,6 +105,8 @@ const TodoListSchema = z.object({
                 important: z.boolean(),
                 notes: z.string().max(5000),
                 doneAt: z.string().max(40).nullable(),
+                remind,
+                remindAt,
             })
         )
         .max(TODO_LIMIT),
@@ -222,7 +230,14 @@ export async function saveTodoList(fileId: string, list: TodoList) {
         where: { id: fileId, userId, type: "todo" },
         data: { content: parsed.data as Prisma.InputJsonValue },
     });
-    return count ? { error: null } : { error: "List not found." };
+    if (!count) return { error: "List not found." };
+
+    await syncReminders(
+        userId,
+        fileId,
+        parsed.data.items.map((t) => ({ id: t.id, title: t.text, due: t.due, time: null, done: t.done, remindAt: t.remindAt }))
+    ).catch((err) => console.error("syncReminders failed:", err));
+    return { error: null };
 }
 
 /**
@@ -339,7 +354,16 @@ export async function savePlanner(fileId: string, board: Board) {
         where: { id: fileId, userId, type: "planner" },
         data: { content: parsed.data as Prisma.InputJsonValue },
     });
-    return count ? { error: null } : { error: "Planner not found." };
+    if (!count) return { error: "Planner not found." };
+
+    await syncReminders(
+        userId,
+        fileId,
+        parsed.data.lists.flatMap((l) =>
+            l.cards.map((c) => ({ id: c.id, title: c.title, due: c.due, time: c.time ?? null, done: c.done, remindAt: c.remindAt }))
+        )
+    ).catch((err) => console.error("syncReminders failed:", err));
+    return { error: null };
 }
 
 export async function renameDriveFile(fileId: string, title: string) {

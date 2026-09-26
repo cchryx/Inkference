@@ -11,3 +11,13 @@ export function isOwnUpload(url: unknown, userId: string) {
     const prefix = `https://res.cloudinary.com/${cloud}/image/upload/`;
     return url.startsWith(prefix) && url.includes(`/${userId}/`);
 }
+
+/**
+ * Cloudinary's id for an uploaded file, from its URL:
+ * .../image/upload/v123/<userId>/projects/abc.jpg -> "<userId>/projects/abc"
+ */
+export function publicIdFromUrl(url: string) {
+    const after = url.split("/image/upload/")[1];
+    if (!after) return null;
+    return after.replace(/^v\d+\//, "").replace(/\.[a-z0-9]+$/i, "");
+}

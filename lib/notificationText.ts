@@ -49,4 +49,6 @@ export const NOTIFICATION_TYPES = [
     { type: "friend_project", label: "Friends' projects", hint: "A friend publishes a new project" },
     { type: "views", label: "View milestones", hint: "Your post or project reaches 100 views, 1,000 views…" },
     { type: "tip", label: "Coffees", hint: "Someone buys you a coffee" },
+    { type: "reminder", label: "Reminders", hint: "Reminders you set on planner cards and to-dos", pushOnly: true },
+    { type: "weekly", label: "Weekly summary", hint: "What's due in your week, every Sunday evening", pushOnly: true },
 ] as const;

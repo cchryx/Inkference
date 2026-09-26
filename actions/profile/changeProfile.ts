@@ -5,6 +5,7 @@ import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
 import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 import { prisma } from "@/lib/prisma";
+import { deleteUnusedUploads } from "@/lib/cleanupUploads";
 
 // Cooldown settings per field (in minutes)
 const COOLDOWN_MINUTES: Record<string, number> = {
@@ -121,6 +122,11 @@ export async function changeProfileAction(formData: FormData, type: string) {
                 [`${type}UpdatedAt`]: new Date(),
             },
         });
+
+        // Old banner isn't used anymore: free its space.
+        if (type === "bannerImage" && typeof profile?.bannerImage === "string") {
+            await deleteUnusedUploads([profile.bannerImage], userId).catch(() => {});
+        }
 
         return { error: null };
     } catch (error) {

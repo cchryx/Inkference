@@ -8,8 +8,9 @@ import type { PaymentEvent, PaymentProvider, PayoutStatus } from "./types";
  * and they get the Express dashboard.
  * Money path for one coffee (a "destination charge"):
  *   supporter's card -> Stripe -> recipient's Stripe account -> their bank
- *   and Inkference keeps the `application_fee_amount` (5% + processing,
- *   out of which Stripe takes its card fee).
+ *   the recipient gets exactly their share (`transfer_data.amount`) and
+ *   Inkference keeps the rest (5% + processing, out of which Stripe takes
+ *   its card fee).
  */
 
 let client: Stripe | null = null;
@@ -107,10 +108,11 @@ export const stripeProvider: PaymentProvider = {
                 },
             ],
             payment_intent_data: {
-                // Inkference's part: its 5% plus the processing fee
-                // (which Stripe then takes out of it).
-                application_fee_amount: breakdown.total - breakdown.toRecipient,
-                transfer_data: { destination: recipientExternalId },
+                // Send the recipient exactly their share. Inkference keeps
+                // the rest (its 5% + the processing fee, which Stripe then
+                // takes out). This way the recipient's Stripe dashboard shows
+                // a clean "+$2.85" with no fee line.
+                transfer_data: { destination: recipientExternalId, amount: breakdown.toRecipient },
                 metadata: { tipId },
             },
             metadata: { tipId },

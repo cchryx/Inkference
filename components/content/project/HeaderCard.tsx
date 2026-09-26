@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useNavigate } from "@/lib/navigation";
 import EditHeaderModal from "./edit/EditHeaderModal";
 import VisibilityModal from "@/components/general/VisibilityModal";
+import VisibilityBadge from "@/components/general/VisibilityBadge";
 import { likeProject } from "@/actions/content/project/likeProject";
 import { viewProject } from "@/actions/content/project/viewProject";
 import { saveProject } from "@/actions/content/project/saveProject";
@@ -331,6 +332,13 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                                 <span className="text-gray-500">
                                     Posted on {postedAt}
                                 </span>
+                                {isOwner && (
+                                    <VisibilityBadge
+                                        kind="project"
+                                        id={project.id}
+                                        onClick={() => setVisibilityOpen(true)}
+                                    />
+                                )}
                             </div>
 
                             <div

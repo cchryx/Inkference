@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import Loader from "@/components/general/Loader";
+import { UploadSessionProvider, useUploadSession } from "@/components/general/photo-editor/uploadSession";
 
 type Props = {
     /** What this modal does, e.g. "Add experience". */
@@ -63,11 +64,19 @@ export default function StepModal({
     const [confirmDiscard, setConfirmDiscard] = useState(false);
     const count = steps?.length ?? 1;
     const isLast = step >= count - 1;
+    // Pictures uploaded inside this popup (e.g. a project banner).
+    const uploads = useUploadSession();
+
+    // Closing without saving: also delete anything uploaded in here.
+    const closeWithoutSaving = () => {
+        uploads.discardAll();
+        onClose();
+    };
 
     const requestClose = () => {
         if (pending) return;
         if (dirty) setConfirmDiscard(true);
-        else onClose();
+        else closeWithoutSaving();
     };
 
     return (
@@ -81,6 +90,10 @@ export default function StepModal({
                 aria-label={title}
                 className={`bg-gray-100 rounded-xl shadow-lg flex flex-col max-h-[95dvh] w-full ${
                     size === "lg" ? "max-w-[640px]" : "max-w-[560px]"
+                } ${
+                    // Step-by-step popups keep one tall size: no jumping between
+                    // steps, and dropdowns have room to open fully.
+                    steps && steps.length > 1 ? "h-[min(640px,92dvh)]" : ""
                 }`}
             >
                 {/* Header */}
@@ -105,7 +118,9 @@ export default function StepModal({
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">{children}</div>
+                <div className="scroll-thin flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">
+                    <UploadSessionProvider session={uploads}>{children}</UploadSessionProvider>
+                </div>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-gray-300">
@@ -159,7 +174,7 @@ export default function StepModal({
                 confirmText="Discard"
                 cancelText="Keep editing"
                 confirmVariant="destructive"
-                onConfirm={onClose}
+                onConfirm={closeWithoutSaving}
                 onClose={() => setConfirmDiscard(false)}
             />
         </div>

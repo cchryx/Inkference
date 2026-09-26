@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import StepModal from "@/components/general/StepModal";
 import { createProject } from "@/actions/content/project/createProject";
 import { useRouter } from "next/navigation";
+import { commitStaged, release } from "@/lib/pendingUploads";
 
 const STEP_NAMES = ["Name and summary", "Description", "Links", "Images", "Timeline", "Resources", "Preview"];
 
@@ -101,13 +102,20 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
 
         if (step === totalSteps - 1) {
             try {
+                // Pictures are only uploaded now, when the project is created.
+                const images = await commitStaged([iconImageUrl, bannerImageUrl]);
+                if (images.error !== undefined) {
+                    toast.error(images.error);
+                    setIsPending(false);
+                    return;
+                }
                 const result = await createProject({
                     name,
                     summary,
                     description,
                     projectLinks,
-                    iconImageUrl,
-                    bannerImageUrl,
+                    iconImageUrl: images.urls[0],
+                    bannerImageUrl: images.urls[1],
                     projectResources,
                     status:
                         timeline.status === "In Progress"
@@ -125,6 +133,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
                 if ("error" in result) {
                     toast.error(result.error);
                 } else {
+                    release([iconImageUrl, bannerImageUrl]);
                     toast.success("Project created successfully.");
                     onCloseModal();
                     router.refresh();

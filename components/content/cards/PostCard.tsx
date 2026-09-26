@@ -12,6 +12,18 @@ type Props = {
     location: string;
 };
 
+/** Which dots to show: all if 7 or fewer, else 7 around the current photo (edges smaller). */
+function dotWindow(count: number, current: number) {
+    const MAX = 7;
+    if (count <= MAX) return Array.from({ length: count }, (_, i) => ({ i, small: false }));
+    const start = Math.min(Math.max(current - 3, 0), count - MAX);
+    return Array.from({ length: MAX }, (_, k) => {
+        const i = start + k;
+        const small = (k === 0 && start > 0) || (k === MAX - 1 && start + MAX < count);
+        return { i, small };
+    });
+}
+
 const PostCard = ({ post, description, location }: Props) => {
     const username: string | undefined = post?.author?.username;
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -117,18 +129,6 @@ const PostCard = ({ post, description, location }: Props) => {
                             <ChevronRight className="w-4 h-4" />
                         </button>
 
-                        <div className="absolute bottom-1/20 left-1/2 -translate-x-1/2 flex gap-2 pb-1">
-                            {images.map((_: any, idx: number) => (
-                                <div
-                                    key={idx}
-                                    className={`w-2 h-2 rounded-full ${
-                                        idx === currentIndex
-                                            ? "bg-black"
-                                            : "bg-black/50"
-                                    }`}
-                                />
-                            ))}
-                        </div>
                     </>
                 )}
 
@@ -160,20 +160,37 @@ const PostCard = ({ post, description, location }: Props) => {
                 </div>
             </div>
 
+            {/* Photo dots: under the photo, not on it. Long posts show a
+                sliding window of 7 so the row never gets too wide. */}
+            {images.length > 1 && (
+                <div className="flex h-5 shrink-0 items-center justify-center gap-1">
+                    {dotWindow(images.length, currentIndex).map(({ i, small }) => (
+                        <span
+                            key={i}
+                            className={`rounded-full transition-all ${small ? "size-1" : "size-1.5"} ${
+                                i === currentIndex ? "bg-black" : "bg-black/25"
+                            }`}
+                        />
+                    ))}
+                </div>
+            )}
+
             {/* Caption under the photo (2 lines, "more" only if it's cut off) */}
             {(description || location || post?.createdAt) && (
-                <div className="px-3 py-2.5 space-y-1">
+                <div className={`px-3 pb-2.5 space-y-1 ${images.length > 1 ? "" : "pt-2.5"}`}>
                     {description && (
                         <Caption
                             text={description}
                             username={username}
                             lines={2}
                             onToggle={setShowFullDescription}
+                            // Slightly smaller and tighter, like a real feed.
+                            textSize="text-[13px]"
                             // Kept in place (just hidden) so nothing jumps when opened.
                             className={showFullDescription ? "invisible" : ""}
                         />
                     )}
-                    <p className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <p className="flex items-center gap-1.5 text-[11px] text-gray-400">
                         {post?.createdAt && <span>{timeShort(post.createdAt)}</span>}
                         {location && (
                             <>

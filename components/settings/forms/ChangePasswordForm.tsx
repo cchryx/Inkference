@@ -38,8 +38,8 @@ const CreatePassword = () => {
     }
 
     return (
-        <div className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md">
-            <h1 className="text-lg">Create Password</h1>
+        <div className="w-full space-y-3 border-gray-200 border p-4 rounded-md">
+            <h1 className="text-base font-semibold">Create Password</h1>
 
             <p className="text-sm text-muted-foreground">
                 You don&apos;t have a password yet. Add one to also sign in
@@ -91,10 +91,10 @@ const ChangePassword = () => {
 
     return (
         <form
-            className="w-full space-y-4 border-gray-200 border-2 p-6 rounded-md"
+            className="w-full space-y-3 border-gray-200 border p-4 rounded-md"
             onSubmit={handleSubmit}
         >
-            <h1 className="text-lg">Change Password</h1>
+            <h1 className="text-base font-semibold">Change Password</h1>
 
             <div className="flex flex-col gap-2">
                 <Label htmlFor="currentPassword">Current Password</Label>

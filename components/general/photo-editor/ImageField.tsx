@@ -10,7 +10,8 @@ import { Slider } from "@/components/ui/slider";
 import Loader from "@/components/general/Loader";
 import InfoTooltip from "@/components/general/InfoToolTip";
 import { centerCrop, cropToBlob, loadImage, toBrowserImage } from "@/lib/cropImage";
-import { uploadPhotos } from "@/actions/content/photos/uploadPhotos";
+import { isStaged, stage, unstage } from "@/lib/pendingUploads";
+import { useCurrentUploadSession } from "./uploadSession";
 
 type Props = {
     label: string;
@@ -19,10 +20,12 @@ type Props = {
     onChange: (url: string) => void;
     /** Width / height of the image, e.g. 1 for an icon, 3 for a banner. */
     aspect: number;
-    /** Cloudinary folder inside the user's space. */
-    folder: "projects" | "merits" | "photos";
+    /** Cloudinary folder inside the user's space (used when it's saved). */
+    folder: "projects" | "merits" | "photos" | "profile";
     /** Icons are shown small; banners stretch to full width. */
     variant?: "icon" | "wide";
+    /** The label is already shown by the surrounding card. */
+    hideLabel?: boolean;
 };
 
 const MAX_FILE_MB = 20;
@@ -30,16 +33,28 @@ const MAX_FILE_MB = 20;
 type Draft = { url: string; width: number; height: number; crop: { x: number; y: number }; zoom: number; area: Area | null; name: string };
 
 /**
- * One image (like a project icon or banner): upload from your device and
- * crop it to the right shape, or paste a link. Same feel as the post uploader.
+ * One image (like a project icon or banner): pick one from your device and
+ * crop it to the right shape, or paste a link. The picture stays on your
+ * device until the form is saved (see lib/pendingUploads), so nothing is
+ * uploaded for a form you never finish.
  */
-export default function ImageField({ label, hint, value, onChange, aspect, folder, variant = "wide" }: Props) {
+export default function ImageField({ label, hint, value, onChange, aspect, folder, variant = "wide", hideLabel }: Props) {
     const [draft, setDraft] = useState<Draft | null>(null);
     const [busy, setBusy] = useState<string | null>(null);
     const [showLink, setShowLink] = useState(false);
     const [dropping, setDropping] = useState(false);
     const [broken, setBroken] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    // Uploads made in this popup get cleaned up if they end up unused.
+    const session = useCurrentUploadSession();
+
+    const replace = (url: string) => {
+        if (url !== value) {
+            if (session) session.discard(value);
+            else if (isStaged(value)) unstage(value);
+        }
+        onChange(url);
+    };
 
     const pick = () => inputRef.current?.click();
 
@@ -69,22 +84,19 @@ export default function ImageField({ label, hint, value, onChange, aspect, folde
 
     const useDraft = async () => {
         if (!draft) return;
-        setBusy("Uploading...");
+        setBusy("Cropping...");
         try {
             const area = draft.area ?? centerCrop(draft.width, draft.height, aspect);
             const blob = await cropToBlob(draft.url, area);
             const file = new File([blob], draft.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
-            const [result] = await uploadPhotos([file], undefined, folder);
-            if (!result?.url) {
-                toast.error(result?.error ?? "Upload failed.");
-                return;
-            }
-            onChange(result.url);
+            const url = stage(file, folder);
+            session?.track(url);
+            replace(url);
             setBroken(false);
             cancelDraft();
         } catch (err) {
             console.error(err);
-            toast.error("Upload failed.");
+            toast.error("Couldn't crop that image.");
         } finally {
             setBusy(null);
         }
@@ -109,10 +121,12 @@ export default function ImageField({ label, hint, value, onChange, aspect, folde
 
     return (
         <div className="flex flex-col gap-2 w-full">
-            <div className="flex items-center gap-1">
-                <span className="text-sm font-medium">{label}</span>
-                {hint && <InfoTooltip text={hint} />}
-            </div>
+            {!hideLabel && (
+                <div className="flex items-center gap-1">
+                    <span className="text-sm font-medium">{label}</span>
+                    {hint && <InfoTooltip text={hint} />}
+                </div>
+            )}
             {fileInput}
 
             {draft ? (
@@ -208,7 +222,7 @@ export default function ImageField({ label, hint, value, onChange, aspect, folde
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => onChange("")}
+                                        onClick={() => replace("")}
                                         aria-label={`Remove ${label}`}
                                         className="rounded-full bg-white/90 hover:bg-white p-2 cursor-pointer"
                                     >
@@ -238,7 +252,7 @@ export default function ImageField({ label, hint, value, onChange, aspect, folde
                                 <Button type="button" variant="outline" size="sm" onClick={pick}>
                                     Change
                                 </Button>
-                                <Button type="button" variant="outline" size="sm" onClick={() => onChange("")}>
+                                <Button type="button" variant="outline" size="sm" onClick={() => replace("")}>
                                     Remove
                                 </Button>
                             </div>
@@ -247,10 +261,10 @@ export default function ImageField({ label, hint, value, onChange, aspect, folde
                             <Input
                                 autoFocus
                                 placeholder="https://example.com/image.png"
-                                value={value}
+                                value={isStaged(value) ? "" : value}
                                 onChange={(e) => {
                                     setBroken(false);
-                                    onChange(e.target.value.trim());
+                                    replace(e.target.value.trim());
                                 }}
                             />
                         ) : (

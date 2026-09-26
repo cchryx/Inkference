@@ -3,11 +3,15 @@
 import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { recordUpload, wouldExceed } from "@/lib/storage";
+import { STORAGE_FULL_MESSAGE } from "@/lib/storageConfig";
 
 export type UploadResult = {
     fileName: string;
     url?: string;
     error?: string;
+    /** "storage_full" when the person is out of space. */
+    code?: "storage_full";
 };
 
 cloudinary.config({
@@ -41,6 +45,17 @@ export async function uploadPhotos(
     }
 
     const safeFolder = folder && FOLDERS.includes(folder) ? folder : "photos";
+
+    // Out of space? Say why instead of uploading.
+    const incoming = files.reduce((sum, f) => sum + (f instanceof File ? f.size : 0), 0);
+    if (await wouldExceed(userId, incoming)) {
+        return files.map((f) => ({
+            fileName: f?.name ?? "",
+            error: STORAGE_FULL_MESSAGE,
+            code: "storage_full" as const,
+        }));
+    }
+
     const results: UploadResult[] = [];
 
     for (const file of files) {
@@ -58,7 +73,7 @@ export async function uploadPhotos(
 
         try {
             const buffer = Buffer.from(await file.arrayBuffer());
-            const uploaded = await new Promise<{ secure_url: string }>((resolve, reject) => {
+            const uploaded = await new Promise<{ secure_url: string; public_id: string; bytes: number }>((resolve, reject) => {
                 const stream = cloudinary.uploader.upload_stream(
                     { folder: `${userId}/${safeFolder}`, resource_type: "image" },
                     (error, result) => {
@@ -69,6 +84,14 @@ export async function uploadPhotos(
                 stream.on("error", reject);
                 stream.end(buffer);
             });
+
+            await recordUpload({
+                userId,
+                url: uploaded.secure_url,
+                publicId: uploaded.public_id,
+                bytes: uploaded.bytes ?? file.size,
+                kind: safeFolder,
+            }).catch((err) => console.error("recordUpload failed:", err));
 
             results.push({ fileName: file.name, url: uploaded.secure_url });
         } catch (err) {
