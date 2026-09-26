@@ -31,12 +31,27 @@ export type PushPayload = {
     tag?: string;
 };
 
+export type PushReport = {
+    configured: boolean;
+    devices: number;
+    sent: number;
+    failed: number;
+    /** A device was subscribed with different VAPID keys (keys changed). */
+    keyMismatch: number;
+};
+
+export const isPushConfigured = () => configure();
+
 /**
  * Sends a push to every device these people turned push on for.
  * People who switched this `type` off in Settings are skipped.
  */
-export async function sendPushToUsers(userIds: string[], payload: PushPayload, type?: string) {
-    if (!configure() || userIds.length === 0) return;
+export async function sendPushToUsers(userIds: string[], payload: PushPayload, type?: string): Promise<PushReport> {
+    const report: PushReport = { configured: configure(), devices: 0, sent: 0, failed: 0, keyMismatch: 0 };
+    if (!report.configured || userIds.length === 0) {
+        if (!report.configured) console.warn("push skipped: VAPID keys are missing on the server");
+        return report;
+    }
 
     try {
         let ids = [...new Set(userIds)];
@@ -48,9 +63,10 @@ export async function sendPushToUsers(userIds: string[], payload: PushPayload, t
             const off = new Set(optedOut.map((o) => o.userId));
             ids = ids.filter((id) => !off.has(id));
         }
-        if (ids.length === 0) return;
+        if (ids.length === 0) return report;
 
         const subs = await prisma.pushSubscription.findMany({ where: { userId: { in: ids } } });
+        report.devices = subs.length;
         const dead: string[] = [];
 
         await Promise.allSettled(
@@ -59,13 +75,22 @@ export async function sendPushToUsers(userIds: string[], payload: PushPayload, t
                     await webpush.sendNotification(
                         { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
                         JSON.stringify(payload),
-                        { TTL: 60 * 60 * 24 } // try for up to a day if the phone is offline
+                        { TTL: 60 * 60 * 24, urgency: "high" } // try for up to a day if the phone is offline
                     );
+                    report.sent++;
                 } catch (err) {
-                    const status = (err as { statusCode?: number }).statusCode;
+                    report.failed++;
+                    const e = err as { statusCode?: number; body?: string };
+                    const status = e.statusCode;
                     // 404/410 = the device unsubscribed or the app was removed.
                     if (status === 404 || status === 410) dead.push(s.id);
-                    else console.error("push failed:", status, err);
+                    // 403 = this device signed up with other VAPID keys. It can
+                    // never work again, so drop it (it re-registers on next visit).
+                    else if (status === 403) {
+                        report.keyMismatch++;
+                        dead.push(s.id);
+                        console.error("push rejected (VAPID key mismatch):", e.body);
+                    } else console.error("push failed:", status, e.body ?? err);
                 }
             })
         );
@@ -74,4 +99,5 @@ export async function sendPushToUsers(userIds: string[], payload: PushPayload, t
     } catch (err) {
         console.error("sendPushToUsers failed:", err);
     }
+    return report;
 }

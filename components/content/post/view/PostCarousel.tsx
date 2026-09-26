@@ -118,7 +118,7 @@ const PostCarousel = ({ images }: Props) => {
                             <span
                                 key={i}
                                 className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                    i === index ? "bg-white" : "bg-white/50"
+                                    i === index ? "bg-white ring-1 ring-black/30" : "bg-white/60 ring-1 ring-black/20"
                                 }`}
                             />
                         ))}

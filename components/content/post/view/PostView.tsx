@@ -26,6 +26,7 @@ import { savePost } from "@/actions/content/post/savePost";
 import { deletePost } from "@/actions/content/post/deletePost";
 import type { PostPageData } from "@/actions/content/post/getPostPage";
 import { markSeen } from "@/lib/seenPosts";
+import { previewUrl } from "@/lib/imageUrl";
 import PostCarousel from "./PostCarousel";
 import Caption from "../Caption";
 import CommentList from "@/components/content/comments/CommentList";
@@ -56,6 +57,22 @@ const PostView = ({ post, currentUserId }: Props) => {
     useEffect(() => {
         if (currentUserId) markSeen(post.id);
     }, [currentUserId, post.id]);
+
+    // On the phone layout the photo box takes the first photo's shape
+    // (between 3:4 tall and 16:9 wide), so there are no big empty bars.
+    const [photoRatio, setPhotoRatio] = useState(4 / 5);
+    const firstPhoto = post.content[0];
+    useEffect(() => {
+        if (!firstPhoto) return;
+        const img = new Image();
+        img.onload = () => {
+            if (!img.naturalWidth || !img.naturalHeight) return;
+            const r = img.naturalWidth / img.naturalHeight;
+            setPhotoRatio(Math.min(16 / 9, Math.max(3 / 4, r)));
+        };
+        // Same small preview the carousel shows first, so it's usually cached.
+        img.src = previewUrl(firstPhoto, 480);
+    }, [firstPhoto]);
 
     const requireLogin = () => {
         toast.error("Sign in to like and save posts.");
@@ -283,23 +300,28 @@ const PostView = ({ post, currentUserId }: Props) => {
                 <ArrowLeft className="w-4 h-4" /> Back
             </button>
 
-            <article className="bg-gray-100 md:bg-gray-200 md:rounded-xl md:shadow-md md:overflow-hidden md:flex md:h-[min(85vh,760px)]">
+            {/* Side by side only on wide screens (xl). Anything smaller uses the
+                phone layout, centred, so the photo never gets squished. */}
+            <article className="bg-gray-100 md:max-w-[620px] md:mx-auto md:rounded-xl md:shadow-md md:overflow-hidden xl:max-w-none xl:bg-gray-200 xl:flex xl:h-[min(85vh,760px)]">
                 {/* Author (mobile: above the photo) */}
-                <div className="md:hidden">{authorHeader}</div>
+                <div className="xl:hidden">{authorHeader}</div>
 
                 {/* Photos */}
-                <div className="relative bg-black w-full aspect-[4/5] md:aspect-auto md:h-full md:flex-1 md:min-w-0">
+                <div
+                    className="relative bg-gray-100 w-full aspect-(--post-aspect) xl:aspect-auto xl:h-full xl:flex-1 xl:min-w-0"
+                    style={{ "--post-aspect": photoRatio } as React.CSSProperties}
+                >
                     <PostCarousel images={post.content} />
                 </div>
 
                 {/* Side panel (desktop) / below the photo (mobile) */}
-                <div className="md:w-[340px] lg:w-[380px] md:shrink-0 flex flex-col md:border-l md:border-gray-300">
-                    <div className="hidden md:block border-b border-gray-300">{authorHeader}</div>
+                <div className="xl:w-[340px] 2xl:w-[380px] xl:shrink-0 flex flex-col xl:border-l xl:border-gray-300">
+                    <div className="hidden xl:block border-b border-gray-300">{authorHeader}</div>
 
                     {/* Mobile: actions right under the photo, like Instagram */}
-                    <div className="md:hidden">{actions}</div>
+                    <div className="xl:hidden">{actions}</div>
 
-                    <div className="md:flex-1 md:overflow-y-auto md:pt-4">
+                    <div className="xl:flex-1 xl:overflow-y-auto xl:pt-4">
                         {caption}
                         <div className="border-t border-gray-300 pt-3">
                             {commentsHeading}
@@ -311,12 +333,12 @@ const PostView = ({ post, currentUserId }: Props) => {
                         </div>
                     </div>
 
-                    <div className="hidden md:block border-t border-gray-300">{actions}</div>
+                    <div className="hidden xl:block border-t border-gray-300">{actions}</div>
 
                     {/* Comment box: bottom of the panel on desktop, stuck to the bottom on phones */}
                     <div
                         data-comment-box
-                        className="sticky bottom-0 z-10 border-t border-gray-300 bg-gray-100 md:bg-gray-200 px-4 py-1"
+                        className="sticky bottom-0 z-10 border-t border-gray-300 bg-gray-100 xl:bg-gray-200 px-4 py-1"
                     >
                         <CommentInput
                             postId={post.id}

@@ -1,4 +1,5 @@
-"use server";
+// Server-only helper (used by lib/auth.ts). Deliberately NOT a "use server"
+// action, so nobody can call it from the browser to send emails.
 
 import transporter from "@/lib/nodemailer";
 

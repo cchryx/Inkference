@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
+import { isOwnUpload } from "@/lib/uploads";
 
 export async function createGallery(input: { name: string; photos: string[] }) {
     const userData = await getCurrentUserData();
@@ -16,7 +17,9 @@ export async function createGallery(input: { name: string; photos: string[] }) {
                 name: input.name,
                 userDataId: userData.id,
                 photos: {
-                    create: input.photos.map((url) => ({ image: url })),
+                    create: (input.photos ?? [])
+                        .filter((url) => isOwnUpload(url, userData.userId))
+                        .map((url) => ({ image: url })),
                 },
             },
         });

@@ -23,6 +23,9 @@ export async function deleteSkill(skillId: string, projectId?: string) {
         });
 
         if (!project) return { error: "Project not found." };
+        if (project.userDataId !== userData.id) {
+            return { error: "You can't edit this project." };
+        }
 
         await prisma.project.update({
             where: { id: projectId },

@@ -1,27 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
 import Step3 from "./Step3";
 import Preview from "./Preview";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import StepModal from "@/components/general/StepModal";
 import { useRouter } from "next/navigation";
 import { addExperience } from "@/actions/content/experience/addExperience";
+
+const STEP_NAMES = ["The basics", "Timeline", "Location and type", "Preview"];
 
 type Props = {
     onCloseModal: () => void;
 };
 
-const MAX_LINKS = 3;
-const MAX_RESOURCES = 20;
 
 export default function AddExperienceModal({ onCloseModal }: Props) {
     // Step states
     const [step, setStep] = useState(0);
-    const totalSteps = 4;
+    const totalSteps = STEP_NAMES.length;
 
     // Step 1
     const [title, setTitle] = useState("");
@@ -87,8 +86,7 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
         if (step > 0) setStep(step - 1);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setIsPending(true);
 
         if (step === totalSteps - 1) {
@@ -126,104 +124,55 @@ export default function AddExperienceModal({ onCloseModal }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <div className="bg-gray-100 rounded-xl shadow-lg flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw]">
-                {/* Top Header */}
-                <div className="flex justify-between items-start p-5 border-b">
-                    <h2 className="text-xl font-bold">Add Experience</h2>
-                    <button
-                        onClick={onCloseModal}
-                        className="text-gray-600 hover:text-black cursor-pointer"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Middle Scrollable Content */}
-                <form
-                    // onSubmit={handleSubmit}
-                    className="flex-1 overflow-y-auto px-5 pt-4 pb-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent"
-                >
-                    {step === 0 && (
-                        <Step1
-                            title={title}
-                            setTitle={setTitle}
-                            organization={organization}
-                            setOrganization={setOrganization}
-                            description={description}
-                            setDescription={setDescription}
-                        />
-                    )}
-                    {step === 1 && (
-                        <Step2 onChange={setTimeline} initialValue={timeline} />
-                    )}
-                    {step === 2 && (
-                        <Step3
-                            location={location}
-                            setLocation={setLocation}
-                            locationSelected={locationSelected}
-                            setLocationSelected={setLocationSelected}
-                            locationType={locationType}
-                            setLocationType={setLocationType}
-                            employmentType={employmentType}
-                            setEmploymentType={setEmploymentType}
-                        />
-                    )}
-                    {step === 3 && (
-                        <Preview
-                            title={title}
-                            organization={organization}
-                            description={description}
-                            timeline={timeline}
-                            location={location}
-                            employmentType={employmentType}
-                            locationType={locationType}
-                        />
-                    )}
-                </form>
-
-                {/* Bottom Navigation */}
-                <div className="flex justify-between items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl">
-                    <Button
-                        onClick={handleBack}
-                        disabled={step === 0 || isPending}
-                        className="cursor-pointer"
-                    >
-                        Back
-                    </Button>
-                    <div className="flex gap-2 items-center">
-                        {Array.from({ length: totalSteps }).map((_, i) => (
-                            <div
-                                key={i}
-                                className={`size-2 rounded-full ${
-                                    step === i
-                                        ? "bg-black size-3"
-                                        : "bg-gray-400"
-                                }`}
-                            />
-                        ))}
-                    </div>
-                    {step === totalSteps - 1 ? (
-                        <Button
-                            onClick={handleSubmit}
-                            type="submit"
-                            className="cursor-pointer"
-                            disabled={isPending}
-                        >
-                            Add Experience
-                        </Button>
-                    ) : (
-                        <Button
-                            type="button"
-                            onClick={handleNextClick}
-                            className="cursor-pointer"
-                            disabled={isPending}
-                        >
-                            Next
-                        </Button>
-                    )}
-                </div>
-            </div>
-        </div>
+        <StepModal
+            title="Add experience"
+            steps={STEP_NAMES}
+            step={step}
+            onClose={onCloseModal}
+            dirty={!!(title.trim() || organization.trim() || description.trim())}
+            onBack={handleBack}
+            onNext={handleNextClick}
+            onSubmit={handleSubmit}
+            submitLabel="Add experience"
+            pendingLabel="Saving"
+            pending={isPending}
+        >
+            {step === 0 && (
+                <Step1
+                    title={title}
+                    setTitle={setTitle}
+                    organization={organization}
+                    setOrganization={setOrganization}
+                    description={description}
+                    setDescription={setDescription}
+                />
+            )}
+            {step === 1 && (
+                <Step2 onChange={setTimeline} initialValue={timeline} />
+            )}
+            {step === 2 && (
+                <Step3
+                    location={location}
+                    setLocation={setLocation}
+                    locationSelected={locationSelected}
+                    setLocationSelected={setLocationSelected}
+                    locationType={locationType}
+                    setLocationType={setLocationType}
+                    employmentType={employmentType}
+                    setEmploymentType={setEmploymentType}
+                />
+            )}
+            {step === 3 && (
+                <Preview
+                    title={title}
+                    organization={organization}
+                    description={description}
+                    timeline={timeline}
+                    location={location}
+                    employmentType={employmentType}
+                    locationType={locationType}
+                />
+            )}
+        </StepModal>
     );
 }

@@ -76,14 +76,15 @@ export async function deletePushSubscription(endpoint: string) {
     return { error: null };
 }
 
+/** Sends a push to all of your devices and says what happened. */
 export async function sendTestPush() {
     const userId = await me();
-    if (!userId) return { error: "Sign in first." };
-    await sendPushToUsers([userId], {
+    if (!userId) return { error: "Sign in first.", report: null };
+    const report = await sendPushToUsers([userId], {
         title: "Inkference",
         body: "Push notifications are working. 🎉",
         url: "/inbox",
         tag: "test",
     });
-    return { error: null };
+    return { error: null, report };
 }

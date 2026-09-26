@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SerwistProvider } from "@serwist/turbopack/react";
+import PushSync from "@/components/general/PushSync";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -92,6 +93,7 @@ export default function RootLayout({
                     disable={process.env.NODE_ENV === "development"}
                 >
                     <QueryProvider>{children}</QueryProvider>
+                    <PushSync />
                     <Toaster position="top-center" richColors />
                 </SerwistProvider>
             </body>

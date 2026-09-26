@@ -1,313 +1,129 @@
 "use client";
 
-import { useState, DragEvent } from "react";
-import { X, Plus } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import Img from "@/components/general/Img";
-import InfoTooltip from "@/components/general/InfoToolTip";
-import { Label } from "@radix-ui/react-label";
-import { uploadPhotos } from "@/actions/content/photos/uploadPhotos";
-import { createGallery } from "@/actions/content/photos/createGallery";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@radix-ui/react-label";
+import StepModal from "@/components/general/StepModal";
+import PhotoEditor from "@/components/general/photo-editor/PhotoEditor";
+import { exportPhotos } from "@/components/general/photo-editor/exportPhotos";
+import { uploadInBatches } from "@/components/general/photo-editor/uploadInBatches";
+import type { CroppableImage } from "@/components/general/photo-editor/aspects";
+import { createGallery } from "@/actions/content/photos/createGallery";
 
 type Props = {
     onCloseModal: () => void;
     currentUserId: string;
 };
 
-const MAX_SIZE_MB = 5;
 const MAX_IMAGES = 100;
+const MAX_NAME = 60;
+const STEPS = ["Choose photos", "Name your gallery"];
 
-export default function AddPhotosModal({ onCloseModal, currentUserId }: Props) {
+export default function AddPhotosModal({ onCloseModal }: Props) {
     const router = useRouter();
-    const [photos, setPhotos] = useState<File[]>([]);
-    const [galleryName, setGalleryName] = useState("");
-    const [isPending, setIsPending] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [processingPhotos, setProcessingPhotos] = useState<number[]>([]); // indices of photos being processed
+    const [step, setStep] = useState(0);
+    const [images, setImages] = useState<CroppableImage[]>([]);
+    const [name, setName] = useState("");
+    const [progress, setProgress] = useState<string | null>(null);
+    const isPending = progress !== null;
 
-    const imagesLeft = MAX_IMAGES - photos.length;
-
-    // Convert HEIC to JPEG
-    const convertHeicToJpeg = async (file: File): Promise<File> => {
-        if (file.type === "image/heic" || file.name.endsWith(".heic")) {
-            const heic2any = (await import("heic2any")).default;
-            const blob: any = await heic2any({
-                blob: file,
-                toType: "image/jpeg",
-                quality: 0.9,
-            });
-            return new File([blob], file.name.replace(/\.heic$/i, ".jpg"), {
-                type: "image/jpeg",
-            });
-        }
-        return file;
+    const close = () => {
+        images.forEach((i) => URL.revokeObjectURL(i.url));
+        onCloseModal();
     };
 
-    const addFiles = async (files: File[]) => {
-        const startIndex = photos.length;
-        const indices = files.map((_, i) => startIndex + i);
-        setProcessingPhotos((prev) => [...prev, ...indices]);
-
+    const submit = async () => {
+        if (!name.trim()) {
+            toast.error("Give your gallery a name.");
+            return;
+        }
         try {
-            const convertedFiles = await Promise.all(
-                files.map(convertHeicToJpeg)
+            setProgress("Preparing...");
+            const files = await exportPhotos(images);
+            const { urls, failed } = await uploadInBatches(files, "photos", (done, total) =>
+                setProgress(`Uploading ${done}/${total}`)
             );
+            if (failed) toast.error(`${failed} photo(s) failed to upload.`);
+            if (!urls.length) return;
 
-            let skipped = 0;
-            const validImages = convertedFiles.filter((file) => {
-                const isImage = file.type.startsWith("image/");
-                const isWithinLimit = file.size <= MAX_SIZE_MB * 1024 * 1024;
-                if (!isImage || !isWithinLimit) {
-                    skipped++;
-                    return false;
-                }
-                return true;
-            });
-
-            setPhotos((prev) => {
-                const availableSlots = MAX_IMAGES - prev.length;
-                const accepted = validImages.slice(0, availableSlots);
-                if (skipped > 0 || validImages.length > accepted.length) {
-                    const overLimit = validImages.length - accepted.length;
-                    const totalSkipped =
-                        skipped + (overLimit > 0 ? overLimit : 0);
-                    toast.error(
-                        `${totalSkipped} image(s) were not added (max ${MAX_IMAGES} images, ≤ ${MAX_SIZE_MB}MB each).`
-                    );
-                }
-                return [...prev, ...accepted];
-            });
-        } catch (err) {
-            console.error(err);
-            toast.error("Error processing images.");
-        }
-
-        // Remove processed indices
-        setProcessingPhotos((prev) => prev.filter((i) => !indices.includes(i)));
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files) return;
-        addFiles(Array.from(e.target.files));
-    };
-
-    const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDragging(false);
-        addFiles(Array.from(e.dataTransfer.files));
-    };
-
-    const handleRemovePhoto = (index: number) => {
-        setPhotos((prev) => prev.filter((_, i) => i !== index));
-    };
-
-    const handleUpload = async () => {
-        if (!galleryName.trim()) {
-            toast.error("Please enter a gallery name.");
-            return;
-        }
-        if (photos.length === 0) {
-            toast.error("Please upload at least one photo.");
-            return;
-        }
-
-        setIsPending(true);
-
-        try {
-            const results = await uploadPhotos(photos, currentUserId);
-            const failed = results.filter((r) => r.error);
-            if (failed.length > 0)
-                toast.error(`${failed.length} photo(s) failed to upload.`);
-
-            const uploadedUrls = results
-                .filter((r) => r.url)
-                .map((r) => r.url!) as string[];
-
-            if (uploadedUrls.length === 0) {
-                toast.error("No photos were uploaded, cannot create gallery.");
-                setIsPending(false);
+            const res = await createGallery({ name: name.trim(), photos: urls });
+            if (res.error) {
+                toast.error(res.error);
                 return;
             }
-
-            const galleryRes = await createGallery({
-                name: galleryName,
-                photos: uploadedUrls,
-            });
-
-            if ("error" in galleryRes && galleryRes.error) {
-                toast.error("Failed to create gallery.");
-                setIsPending(false);
-                return;
-            }
-
-            toast.success("Gallery created successfully.");
-            onCloseModal();
+            toast.success("Gallery created.");
+            close();
             router.refresh();
         } catch (err) {
             console.error(err);
-            toast.error("Failed to upload photos or create gallery.");
+            toast.error("Failed to create gallery.");
+        } finally {
+            setProgress(null);
         }
-        setIsPending(false);
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <div className="bg-gray-100 rounded-xl shadow-lg flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw]">
-                {/* Header */}
-                <div className="flex justify-between items-start p-5 border-b">
-                    <h2 className="text-xl font-bold">Add Photos</h2>
-                    <button
-                        disabled={isPending}
-                        onClick={onCloseModal}
-                        className="text-gray-600 hover:text-black cursor-pointer"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <StepModal
+            title="Create gallery"
+            steps={STEPS}
+            step={step}
+            size="lg"
+            onClose={close}
+            dirty={images.length > 0 || !!name.trim()}
+            discardTitle="Discard this gallery?"
+            discardText="Your photos and gallery name will be lost."
+            onBack={() => setStep(0)}
+            onNext={() => setStep(1)}
+            onSubmit={submit}
+            submitLabel="Create gallery"
+            pending={isPending}
+            pendingLabel={progress ?? undefined}
+            disabled={!images.length || (step === 1 && !name.trim())}
+        >
+            {step === 0 && (
+                <PhotoEditor images={images} setImages={setImages} maxImages={MAX_IMAGES} perPhotoShape />
+            )}
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-                    {/* Gallery Name */}
-                    <div className="flex flex-col w-full gap-1">
-                        <div className="flex items-center gap-1">
-                            <Label>Gallery Name</Label>
-                            <InfoTooltip text="Enter the name of the gallery (max 60 chars)" />
-                        </div>
+            {step === 1 && (
+                <div className="flex flex-col gap-5 w-full max-w-[560px] mx-auto">
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="gallery-name" className="text-sm font-semibold">
+                            Gallery name
+                        </Label>
                         <Input
-                            placeholder="Enter a gallery name..."
-                            value={galleryName}
+                            id="gallery-name"
+                            autoFocus
+                            placeholder="e.g. Summer in Toronto"
+                            value={name}
                             disabled={isPending}
-                            onChange={(e) =>
-                                setGalleryName(e.target.value.slice(0, 60))
-                            }
+                            onChange={(e) => setName(e.target.value.slice(0, MAX_NAME))}
+                            onKeyDown={(e) => e.key === "Enter" && !isPending && submit()}
                         />
                         <span className="text-xs text-gray-500">
-                            {60 - galleryName.length} characters left
+                            {MAX_NAME - name.length} characters left
                         </span>
                     </div>
 
-                    {/* Drag & Drop + Preview Grid */}
-                    <div
-                        onDragOver={(e) => {
-                            e.preventDefault();
-                            setIsDragging(true);
-                        }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={handleDrop}
-                        className={`flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-lg cursor-pointer transition ${
-                            isDragging
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-400 hover:bg-gray-200"
-                        }`}
-                    >
-                        <label
-                            htmlFor="photos"
-                            className={`flex items-center gap-2 cursor-pointer bg-gray-200 py-1 px-2 rounded-md ${
-                                imagesLeft === 0
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                            }`}
-                        >
-                            <Plus className="w-5 h-5" /> Add Photos (Click or
-                            Drag & Drop)
-                        </label>
-                        <input
-                            id="photos"
-                            type="file"
-                            accept="image/*,.heic"
-                            multiple
-                            disabled={imagesLeft === 0 || isPending}
-                            className="hidden"
-                            onChange={handleFileChange}
-                        />
-                        <p className="text-xs text-gray-500 mt-2">
-                            Only images or GIFs. Up to {MAX_SIZE_MB}MB each.{" "}
-                            {imagesLeft} images left.
-                        </p>
-                    </div>
-
-                    {photos.length > 0 && (
-                        <div className="grid grid-cols-3 gap-3 mt-3">
-                            {photos.map((photo, index) => {
-                                const sizeInMB = (
-                                    photo.size /
-                                    (1024 * 1024)
-                                ).toFixed(2);
-                                const isProcessing =
-                                    processingPhotos.includes(index);
-                                return (
-                                    <div
-                                        key={index}
-                                        className="relative group border rounded-md overflow-hidden"
-                                    >
-                                        <Img
-                                            src={URL.createObjectURL(photo)}
-                                            fallbackSrc="/assets/general/fillers/skill.png"
-                                            className="object-cover w-full h-24"
-                                        />
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white text-xs font-medium">
-                                            {sizeInMB} MB
-                                        </div>
-                                        <button
-                                            type="button"
-                                            disabled={isPending}
-                                            className="absolute cursor-pointer top-1 right-1 bg-black/60 text-white rounded-full p-1"
-                                            onClick={() =>
-                                                handleRemovePhoto(index)
-                                            }
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                    <div className="flex flex-col gap-1.5">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {images.length} photo{images.length === 1 ? "" : "s"}
+                        </span>
+                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+                            {images.map((img, i) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    key={img.id}
+                                    src={img.url}
+                                    alt={`Photo ${i + 1}`}
+                                    className="aspect-square w-full object-cover rounded-md bg-gray-200"
+                                />
+                            ))}
                         </div>
-                    )}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl gap-2">
-                    <div className="flex flex-1 items-center gap-1 text-sm text-gray-700">
-                        {processingPhotos.length > 0 && (
-                            <>
-                                <svg
-                                    className="animate-spin h-4 w-4 text-gray-700"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                    ></path>
-                                </svg>
-                                Processing {processingPhotos.length} photo
-                                {processingPhotos.length > 1 ? "s" : ""}
-                            </>
-                        )}
                     </div>
-
-                    <Button
-                        onClick={handleUpload}
-                        disabled={isPending || processingPhotos.length > 0}
-                        className="cursor-pointer justify-end"
-                    >
-                        {isPending ? "Uploading..." : "Create Gallery"}
-                    </Button>
                 </div>
-            </div>
-        </div>
+            )}
+        </StepModal>
     );
 }

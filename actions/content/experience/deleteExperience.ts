@@ -1,13 +1,19 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 import { APIError } from "better-auth/api";
 
 export async function deleteExperience(experienceId: string) {
     try {
-        await prisma.experience.delete({
-            where: { id: experienceId },
+        const userData = await getCurrentUserData();
+        if (!userData || "error" in userData) return { error: "Unauthorized." };
+
+        // Only deletes it if it belongs to the signed-in user.
+        const { count } = await prisma.experience.deleteMany({
+            where: { id: experienceId, userDataId: userData.id },
         });
+        if (!count) return { error: "You can't delete this experience entry." };
 
         return { error: null };
     } catch (error) {

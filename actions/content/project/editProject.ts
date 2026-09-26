@@ -2,22 +2,53 @@
 
 import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
+
+// The only project fields the edit screens are allowed to change.
+const EDITABLE_FIELDS = [
+    "name",
+    "summary",
+    "description",
+    "projectLinks",
+    "iconImage",
+    "bannerImage",
+    "status",
+    "startDate",
+    "endDate",
+    "projectResources",
+] as const;
 
 type GalleryImageItem = {
     image: string;
     description: string;
 };
 
-export async function editProject(projectId: string, data: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function editProject(projectId: string, input: any) {
     try {
-        // Check that project exists first
+        const userData = await getCurrentUserData();
+        if (!userData || "error" in userData) return { error: "Unauthorized." };
+
+        // Only the owner can edit a project.
         const existingProject = await prisma.project.findUnique({
             where: { id: projectId },
-            select: { id: true },
+            select: { userDataId: true },
         });
 
         if (!existingProject) {
             return { error: "Project not found." };
+        }
+        if (existingProject.userDataId !== userData.id) {
+            return { error: "You can't edit this project." };
+        }
+
+        // Copy only the allowed fields (ignores things like userDataId).
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data: Record<string, any> = {};
+        if (Array.isArray(input?.galleryImages)) data.galleryImages = input.galleryImages;
+        if (Array.isArray(input?.contributors)) data.contributors = input.contributors;
+        for (const key of EDITABLE_FIELDS) {
+            if (input && key in input) data[key] = input[key];
         }
 
         // Handle gallery images update if provided
@@ -31,8 +62,8 @@ export async function editProject(projectId: string, data: any) {
             if (galleryItems.length > 0) {
                 await prisma.projectGalleryImage.createMany({
                     data: galleryItems.map((item: GalleryImageItem) => ({
-                        image: item.image,
-                        description: item.description,
+                        image: String(item.image ?? ""),
+                        description: String(item.description ?? ""),
                         projectId,
                     })),
                 });
@@ -43,7 +74,16 @@ export async function editProject(projectId: string, data: any) {
 
         // Handle contributors update if provided
         if (Array.isArray(data.contributors)) {
-            const contributorUserIds: string[] = data.contributors;
+            // Keep only real accounts.
+            const requested = (data.contributors as unknown[]).filter(
+                (id): id is string => typeof id === "string"
+            );
+            const contributorUserIds = (
+                await prisma.user.findMany({
+                    where: { id: { in: requested } },
+                    select: { id: true },
+                })
+            ).map((u) => u.id);
 
             // Step 1: Fetch existing userData entries
             const existingUserDatas = await prisma.userData.findMany({

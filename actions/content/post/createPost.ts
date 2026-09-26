@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { notifyFriends } from "@/lib/notify";
 import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
+import { isOwnUpload } from "@/lib/uploads";
 
 type CreatePostInput = {
     type: string;
@@ -21,13 +22,40 @@ export async function createPost(input: CreatePostInput) {
         return { error: "Unauthorized or no user data found." };
     }
 
+    if (input.type !== "post" && input.type !== "project") {
+        return { error: "Unknown post type." };
+    }
+
+    // Sharing a project: it has to be yours (or one you worked on).
+    if (input.type === "project") {
+        const project = await prisma.project.findFirst({
+            where: {
+                id: input.dataId,
+                OR: [
+                    { userDataId: userData.id },
+                    { contributors: { some: { id: userData.id } } },
+                ],
+            },
+            select: { id: true },
+        });
+        if (!project) return { error: "You can only share your own projects." };
+    }
+
+    // Photo posts can only use photos this user uploaded.
+    const content = (input.content ?? []).filter(
+        (url) => input.type !== "post" || isOwnUpload(url, userData.userId)
+    );
+    if (input.type === "post" && !content.length) {
+        return { error: "Add at least one photo." };
+    }
+
     try {
         const post = await prisma.post.create({
             data: {
                 type: input.type,
                 userDataId: userData.id,
                 dataId: input.dataId,
-                content: input.content || [],
+                content,
                 description: input.description,
                 location: input.location,
                 mentions: input.mentions || [],

@@ -10,27 +10,11 @@ import { Skeleton } from "@/components/general/Skeleton";
 import {
     deletePushSubscription,
     getNotificationSettings,
-    savePushSubscription,
     sendTestPush,
     updateNotificationSettings,
 } from "@/actions/notifications/settings";
+import { getRegistration, subscribeThisDevice, syncPushSubscription } from "@/lib/pushClient";
 import { NOTIFICATION_TYPES } from "@/lib/notificationText";
-
-// VAPID public key -> the format the browser wants.
-function urlBase64ToUint8Array(base64: string) {
-    const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-    const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
-    return Uint8Array.from(raw, (c) => c.charCodeAt(0));
-}
-
-// The service worker, or null if it isn't running (e.g. in `npm run dev`).
-async function getRegistration() {
-    if (!("serviceWorker" in navigator)) return null;
-    return Promise.race<ServiceWorkerRegistration | null>([
-        navigator.serviceWorker.ready,
-        new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
-    ]);
-}
 
 type PushState = "checking" | "unsupported" | "needs-install" | "no-worker" | "denied" | "off" | "on";
 
@@ -77,8 +61,8 @@ const NotificationSettings = () => {
 
             const reg = await getRegistration();
             if (!reg) return setPushState("no-worker");
-            const sub = await reg.pushManager.getSubscription();
-            setPushState(sub ? "on" : "off");
+            // Also re-registers this device with the server if needed.
+            setPushState((await syncPushSubscription()) ? "on" : "off");
         })();
     }, []);
 
@@ -98,13 +82,9 @@ const NotificationSettings = () => {
             const reg = await getRegistration();
             if (!reg) return setPushState("no-worker");
 
-            const sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(key),
-            });
-            const json = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
-            const { error } = await savePushSubscription({ ...json, userAgent: navigator.userAgent });
-            if (error) throw new Error(error);
+            // Start clean, in case an old signup with other keys is stuck.
+            await (await reg.pushManager.getSubscription())?.unsubscribe();
+            await subscribeThisDevice(reg, key);
 
             setPushState("on");
             toast.success("Push notifications are on for this device.");
@@ -136,9 +116,29 @@ const NotificationSettings = () => {
 
     const test = async () => {
         setBusy(true);
-        await sendTestPush();
+        // Make sure the server knows this device before testing.
+        await syncPushSubscription();
+        const { error, report } = await sendTestPush();
         setBusy(false);
-        toast.success("Test sent. It should appear in a few seconds.");
+        refresh();
+
+        if (error || !report) return toast.error(error ?? "Couldn't send a test.");
+        if (!report.configured) {
+            return toast.error("The server is missing its VAPID keys, so it can't send pushes. Add them on Render.");
+        }
+        if (report.devices === 0) {
+            return toast.error("No devices are signed up. Turn push off and on again on this device.");
+        }
+        if (report.keyMismatch > 0) {
+            setPushState("off");
+            return toast.error("This device signed up with old keys. Turn push on again to fix it.");
+        }
+        if (report.sent === 0) {
+            return toast.error("The push service rejected it. Try turning push off and on again.");
+        }
+        toast.success(
+            `Sent to ${report.sent} device${report.sent > 1 ? "s" : ""}. Nothing showing? Check your phone's notification settings and Focus / Do Not Disturb.`
+        );
     };
 
     const toggle = async (list: "inAppOff" | "pushOff", type: string) => {

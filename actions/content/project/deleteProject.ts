@@ -1,13 +1,19 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 import { APIError } from "better-auth/api";
 
 export async function deleteProject(projectId: string) {
     try {
-        await prisma.project.delete({
-            where: { id: projectId },
+        const userData = await getCurrentUserData();
+        if (!userData || "error" in userData) return { error: "Unauthorized." };
+
+        // Only deletes it if it belongs to the signed-in user.
+        const { count } = await prisma.project.deleteMany({
+            where: { id: projectId, userDataId: userData.id },
         });
+        if (!count) return { error: "You can't delete this project." };
 
         return { error: null };
     } catch (error) {

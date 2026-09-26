@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
 import Step3 from "./Step3";
@@ -10,9 +9,11 @@ import Step5 from "./Step5";
 import Step6 from "./Step6";
 import Preview from "./Preview";
 import { toast } from "sonner";
+import StepModal from "@/components/general/StepModal";
 import { createProject } from "@/actions/content/project/createProject";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+
+const STEP_NAMES = ["Name and summary", "Description", "Links", "Images", "Timeline", "Resources", "Preview"];
 
 type Props = {
     onCloseModal: () => void;
@@ -24,7 +25,7 @@ const MAX_RESOURCES = 20;
 export default function CreateProjectModal({ onCloseModal }: Props) {
     // Step states
     const [step, setStep] = useState(0);
-    const totalSteps = 7;
+    const totalSteps = STEP_NAMES.length;
 
     // Step 1
     const [name, setName] = useState("");
@@ -95,8 +96,7 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
         if (step > 0) setStep(step - 1);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setIsPending(true);
 
         if (step === totalSteps - 1) {
@@ -138,163 +138,114 @@ export default function CreateProjectModal({ onCloseModal }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <div className="bg-gray-100 rounded-xl shadow-lg flex flex-col max-h-[90vh] w-[95vw] md:w-[80vw] lg:w-[50vw]">
-                {/* Top Header */}
-                <div className="flex justify-between items-start p-5 border-b">
-                    <h2 className="text-xl font-bold">Create Project</h2>
-                    <button
-                        onClick={onCloseModal}
-                        className="text-gray-600 hover:text-black cursor-pointer"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Middle Scrollable Content */}
-                <form
-                    onSubmit={handleSubmit}
-                    className="flex-1 overflow-y-auto px-5 pt-4 pb-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent"
-                >
-                    {step === 0 && (
-                        <Step1
-                            name={name}
-                            setName={setName}
-                            summary={summary}
-                            setSummary={setSummary}
-                        />
-                    )}
-                    {step === 1 && (
-                        <Step2
-                            description={description}
-                            setDescription={setDescription}
-                        />
-                    )}
-                    {step === 2 && (
-                        <Step3
-                            projectLinks={projectLinks}
-                            linkInput={linkInput}
-                            showLinkInput={showLinkInput}
-                            onLinkInputChange={setLinkInput}
-                            onAddLink={() => {
-                                if (
-                                    linkInput.trim() &&
-                                    projectLinks.length < MAX_LINKS
-                                ) {
-                                    setProjectLinks([
-                                        ...projectLinks,
-                                        linkInput.trim(),
-                                    ]);
-                                    setLinkInput("");
-                                    setShowLinkInput(false);
-                                }
-                            }}
-                            onRemoveLink={(i) =>
-                                setProjectLinks(
-                                    projectLinks.filter((_, idx) => idx !== i)
-                                )
-                            }
-                            onToggleInput={() => setShowLinkInput((p) => !p)}
-                        />
-                    )}
-                    {step === 3 && (
-                        <Step4
-                            iconImageUrl={iconImageUrl}
-                            setIconImageUrl={setIconImageUrl}
-                            bannerImageUrl={bannerImageUrl}
-                            setBannerImageUrl={setBannerImageUrl}
-                        />
-                    )}
-                    {step === 4 && (
-                        <Step5 onChange={setTimeline} initialValue={timeline} />
-                    )}
-                    {step === 5 && (
-                        <Step6
-                            projectResources={projectResources}
-                            resourceInput={resourceInput}
-                            showResourceInput={showResourceInput}
-                            onLinkInputChange={setResourceInput}
-                            onAddLink={() => {
-                                if (
-                                    resourceInput.trim() &&
-                                    projectResources.length < MAX_RESOURCES
-                                ) {
-                                    setProjectResources([
-                                        ...projectResources,
-                                        resourceInput.trim(),
-                                    ]);
-                                    setResourceInput("");
-                                    setShowResourceInput(false);
-                                }
-                            }}
-                            onRemoveLink={(i) =>
-                                setProjectResources(
-                                    projectResources.filter(
-                                        (_, idx) => idx !== i
-                                    )
-                                )
-                            }
-                            onToggleInput={() =>
-                                setShowResourceInput((p) => !p)
-                            }
-                        />
-                    )}
-                    {step === 6 && (
-                        <Preview
-                            name={name}
-                            summary={summary}
-                            description={description}
-                            projectLinks={projectLinks}
-                            iconImageUrl={iconImageUrl}
-                            bannerImageUrl={bannerImageUrl}
-                            timeline={timeline}
-                            projectResources={projectResources}
-                        />
-                    )}
-                </form>
-
-                {/* Bottom Navigation */}
-                <div className="flex justify-between items-center px-5 py-4 border-t bg-gray-100 rounded-b-xl">
-                    <Button
-                        onClick={handleBack}
-                        disabled={step === 0 || isPending}
-                        className="cursor-pointer"
-                    >
-                        Back
-                    </Button>
-                    <div className="flex gap-2 items-center">
-                        {Array.from({ length: totalSteps }).map((_, i) => (
-                            <div
-                                key={i}
-                                className={`size-2 rounded-full ${
-                                    step === i
-                                        ? "bg-black size-3"
-                                        : "bg-gray-400"
-                                }`}
-                            />
-                        ))}
-                    </div>
-                    {step === totalSteps - 1 ? (
-                        <Button
-                            onClick={handleSubmit}
-                            type="submit"
-                            className="cursor-pointer"
-                            disabled={isPending}
-                        >
-                            Create Project
-                        </Button>
-                    ) : (
-                        <Button
-                            type="button"
-                            onClick={handleNextClick}
-                            className="cursor-pointer"
-                            disabled={isPending}
-                        >
-                            Next
-                        </Button>
-                    )}
-                </div>
-            </div>
-        </div>
+        <StepModal
+            title="Create project"
+            steps={STEP_NAMES}
+            step={step}
+            onClose={onCloseModal}
+            dirty={!!(name.trim() || summary.trim() || description.trim())}
+            onBack={handleBack}
+            onNext={handleNextClick}
+            onSubmit={handleSubmit}
+            submitLabel="Create project"
+            pendingLabel="Saving"
+            pending={isPending}
+        >
+            {step === 0 && (
+                <Step1
+                    name={name}
+                    setName={setName}
+                    summary={summary}
+                    setSummary={setSummary}
+                />
+            )}
+            {step === 1 && (
+                <Step2
+                    description={description}
+                    setDescription={setDescription}
+                />
+            )}
+            {step === 2 && (
+                <Step3
+                    projectLinks={projectLinks}
+                    linkInput={linkInput}
+                    showLinkInput={showLinkInput}
+                    onLinkInputChange={setLinkInput}
+                    onAddLink={() => {
+                        if (
+                            linkInput.trim() &&
+                            projectLinks.length < MAX_LINKS
+                        ) {
+                            setProjectLinks([
+                                ...projectLinks,
+                                linkInput.trim(),
+                            ]);
+                            setLinkInput("");
+                            setShowLinkInput(false);
+                        }
+                    }}
+                    onRemoveLink={(i) =>
+                        setProjectLinks(
+                            projectLinks.filter((_, idx) => idx !== i)
+                        )
+                    }
+                    onToggleInput={() => setShowLinkInput((p) => !p)}
+                />
+            )}
+            {step === 3 && (
+                <Step4
+                    iconImageUrl={iconImageUrl}
+                    setIconImageUrl={setIconImageUrl}
+                    bannerImageUrl={bannerImageUrl}
+                    setBannerImageUrl={setBannerImageUrl}
+                />
+            )}
+            {step === 4 && (
+                <Step5 onChange={setTimeline} initialValue={timeline} />
+            )}
+            {step === 5 && (
+                <Step6
+                    projectResources={projectResources}
+                    resourceInput={resourceInput}
+                    showResourceInput={showResourceInput}
+                    onLinkInputChange={setResourceInput}
+                    onAddLink={() => {
+                        if (
+                            resourceInput.trim() &&
+                            projectResources.length < MAX_RESOURCES
+                        ) {
+                            setProjectResources([
+                                ...projectResources,
+                                resourceInput.trim(),
+                            ]);
+                            setResourceInput("");
+                            setShowResourceInput(false);
+                        }
+                    }}
+                    onRemoveLink={(i) =>
+                        setProjectResources(
+                            projectResources.filter(
+                                (_, idx) => idx !== i
+                            )
+                        )
+                    }
+                    onToggleInput={() =>
+                        setShowResourceInput((p) => !p)
+                    }
+                />
+            )}
+            {step === 6 && (
+                <Preview
+                    name={name}
+                    summary={summary}
+                    description={description}
+                    projectLinks={projectLinks}
+                    iconImageUrl={iconImageUrl}
+                    bannerImageUrl={bannerImageUrl}
+                    timeline={timeline}
+                    projectResources={projectResources}
+                />
+            )}
+        </StepModal>
     );
 }

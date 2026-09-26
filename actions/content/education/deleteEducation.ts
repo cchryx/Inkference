@@ -1,13 +1,19 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserData } from "@/actions/users/getCurrentUserData";
 import { APIError } from "better-auth/api";
 
 export async function deleteEducation(educationId: string) {
     try {
-        await prisma.education.delete({
-            where: { id: educationId },
+        const userData = await getCurrentUserData();
+        if (!userData || "error" in userData) return { error: "Unauthorized." };
+
+        // Only deletes it if it belongs to the signed-in user.
+        const { count } = await prisma.education.deleteMany({
+            where: { id: educationId, userDataId: userData.id },
         });
+        if (!count) return { error: "You can't delete this education entry." };
 
         return { error: null };
     } catch (error) {

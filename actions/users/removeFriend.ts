@@ -2,12 +2,19 @@
 
 import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
+/** `_currentUserId` is ignored: the signed-in user is always used. */
 export async function removeFriend(
     targetUserId: string,
-    currentUserId: string
+    _currentUserId?: string
 ) {
     try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        const currentUserId = session?.user?.id;
+        if (!currentUserId) return { error: "Unauthorized." };
+
         if (currentUserId === targetUserId) {
             return { error: "You cannot unfriend yourself." };
         }
