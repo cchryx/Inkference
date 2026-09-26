@@ -79,3 +79,19 @@ export function activeBan(a: Pick<Account, "bannedUntil" | "banReason"> | null |
 
 /** Stored as the ban end for "forever". */
 export const FOREVER = new Date("9999-12-31T00:00:00Z");
+
+/** Everyone on staff (admins, HR, CEO): who gets told about new reports. */
+export async function getStaffIds() {
+    const ceos = envCeos();
+    const rows = await prisma.user.findMany({
+        where: {
+            OR: [
+                { role: { in: ["admin", "hr", "ceo"] } },
+                ...(ceos.length ? [{ username: { in: ceos, mode: "insensitive" as const } }] : []),
+            ],
+        },
+        select: { id: true },
+        take: 200,
+    });
+    return rows.map((r) => r.id);
+}

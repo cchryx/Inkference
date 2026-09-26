@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, ShieldAlert, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flag, ShieldAlert, Trash2, X } from "lucide-react";
 import ProgressiveImg from "@/components/general/ProgressiveImg";
 import { previewUrl } from "@/lib/imageUrl";
 import { formatBytes } from "@/lib/storageConfig";
@@ -20,6 +20,8 @@ type Props = {
     sizes?: Record<string, number>;
     /** Admins: flag or delete the photo being viewed. */
     onModerate?: (photo: Photo) => void;
+    /** Signed-in visitors: report the photo being viewed. */
+    onReport?: (photo: Photo) => void;
 };
 
 const SLIDE_MS = 220;
@@ -28,7 +30,7 @@ const SLIDE_MS = 220;
  * Full-screen photo viewer. Phones: swipe left/right to browse, swipe down
  * to close. Computers: arrow buttons or arrow keys, Esc to close.
  */
-export default function PhotoViewer({ photos, index, onIndex, onClose, onDelete, sizes, onModerate }: Props) {
+export default function PhotoViewer({ photos, index, onIndex, onClose, onDelete, sizes, onModerate, onReport }: Props) {
     const [dx, setDx] = useState(0);
     const [dy, setDy] = useState(0);
     const [animating, setAnimating] = useState(false);
@@ -153,6 +155,16 @@ export default function PhotoViewer({ photos, index, onIndex, onClose, onDelete,
                     )}
                 </span>
                 <div className="flex items-center gap-1">
+                    {onReport && (
+                        <button
+                            type="button"
+                            onClick={() => onReport(photo)}
+                            aria-label="Report photo"
+                            className="rounded-full p-2 hover:bg-white/10 cursor-pointer"
+                        >
+                            <Flag className="size-5" />
+                        </button>
+                    )}
                     {onModerate && (
                         <button
                             type="button"

@@ -9,6 +9,8 @@ import ConfirmModal from "@/components/general/ConfirmModal";
 import { deletePhoto } from "@/actions/content/photos/deletePhoto";
 import { useIsAdmin } from "@/components/admin/useIsAdmin";
 import ModerateModal from "@/components/admin/ModerateModal";
+import ReportButton from "@/components/general/ReportButton";
+import { useSession } from "@/lib/auth-client";
 
 type Photo = { id: string; image: string };
 
@@ -34,6 +36,8 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: Galler
     const isAdmin = useIsAdmin();
     const [moderating, setModerating] = useState<Photo | null>(null);
     const canModerate = isAdmin && !isOwner;
+    const { data: session } = useSession();
+    const [reporting, setReporting] = useState<Photo | null>(null);
     const sentinelRef = useRef<HTMLDivElement>(null);
 
     // Update columns based on screen size
@@ -116,6 +120,14 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: Galler
                     onIndex={setViewing}
                     onClose={() => setViewing(null)}
                     sizes={sizes}
+                    onReport={
+                        session && !isOwner
+                            ? (p) => {
+                                  setViewing(null);
+                                  setReporting(p);
+                              }
+                            : undefined
+                    }
                     onModerate={
                         canModerate
                             ? (p) => {
@@ -132,6 +144,15 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: Galler
                               }
                             : undefined
                     }
+                />
+            )}
+
+            {reporting && (
+                <ReportButton
+                    targetType="photo"
+                    targetId={reporting.id}
+                    open
+                    onOpenChange={(o) => !o && setReporting(null)}
                 />
             )}
 

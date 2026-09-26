@@ -61,8 +61,9 @@ export default function Storage() {
     }
     if ("error" in data) return <p className="text-sm text-gray-600">{data.error}</p>;
 
-    const pct = Math.min(100, (data.used / data.limit) * 100);
-    const full = data.used >= data.limit;
+    const unlimited = data.limit === null;
+    const pct = unlimited ? 0 : Math.min(100, (data.used / data.limit!) * 100);
+    const full = !unlimited && data.used >= data.limit!;
     const barColor = full ? "bg-red-500" : pct > 80 ? "bg-amber-500" : "bg-gray-800";
 
     return (
@@ -75,7 +76,7 @@ export default function Storage() {
                 <div className="space-y-1.5">
                     <div className="flex items-baseline justify-between text-sm">
                         <span className="font-medium">
-                            {formatBytes(data.used)} <span className="text-gray-500 font-normal">of {formatBytes(data.limit)}</span>
+                            {formatBytes(data.used)} <span className="text-gray-500 font-normal">{unlimited ? "used · unlimited" : `of ${formatBytes(data.limit!)}`}</span>
                         </span>
                         <span className="text-xs text-gray-500">{Math.round(pct)}% used</span>
                     </div>
@@ -119,7 +120,7 @@ export default function Storage() {
             <Card>
                 <h1 className="text-base font-semibold">Why is there a limit?</h1>
                 <p className="text-sm text-gray-600">
-                    Inkference runs on a free plan, so everyone gets {formatBytes(data.limit)} for gallery photos, posts,
+                    Inkference runs on a free plan, so everyone gets {formatBytes(data.baseLimit)} for gallery photos, posts,
                     projects and profile pictures. When you run out, new uploads are paused until you delete some old
                     ones. Removing a post, photo or project frees its space right away.
                 </p>

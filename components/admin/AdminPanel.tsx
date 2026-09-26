@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Ban, Check, ChevronDown, Crown, HardDrive, Search, ShieldAlert, ShieldCheck, Trash2, Undo2, UserCog, Users } from "lucide-react";
+import { Ban, Check, ChevronDown, Crown, ExternalLink, Flag, HardDrive, Search, ShieldAlert, ShieldCheck, Trash2, Undo2, UserCog, Users } from "lucide-react";
 import { useAdminStatus } from "./useIsAdmin";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,10 @@ import {
     resolveCase,
     setStorageLimit,
     setUserRole,
+    setUserStorage,
+    listReports,
+    dismissReports,
+    type AdminReport,
     unbanUser,
     type AdminCase,
     type AdminUser,
@@ -35,7 +39,8 @@ const Card = ({ children }: { children: React.ReactNode }) => (
 );
 
 const TABS = [
-    { id: "reports", label: "Reports", icon: ShieldAlert },
+    { id: "reports", label: "Reports", icon: Flag },
+    { id: "review", label: "Review", icon: ShieldAlert },
     { id: "users", label: "Users", icon: Users },
     { id: "app", label: "App", icon: HardDrive },
 ] as const;
@@ -57,17 +62,19 @@ export function RoleBadge({ role }: { role: string }) {
 }
 
 /** The admin page: reports, users and app-wide settings. */
-export default function AdminPanel({ initialUser }: { initialUser?: string }) {
-    const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(initialUser ? "users" : "reports");
+export default function AdminPanel({ initialUser, initialTab }: { initialUser?: string; initialTab?: string }) {
+    const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(
+        initialUser ? "users" : (TABS.find((t) => t.id === initialTab)?.id ?? "reports")
+    );
     return (
         <div className="space-y-3">
-            <div className="flex w-fit gap-1 rounded-lg bg-gray-200 p-1">
+            <div className="scroll-thin flex max-w-full gap-1 overflow-x-auto rounded-lg bg-gray-200 p-1 w-fit">
                 {TABS.map((t) => (
                     <button
                         key={t.id}
                         type="button"
                         onClick={() => setTab(t.id)}
-                        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm cursor-pointer ${
+                        className={`flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm cursor-pointer ${
                             tab === t.id ? "bg-white font-semibold shadow-sm" : "text-gray-600 hover:text-black"
                         }`}
                     >
@@ -75,7 +82,8 @@ export default function AdminPanel({ initialUser }: { initialUser?: string }) {
                     </button>
                 ))}
             </div>
-            {tab === "reports" && <Reports />}
+            {tab === "reports" && <UserReports />}
+            {tab === "review" && <Reports />}
             {tab === "users" && <UsersTab initialQuery={initialUser} />}
             {tab === "app" && <AppSettings />}
         </div>
@@ -98,6 +106,7 @@ function Reports() {
     const [busy, setBusy] = useState<string | null>(null);
 
     const decide = async (c: AdminCase, decision: "restore" | "delete") => {
+        // (Review tab: flagged things and appeals.)
         setBusy(c.id);
         const res = await resolveCase(c.id, decision);
         setBusy(null);
@@ -109,7 +118,7 @@ function Reports() {
     return (
         <Card>
             <div className="flex items-center justify-between gap-2">
-                <h1 className="text-base font-semibold">Reports</h1>
+                <h1 className="text-base font-semibold">Review</h1>
                 <Dropdown
                     size="sm"
                     value={view}
@@ -188,6 +197,99 @@ function Reports() {
                         </li>
                     ))}
                 </ul>
+            )}
+        </Card>
+    );
+}
+
+// ---------------- Reports from users ----------------
+
+function UserReports() {
+    const queryClient = useQueryClient();
+    const { data, isLoading } = useQuery({ queryKey: ["adminReports"], queryFn: () => listReports() });
+    const [moderate, setModerate] = useState<AdminReport | null>(null);
+    const [busy, setBusy] = useState<string | null>(null);
+    const refresh = () => queryClient.invalidateQueries({ queryKey: ["adminReports"] });
+
+    const dismiss = async (r: AdminReport) => {
+        setBusy(r.targetId);
+        const res = await dismissReports(r.targetType, r.targetId);
+        setBusy(null);
+        if (res.error) return toast.error(res.error);
+        toast.success("Dismissed.");
+        refresh();
+    };
+
+    return (
+        <Card>
+            <h1 className="text-base font-semibold">Reports</h1>
+            <p className="text-xs text-gray-500">What people reported, most reported first. Moderate it, or dismiss if it&apos;s fine.</p>
+            {isLoading ? (
+                <Skeleton className="h-20 w-full rounded-md" />
+            ) : !data?.length ? (
+                <p className="py-6 text-center text-sm text-gray-500">No open reports.</p>
+            ) : (
+                <ul className="space-y-2">
+                    {data.map((r) => (
+                        <li key={`${r.targetType}:${r.targetId}`} className="flex gap-3 rounded-lg bg-white p-3 ring-1 ring-black/5">
+                            {r.image ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={previewUrl(r.image, 200)} alt="" className="size-16 shrink-0 rounded-md object-cover" />
+                            ) : (
+                                <div className="grid size-16 shrink-0 place-items-center rounded-md bg-gray-100 text-xs text-gray-400">
+                                    {r.targetType}
+                                </div>
+                            )}
+                            <div className="min-w-0 flex-1 space-y-1 text-sm">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                    <span className="rounded bg-orange-100 px-1.5 py-0.5 text-[11px] font-semibold text-orange-800">
+                                        {r.count} report{r.count === 1 ? "" : "s"}
+                                    </span>
+                                    <span className="truncate font-medium">{r.label}</span>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    {r.owner?.username ? (
+                                        <Link href={`/profile/${r.owner.username}`} className="hover:underline">
+                                            @{r.owner.username}
+                                        </Link>
+                                    ) : (
+                                        "Unknown owner"
+                                    )}{" "}
+                                    · last {formatDistanceToNow(new Date(r.lastAt), { addSuffix: true })}
+                                </p>
+                                <p className="text-xs">{r.reasons.map((x) => `${x.label}${x.count > 1 ? ` ×${x.count}` : ""}`).join(" · ")}</p>
+                                {r.details.map((d, i) => (
+                                    <p key={i} className="rounded-md bg-gray-50 p-2 text-xs text-gray-700">
+                                        &ldquo;{d}&rdquo;
+                                    </p>
+                                ))}
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                    {r.link && (
+                                        <Link href={r.link} target="_blank" className="inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-xs ring-1 ring-gray-300 hover:bg-gray-100">
+                                            <ExternalLink className="size-3.5" /> Open
+                                        </Link>
+                                    )}
+                                    <Button size="sm" className="h-7 bg-red-600 hover:bg-red-700 cursor-pointer" onClick={() => setModerate(r)}>
+                                        <ShieldAlert className="size-3.5" /> Moderate
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="h-7 cursor-pointer" disabled={busy === r.targetId} onClick={() => dismiss(r)}>
+                                        {busy === r.targetId ? <Loader size={4} color="text-gray-700" /> : <Check className="size-3.5" />} Dismiss
+                                    </Button>
+                                </div>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {moderate && (
+                <ModerateModal
+                    targetType={moderate.targetType as ModTarget}
+                    targetId={moderate.targetId}
+                    onClose={() => {
+                        setModerate(null);
+                        refresh();
+                    }}
+                />
             )}
         </Card>
     );
@@ -378,6 +480,8 @@ function UserRow({ user: u, startOpen }: { user: AdminUser; startOpen?: boolean 
                         )}
                     </div>
 
+                    {(u.manageable || canAssign.includes("hr")) && <StorageEditor user={u} onSaved={refresh} />}
+
                     {banning && (
                         <div className="space-y-2 rounded-lg bg-gray-50 p-3">
                             <textarea
@@ -434,6 +538,48 @@ function UserRow({ user: u, startOpen }: { user: AdminUser; startOpen?: boolean 
                 </div>
             </ConfirmModal>
         </li>
+    );
+}
+
+/** Give one person extra photo storage, or unlimited. */
+function StorageEditor({ user: u, onSaved }: { user: AdminUser; onSaved: () => void }) {
+    const [extra, setExtra] = useState(String(u.storageExtraMB));
+    const [unlimited, setUnlimited] = useState(u.storageUnlimited);
+    const [busy, setBusy] = useState(false);
+    const changed = extra !== String(u.storageExtraMB) || unlimited !== u.storageUnlimited;
+
+    const save = async () => {
+        setBusy(true);
+        const res = await setUserStorage(u.id, { extraMB: Number(extra) || 0, unlimited });
+        setBusy(false);
+        if (res.error) return toast.error(res.error);
+        toast.success("Storage updated.");
+        onSaved();
+    };
+
+    return (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 p-2.5 text-xs">
+            <HardDrive className="size-3.5 text-gray-500" />
+            <span className="text-gray-600">Uses {formatBytes(u.storageBytes)}. Extra storage:</span>
+            <input
+                type="number"
+                min={0}
+                value={extra}
+                disabled={unlimited}
+                onChange={(e) => setExtra(e.target.value)}
+                className="w-20 rounded-md bg-white px-2 py-1 ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-black/40 disabled:opacity-40"
+            />
+            <span className="text-gray-600">MB</span>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" checked={unlimited} onChange={(e) => setUnlimited(e.target.checked)} className="accent-black" />
+                Unlimited
+            </label>
+            {changed && (
+                <Button size="sm" className="ml-auto h-7 cursor-pointer" disabled={busy} onClick={save}>
+                    {busy && <Loader size={4} color="text-white" />} Save
+                </Button>
+            )}
+        </div>
     );
 }
 

@@ -6,6 +6,7 @@ import { Eye, Pencil, Share2, Trash2, UploadIcon } from "lucide-react";
 import VisibilityModal from "@/components/general/VisibilityModal";
 import VisibilityBadge from "@/components/general/VisibilityBadge";
 import AdminModerateButton from "@/components/admin/AdminModerateButton";
+import ReportButton from "@/components/general/ReportButton";
 import { formatBytes } from "@/lib/storageConfig";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { deleteGallery } from "@/actions/content/photos/deleteGallery";
@@ -170,12 +171,20 @@ const HeaderCard = ({
                     </button>
 
                     {!isOwner && (
-                        <AdminModerateButton
-                            targetType="gallery"
-                            targetId={galleryId}
-                            withLabel
-                            className="h-fit w-fit bg-gray-300 px-3 py-1 rounded-sm"
-                        />
+                        <>
+                            <AdminModerateButton
+                                targetType="gallery"
+                                targetId={galleryId}
+                                withLabel
+                                className="h-fit w-fit bg-gray-300 px-3 py-1 rounded-sm"
+                            />
+                            <ReportButton
+                                targetType="gallery"
+                                targetId={galleryId}
+                                withLabel
+                                className="h-fit w-fit bg-gray-300 px-3 py-1 rounded-sm hover:bg-gray-400"
+                            />
+                        </>
                     )}
 
                     {/* Owner-only Buttons */}

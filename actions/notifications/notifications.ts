@@ -82,12 +82,14 @@ export async function getNotifications(cursor?: string) {
             href = "/settings?section=payments";
         } else if (n.type === "moderation") {
             href = "/moderation";
+        } else if (n.type === "report") {
+            href = "/admin?tab=reports";
         } else if (actors[0]?.username) {
             href = `/profile/${actors[0].username}`;
         }
 
         // Skip people-only notifications whose people no longer exist.
-        if (n.type !== "views" && n.type !== "moderation" && actors.length === 0) return [];
+        if (n.type !== "views" && n.type !== "moderation" && n.type !== "report" && actors.length === 0) return [];
 
         return [
             {

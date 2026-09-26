@@ -39,9 +39,23 @@ export async function getUsageBytes(userId: string) {
     return agg._sum.bytes ?? 0;
 }
 
+/**
+ * This person's limit in bytes: everyone's limit plus any extra an admin
+ * gave them. null = unlimited.
+ */
+export async function getUserLimitBytes(userId: string): Promise<number | null> {
+    const u = await prisma.user
+        .findUnique({ where: { id: userId }, select: { storageExtraMB: true, storageUnlimited: true } })
+        .catch(() => null);
+    if (u?.storageUnlimited) return null;
+    return ((await getStorageLimitMB()) + Math.max(0, u?.storageExtraMB ?? 0)) * MB;
+}
+
 /** Would adding `incoming` bytes go over this person's limit? */
 export async function wouldExceed(userId: string, incoming: number) {
-    return (await getUsageBytes(userId)) + incoming > (await getStorageLimitBytes());
+    const limit = await getUserLimitBytes(userId);
+    if (limit === null) return false;
+    return (await getUsageBytes(userId)) + incoming > limit;
 }
 
 export async function recordUpload(input: { userId: string; url: string; publicId: string; bytes: number; kind: string }) {

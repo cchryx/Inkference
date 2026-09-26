@@ -26,6 +26,7 @@ import EditHeaderModal from "./edit/EditHeaderModal";
 import VisibilityModal from "@/components/general/VisibilityModal";
 import VisibilityBadge from "@/components/general/VisibilityBadge";
 import AdminModerateButton from "@/components/admin/AdminModerateButton";
+import ReportButton from "@/components/general/ReportButton";
 import { likeProject } from "@/actions/content/project/likeProject";
 import { viewProject } from "@/actions/content/project/viewProject";
 import { saveProject } from "@/actions/content/project/saveProject";
@@ -366,12 +367,20 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
                         <div className="flex flex-1 flex-col flex-wrap gap-2 items-start md:items-end w-full">
                             <div className="flex w-full flex-wrap gap-2 justify-start md:justify-end">
                                 {!isOwner && (
-                                    <AdminModerateButton
-                                        targetType="project"
-                                        targetId={project.id}
-                                        withLabel
-                                        className="bg-gray-300 px-3 py-1 rounded-sm"
-                                    />
+                                    <>
+                                        <AdminModerateButton
+                                            targetType="project"
+                                            targetId={project.id}
+                                            withLabel
+                                            className="bg-gray-300 px-3 py-1 rounded-sm"
+                                        />
+                                        <ReportButton
+                                            targetType="project"
+                                            targetId={project.id}
+                                            withLabel
+                                            className="bg-gray-300 px-3 py-1 rounded-sm hover:bg-gray-400"
+                                        />
+                                    </>
                                 )}
                                 <button
                                     onClick={handleShare}

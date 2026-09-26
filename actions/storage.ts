@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getStorageLimitBytes, getUsageBytes, syncFromCloudinary } from "@/lib/storage";
+import { getStorageLimitBytes, getUsageBytes, getUserLimitBytes, syncFromCloudinary } from "@/lib/storage";
 import { deleteUnusedUploads } from "@/lib/cleanupUploads";
 import { getPreferences, setPreferences } from "@/actions/preferences";
 import { getSession } from "@/lib/session";
@@ -15,7 +15,10 @@ async function me() {
 
 export type StorageUsage = {
     used: number;
-    limit: number;
+    /** null = unlimited (an admin gave you unlimited space). */
+    limit: number | null;
+    /** What everyone gets. */
+    baseLimit: number;
     files: number;
     byKind: { kind: string; bytes: number; files: number }[];
     syncedAt: number | null;
@@ -33,7 +36,8 @@ async function usage(userId: string, syncedAt: number | null): Promise<StorageUs
         .sort((a, b) => b.bytes - a.bytes);
     return {
         used: byKind.reduce((s, g) => s + g.bytes, 0),
-        limit: await getStorageLimitBytes(),
+        limit: await getUserLimitBytes(userId),
+        baseLimit: await getStorageLimitBytes(),
         files: byKind.reduce((s, g) => s + g.files, 0),
         byKind,
         syncedAt,
@@ -106,6 +110,7 @@ export async function checkStorageRoom(incoming = 0): Promise<{ ok: boolean }> {
     if (!userId) return { ok: false };
     const used = await getUsageBytes(userId);
     const bytes = Math.max(0, Number(incoming) || 0);
-    const limit = await getStorageLimitBytes();
+    const limit = await getUserLimitBytes(userId);
+    if (limit === null) return { ok: true };
     return { ok: used < limit && used + bytes <= limit };
 }

@@ -11,6 +11,7 @@ import {
     ImageIcon,
     MessageCircle,
     ShieldAlert,
+    Flag,
     UserCheck,
     UserPlus,
     Users,
@@ -36,6 +37,7 @@ const ICONS: Record<string, { icon: LucideIcon; className: string }> = {
     views: { icon: Eye, className: "bg-neutral-500" },
     tip: { icon: Coffee, className: "bg-amber-600" },
     moderation: { icon: ShieldAlert, className: "bg-red-600" },
+    report: { icon: Flag, className: "bg-orange-500" },
 };
 
 // "Sam", "Sam and Alex", "Sam, Alex and 12 others"
@@ -102,7 +104,7 @@ const Row = ({ n, isNew }: { n: NotificationItem; isNew: boolean }) => {
                         <div className="grid size-8 place-items-center rounded-full bg-gray-300 md:size-11">
                             <Eye className="h-4 w-4 text-gray-700 md:h-5 md:w-5" />
                         </div>
-                    ) : n.type === "moderation" ? (
+                    ) : n.type === "moderation" || n.type === "report" ? (
                         <div className="grid size-8 place-items-center rounded-full bg-red-100 md:size-11">
                             <ShieldAlert className="h-4 w-4 text-red-600 md:h-5 md:w-5" />
                         </div>
@@ -132,9 +134,9 @@ const Row = ({ n, isNew }: { n: NotificationItem; isNew: boolean }) => {
                             Your {n.target?.kind ?? "post"} reached{" "}
                             <span className="font-semibold">{Number(n.preview).toLocaleString()} views</span>.
                         </>
-                    ) : n.type === "moderation" ? (
+                    ) : n.type === "moderation" || n.type === "report" ? (
                         <>
-                            <span className="font-semibold">Inkference admin: </span>
+                            <span className="font-semibold">{n.type === "report" ? "Report: " : "Inkference admin: "}</span>
                             <span className="break-words">{n.preview}</span>
                         </>
                     ) : (

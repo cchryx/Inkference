@@ -7,8 +7,8 @@ import { getAccount, isAdminAccount, roleOf } from "@/lib/admin";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ user?: string }> }) {
-    const [session, { user }] = await Promise.all([getRawSession(), searchParams]);
+export default async function Page({ searchParams }: { searchParams: Promise<{ user?: string; tab?: string }> }) {
+    const [session, { user, tab }] = await Promise.all([getRawSession(), searchParams]);
     const account = session ? await getAccount(session.user.id) : null;
     if (!isAdminAccount(account)) notFound(); // not staff: this page doesn't exist for you
 
@@ -25,7 +25,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ u
                     <p className="text-sm text-gray-500">Reports, people and app settings. Only staff can see this page.</p>
                 </div>
             </header>
-            <AdminPanel initialUser={user} />
+            <AdminPanel initialUser={user} initialTab={tab} />
         </div>
     );
 }

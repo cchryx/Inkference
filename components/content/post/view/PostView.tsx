@@ -20,6 +20,7 @@ import {
 import VisibilityModal from "@/components/general/VisibilityModal";
 import VisibilityBadge from "@/components/general/VisibilityBadge";
 import AdminModerateButton from "@/components/admin/AdminModerateButton";
+import ReportButton from "@/components/general/ReportButton";
 import { toast } from "sonner";
 
 import { UserIcon } from "@/components/general/UserIcon";
@@ -150,7 +151,12 @@ const PostView = ({ post, currentUserId }: Props) => {
                 </div>
             </Link>
 
-            {!isOwner && <AdminModerateButton targetType="post" targetId={post.id} photos={post.content} />}
+            {!isOwner && (
+                <div className="flex items-center gap-0.5">
+                    <AdminModerateButton targetType="post" targetId={post.id} photos={post.content} />
+                    <ReportButton targetType="post" targetId={post.id} />
+                </div>
+            )}
 
             {isOwner && (
                 <div className="relative">

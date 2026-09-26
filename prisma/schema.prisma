@@ -90,6 +90,10 @@ model User {
   bannedUntil DateTime?
   banReason   String?   @db.VarChar(500)
 
+  // Extra photo storage an admin gave this person (on top of everyone's limit).
+  storageExtraMB   Int     @default(0)
+  storageUnlimited Boolean @default(false)
+
   sessions Session[]
   accounts Account[]
 
@@ -683,4 +687,27 @@ model AppSetting {
   updatedAt DateTime @updatedAt
 
   @@map("app_settings")
+}
+
+// Someone reported a post, project, gallery or photo. Admins review these.
+model Report {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  reporterId String // User.id
+  ownerId    String // User.id of whose content it is
+  targetType String @db.VarChar(20) // post | project | gallery | photo
+  targetId   String
+
+  reason  String  @db.VarChar(40)
+  details String? @db.VarChar(500)
+
+  status     String    @default("open") @db.VarChar(12) // open | resolved | dismissed
+  resolvedBy String?
+  resolvedAt DateTime?
+
+  @@unique([reporterId, targetType, targetId]) // one report per person per thing
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@map("reports")
 }

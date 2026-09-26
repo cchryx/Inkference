@@ -12,12 +12,14 @@ import {
     describeTarget,
     removeTarget,
     setHidden,
+    targetLink,
     targetWords,
     tellOwner,
     type Flaggable,
     type TargetType,
 } from "@/lib/moderation";
 import { forgetStorageLimit, getStorageLimitMB } from "@/lib/storage";
+import { reasonLabel } from "@/lib/reportReasons";
 
 // Everything in here is for admins only.
 
@@ -57,6 +59,8 @@ export type AdminUser = {
     bannedUntil: string | null;
     banReason: string | null;
     storageBytes: number;
+    storageExtraMB: number;
+    storageUnlimited: boolean;
 };
 
 /** Everyone, newest first (search by name, username or email). */
@@ -89,6 +93,8 @@ export async function listUsers(query = "", cursor?: string) {
             role: true,
             bannedUntil: true,
             banReason: true,
+            storageExtraMB: true,
+            storageUnlimited: true,
         },
     });
     const page = rows.slice(0, 25);
@@ -226,6 +232,14 @@ export async function moderateContent(input: {
         await tellOwner(target.ownerId, c.id, `An admin removed your ${words}: "${reason}".`);
     }
 
+    // Anything people reported about it is now handled.
+    if (type !== "post_photo") {
+        await prisma.report.updateMany({
+            where: { targetType: type, targetId: input.targetId, status: "open" },
+            data: { status: "resolved", resolvedBy: me, resolvedAt: new Date() },
+        });
+    }
+
     revalidatePath("/", "layout");
     return { error: null };
 }
@@ -313,4 +327,104 @@ export async function setStorageLimit(mb: number) {
     });
     forgetStorageLimit();
     return { error: null };
+}
+
+// ---------------- Storage per person ----------------
+
+/** Give someone extra storage on top of everyone's limit, or unlimited. */
+export async function setUserStorage(userId: string, input: { extraMB: number; unlimited: boolean }) {
+    const me = await staff();
+    if (!me) return NOPE;
+    const target = await getAccount(userId);
+    if (!target) return { error: "User not found." };
+    const self = userId === me.id;
+    if (self ? me.role !== "ceo" : !canManage(me.role, roleOf(target))) {
+        return { error: "You can't change storage for someone at your level or above." };
+    }
+    const extraMB = Math.round(Number(input.extraMB) || 0);
+    if (extraMB < 0 || extraMB > 1_000_000) return { error: "Extra storage must be between 0 and 1,000,000 MB." };
+    await prisma.user.update({
+        where: { id: userId },
+        data: { storageExtraMB: extraMB, storageUnlimited: !!input.unlimited },
+    });
+    return { error: null };
+}
+
+// ---------------- Reports from users ----------------
+
+export type AdminReport = {
+    targetType: string;
+    targetId: string;
+    label: string;
+    image: string | null;
+    link: string | null;
+    count: number;
+    reasons: { label: string; count: number }[];
+    details: string[];
+    lastAt: string;
+    owner: { name: string; username: string | null } | null;
+};
+
+/** Open reports, grouped by the thing reported (most reported first). */
+export async function listReports(): Promise<AdminReport[]> {
+    if (!(await adminId())) return [];
+    const rows = await prisma.report.findMany({
+        where: { status: "open" },
+        orderBy: { createdAt: "desc" },
+        take: 1000,
+    });
+
+    const groups = new Map<string, typeof rows>();
+    for (const r of rows) {
+        const key = `${r.targetType}:${r.targetId}`;
+        groups.set(key, [...(groups.get(key) ?? []), r]);
+    }
+
+    const out: AdminReport[] = [];
+    const gone: string[] = [];
+    for (const list of [...groups.values()].sort((a, b) => b.length - a.length).slice(0, 60)) {
+        const first = list[0];
+        const target = await describeTarget(first.targetType as TargetType, first.targetId);
+        if (!target) {
+            gone.push(...list.map((r) => r.id)); // deleted since: nothing to do
+            continue;
+        }
+        const tally = new Map<string, number>();
+        for (const r of list) tally.set(r.reason, (tally.get(r.reason) ?? 0) + 1);
+        out.push({
+            targetType: first.targetType,
+            targetId: first.targetId,
+            label: target.label,
+            image: target.image,
+            link: await targetLink(first.targetType, first.targetId),
+            count: list.length,
+            reasons: [...tally].map(([id, count]) => ({ label: reasonLabel(id), count })).sort((a, b) => b.count - a.count),
+            details: list.map((r) => r.details).filter((d): d is string => !!d).slice(0, 3),
+            lastAt: first.createdAt.toISOString(),
+            owner: null,
+        });
+        const owner = await prisma.user.findUnique({ where: { id: target.ownerId }, select: { name: true, username: true } });
+        out[out.length - 1].owner = owner;
+    }
+    if (gone.length) {
+        await prisma.report.updateMany({ where: { id: { in: gone } }, data: { status: "resolved", resolvedAt: new Date() } });
+    }
+    return out;
+}
+
+/** Nothing wrong with it: close its reports. */
+export async function dismissReports(targetType: string, targetId: string) {
+    const me = await adminId();
+    if (!me) return NOPE;
+    await prisma.report.updateMany({
+        where: { targetType, targetId, status: "open" },
+        data: { status: "dismissed", resolvedBy: me, resolvedAt: new Date() },
+    });
+    return { error: null };
+}
+
+/** How many reports are waiting (for the badge). */
+export async function countOpenReports() {
+    if (!(await adminId())) return 0;
+    return prisma.report.count({ where: { status: "open" } });
 }

@@ -107,6 +107,18 @@ export async function describeTarget(type: TargetType, id: string, url?: string)
     }
 }
 
+/** Where to see it in the app. */
+export async function targetLink(type: string, id: string) {
+    if (type === "post" || type === "post_photo") return `/post/${id}`;
+    if (type === "project") return `/project/${id}`;
+    if (type === "gallery") return `/gallery/${id}`;
+    if (type === "photo") {
+        const p = await prisma.photo.findUnique({ where: { id }, select: { galleryId: true } });
+        return p ? `/gallery/${p.galleryId}` : null;
+    }
+    return null;
+}
+
 /** Hide (or show again) something while it's under review. */
 export async function setHidden(type: Flaggable, id: string, hidden: boolean) {
     const data = { hiddenAt: hidden ? new Date() : null };
