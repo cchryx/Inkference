@@ -10,21 +10,68 @@ import { SignoutButton } from "../auth/SignoutButton";
 import { NAVBARLEFT_LINKS, NAVBARLEFT_SUB_LINKS } from "@/constants/index";
 import { UserIcon } from "../general/UserIcon";
 import { UnreadBadge } from "../general/UnreadBadge";
+import { NAV_COOKIE } from "@/lib/navCookie";
 
 type NavbarLeftProps = {
     session: any;
     /** Shows the Admin link. */
     isAdmin?: boolean;
+    /** Open or minimized, as you last left it (from a cookie, so there's no flicker on reload). */
+    initialOpen?: boolean;
 };
 
-const NavbarLeft = ({ session, isAdmin = false }: NavbarLeftProps) => {
+// Minimize by itself after this long of working in the page (clicking, typing, scrolling).
+const AUTO_MINIMIZE_MS = 30_000;
+// A break this long starts the count again.
+const IDLE_RESET_MS = 60_000;
+
+const saveOpen = (open: boolean) => {
+    document.cookie = `${NAV_COOKIE}=${open ? "open" : "closed"}; path=/; max-age=31536000; samesite=lax`;
+};
+
+const NavbarLeft = ({ session, isAdmin = false, initialOpen = true }: NavbarLeftProps) => {
     const user = session?.user;
     const pathname = usePathname();
 
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpenState] = useState(initialOpen);
     const [showUserMenu, setShowUserMenu] = useState(false);
 
     const userMenuRef = useRef<HTMLDivElement>(null);
+    const navRef = useRef<HTMLDivElement>(null);
+
+    const setIsOpen = (open: boolean) => {
+        setIsOpenState(open);
+        saveOpen(open);
+    };
+
+    // Open: after a while of working in the page, tuck the sidebar away.
+    useEffect(() => {
+        if (!isOpen) return;
+        let started = 0;
+        let last = 0;
+        const onActivity = (e: Event) => {
+            if (navRef.current?.contains(e.target as Node)) {
+                started = 0; // using the sidebar: keep it open
+                return;
+            }
+            const now = Date.now();
+            if (!started || now - last > IDLE_RESET_MS) started = now;
+            last = now;
+            if (now - started >= AUTO_MINIMIZE_MS) {
+                setIsOpenState(false);
+                saveOpen(false);
+            }
+        };
+        const opts = { capture: true, passive: true } as const;
+        document.addEventListener("pointerdown", onActivity, opts);
+        document.addEventListener("keydown", onActivity, opts);
+        document.addEventListener("wheel", onActivity, opts);
+        return () => {
+            document.removeEventListener("pointerdown", onActivity, opts);
+            document.removeEventListener("keydown", onActivity, opts);
+            document.removeEventListener("wheel", onActivity, opts);
+        };
+    }, [isOpen]);
 
     // Outside click handling
     useEffect(() => {
@@ -50,6 +97,7 @@ const NavbarLeft = ({ session, isAdmin = false }: NavbarLeftProps) => {
 
     return (
         <div
+            ref={navRef}
             className={`no-drag select-none relative bg-gray-200 h-full flex flex-col transition-all duration-300 ${
                 isOpen ? "w-[250px]" : "w-[64px]"
             }`}

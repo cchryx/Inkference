@@ -1,5 +1,7 @@
 import { ChooseUsernameForm } from "@/components/auth/ChooseUsernameForm";
 import NavbarLeft from "@/components/root/NavbarLeft";
+import { NAV_COOKIE } from "@/lib/navCookie";
+import { cookies } from "next/headers";
 import NavbarMobile from "@/components/root/NavbarMobile";
 import { getRawSession } from "@/lib/session";
 import { activeBan, getAccount, isAdminAccount } from "@/lib/admin";
@@ -24,12 +26,14 @@ export default async function Layout({ children }: LayoutProps) {
         return <BannedScreen reason={ban.reason} until={ban.until} username={session.user.username} />;
     }
     const isAdmin = isAdminAccount(account);
+    // Sidebar open/minimized, as you last left it.
+    const navOpen = (await cookies()).get(NAV_COOKIE)?.value !== "closed";
 
     const page = (
         <div className="flex flex-col md:flex-row h-full w-full fixed">
             {session && (
                 <div className="hidden md:flex max-w-[250px]">
-                    <NavbarLeft session={session} isAdmin={isAdmin} />
+                    <NavbarLeft session={session} isAdmin={isAdmin} initialOpen={navOpen} />
                 </div>
             )}
 
