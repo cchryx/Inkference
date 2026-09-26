@@ -11,7 +11,11 @@ import {
     MAX_NOTE_CHARS,
     MAX_REMIND_MINUTES,
     TODO_LIMIT,
+    TRACKER_LIMIT,
     boardStats,
+    defaultTracker,
+    trackerStats,
+    type Tracker,
     defaultBoard,
     dayKey,
     defaultTodoList,
@@ -34,7 +38,7 @@ async function me() {
     return session?.user?.id ?? null;
 }
 
-const DriveTypeSchema = z.enum(["note", "planner", "todo"]);
+const DriveTypeSchema = z.enum(["note", "planner", "todo", "tracker"]);
 
 const id = z.string().min(1).max(40);
 const remind = z.number().int().min(0).max(MAX_REMIND_MINUTES).nullable().optional();
@@ -111,6 +115,29 @@ const TodoListSchema = z.object({
         .max(TODO_LIMIT),
 });
 
+const TrackerSchema = z.object({
+    color: z.enum(Object.keys(BOARD_COLORS) as [BoardColor, ...BoardColor[]]),
+    items: z
+        .array(
+            z.object({
+                id,
+                name: z.string().max(200),
+                episode: z.number().int().min(0).max(1_000_000),
+                total: z.number().int().min(1).max(1_000_000).nullable(),
+                status: z.enum(["watching", "planned", "completed"]),
+                link: z.string().max(500),
+                notes: z.string().max(2000),
+                updatedAt: z.string().max(40),
+            })
+        )
+        .max(TRACKER_LIMIT),
+});
+
+const readTracker = (content: unknown) => {
+    const parsed = TrackerSchema.safeParse(content);
+    return (parsed.success ? parsed.data : defaultTracker()) as Tracker;
+};
+
 const readBoard = (content: unknown) => {
     const parsed = BoardSchema.safeParse(content);
     return (parsed.success ? parsed.data : defaultBoard()) as Board;
@@ -145,6 +172,16 @@ function summarize(f: {
     if (f.type === "todo") {
         const list = readTodos(f.content);
         return { ...base, preview: "", color: list.color, todoStats: todoStats(list) };
+    }
+    if (f.type === "tracker") {
+        const t = readTracker(f.content);
+        const latest = [...t.items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+        return {
+            ...base,
+            preview: latest ? `${latest.name} · ep ${latest.episode}` : "",
+            color: t.color,
+            trackerStats: trackerStats(t),
+        };
     }
     return { ...base, preview: notePreview(asText(f.content)) };
 }
@@ -317,13 +354,17 @@ export async function createDriveFile(type: DriveType, title?: string) {
                     ? "Untitled planner"
                     : type === "todo"
                       ? "New list"
-                      : "")
+                      : type === "tracker"
+                        ? "Watchlist"
+                        : "")
             ).slice(0, 200),
             content: (type === "planner"
                 ? defaultBoard()
                 : type === "todo"
                   ? defaultTodoList()
-                  : { text: "" }) as Prisma.InputJsonValue,
+                  : type === "tracker"
+                    ? defaultTracker()
+                    : { text: "" }) as Prisma.InputJsonValue,
         },
         select: { id: true },
     });
@@ -390,4 +431,36 @@ export async function deleteDriveFile(fileId: string) {
     if (!userId) return { error: "Sign in first." };
     const { count } = await prisma.driveFile.deleteMany({ where: { id: fileId, userId } });
     return count ? { error: null } : { error: "File not found." };
+}
+
+export type TrackerData = { id: string; title: string; tracker: Tracker; updatedAt: string };
+
+/** All your trackers with their shows. */
+export async function getTrackers(): Promise<TrackerData[]> {
+    const userId = await me();
+    if (!userId) return [];
+    const files = await prisma.driveFile.findMany({
+        where: { userId, type: "tracker" },
+        orderBy: { createdAt: "asc" },
+        take: 200,
+        select: { id: true, title: true, content: true, updatedAt: true },
+    });
+    return files.map((f) => ({
+        id: f.id,
+        title: f.title,
+        tracker: readTracker(f.content),
+        updatedAt: f.updatedAt.toISOString(),
+    }));
+}
+
+export async function saveTracker(fileId: string, tracker: Tracker) {
+    const userId = await me();
+    if (!userId) return { error: "Sign in first." };
+    const parsed = TrackerSchema.safeParse(tracker);
+    if (!parsed.success) return { error: "Couldn't save this tracker (something is too long)." };
+    const { count } = await prisma.driveFile.updateMany({
+        where: { id: fileId, userId, type: "tracker" },
+        data: { content: parsed.data as Prisma.InputJsonValue },
+    });
+    return count ? { error: null } : { error: "Tracker not found." };
 }

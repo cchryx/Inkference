@@ -4,17 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { CalendarCheck, ChevronRight, FileText, HardDrive, Pin, Plus, StickyNote, Table } from "lucide-react";
+import { CalendarCheck, ChevronRight, FileText, HardDrive, Pin, Plus, StickyNote, Table, Tv } from "lucide-react";
 import { toast } from "sonner";
 import Loader from "@/components/general/Loader";
 import SeeAll from "@/components/general/SeeAll";
 import { createDriveFile } from "@/actions/drive/drive";
-import type { DriveFileSummary } from "@/lib/drive";
+import { BOARD_COLORS, type DriveFileSummary } from "@/lib/drive";
 
-type Props = { notes: DriveFileSummary[] };
+type Props = { notes: DriveFileSummary[]; trackers: DriveFileSummary[] };
 
 const KINDS = [
     { type: "note" as const, label: "Note", hint: "Quick thoughts and lists", icon: StickyNote, tint: "bg-amber-100 text-amber-700" },
+    { type: "tracker" as const, label: "Tracker", hint: "Episodes you're on, next-episode links", icon: Tv, tint: "bg-violet-100 text-violet-700" },
 ];
 
 const SOON = [
@@ -22,18 +23,18 @@ const SOON = [
     { label: "Sheet", icon: Table },
 ];
 
-export default function DriveHome({ notes }: Props) {
+export default function DriveHome({ notes, trackers }: Props) {
     const router = useRouter();
-    const [creating, setCreating] = useState<"note" | null>(null);
+    const [creating, setCreating] = useState<"note" | "tracker" | null>(null);
 
-    const create = async (type: "note") => {
+    const create = async (type: "note" | "tracker") => {
         setCreating(type);
         const { error, id } = await createDriveFile(type);
         if (error || !id) {
             setCreating(null);
             return toast.error(error ?? "Couldn't create it.");
         }
-        router.push(`/drive/notes?n=${id}`);
+        router.push(type === "note" ? `/drive/notes?n=${id}` : `/drive/trackers?t=${id}`);
     };
 
     return (
@@ -113,6 +114,32 @@ export default function DriveHome({ notes }: Props) {
                     </div>
                 ) : (
                     <Empty text="No notes yet." action="New note" onClick={() => create("note")} />
+                )}
+            </Section>
+
+            {/* Trackers */}
+            <Section title="Trackers" href="/drive/trackers" count={trackers.length} icon={Tv}>
+                {trackers.length ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {trackers.map((t) => (
+                            <Link
+                                key={t.id}
+                                href={`/drive/trackers?t=${t.id}`}
+                                className="flex gap-3 rounded-xl bg-gray-100 p-4 hover:bg-gray-200 transition-colors"
+                            >
+                                <span className={`w-1 shrink-0 rounded-full ${BOARD_COLORS[t.color ?? "purple"].band}`} />
+                                <span className="min-w-0 flex-1">
+                                    <span className="block truncate font-semibold">{t.title || "Tracker"}</span>
+                                    <span className="block text-xs text-gray-500">
+                                        {t.trackerStats?.watching ?? 0} watching · {t.trackerStats?.completed ?? 0} completed
+                                    </span>
+                                    {t.preview && <span className="mt-1 block truncate text-sm text-gray-600">{t.preview}</span>}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <Empty text="No trackers yet." action="New tracker" onClick={() => create("tracker")} />
                 )}
             </Section>
 

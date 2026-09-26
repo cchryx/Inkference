@@ -1,6 +1,6 @@
 // Shared Drive types and helpers (safe to use on the server and in the browser).
 
-export const DRIVE_TYPES = ["note", "planner", "todo"] as const;
+export const DRIVE_TYPES = ["note", "planner", "todo", "tracker"] as const;
 export type DriveType = (typeof DRIVE_TYPES)[number];
 
 // ---------- Notes ----------
@@ -231,6 +231,84 @@ export type DueItem = {
     listName?: string;
 };
 
+// ---------- Trackers (what episode you're on) ----------
+
+export type TrackerStatus = "watching" | "planned" | "completed";
+export type TrackerItem = {
+    id: string;
+    name: string;
+    /** Last episode you watched (0 = not started). */
+    episode: number;
+    /** How many episodes there are, if you know. */
+    total: number | null;
+    status: TrackerStatus;
+    /** Link with {ep} where the episode number goes, e.g. https://site.com/watch/{ep} */
+    link: string;
+    notes: string;
+    updatedAt: string;
+};
+export type Tracker = { color: BoardColor; items: TrackerItem[] };
+
+export const TRACKER_LIMIT = 500;
+export const EP_TOKEN = "{ep}";
+export const TRACKER_STATUSES: { id: TrackerStatus; label: string }[] = [
+    { id: "watching", label: "Watching" },
+    { id: "planned", label: "Plan to watch" },
+    { id: "completed", label: "Completed" },
+];
+
+export function newTrackerItem(name: string, episode = 0): TrackerItem {
+    return {
+        id: newId(),
+        name,
+        episode: Math.max(0, Math.floor(episode)),
+        total: null,
+        status: "watching",
+        link: "",
+        notes: "",
+        updatedAt: new Date().toISOString(),
+    };
+}
+
+export function defaultTracker(): Tracker {
+    return { color: "purple", items: [] };
+}
+
+/** The link for one episode, or null if the link has no {ep} spot. */
+export function episodeLink(template: string, ep: number) {
+    if (!template || !template.includes(EP_TOKEN) || !/^https?:\/\//i.test(template)) return null;
+    return template.split(EP_TOKEN).join(String(ep));
+}
+
+/** A link cut into text and numbers, so you can tap the number that's the episode. */
+export function linkParts(url: string) {
+    return url.split(/(\d+)/).filter(Boolean).map((text) => ({ text, isNumber: /^\d+$/.test(text) }));
+}
+
+/** Turns pasted lines like "Swallowed Star: 242" into shows. */
+export function parseTrackerList(text: string) {
+    return text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .map((line) => {
+            const m = line.match(/^(.*?)[\s:\-–]+(?:ep(?:isode)?\s*)?(\d+)\s*$/i);
+            return m && m[1].trim()
+                ? { name: m[1].trim().replace(/[:\-–]\s*$/, "").trim(), episode: Number(m[2]) }
+                : { name: line.replace(/:\s*$/, ""), episode: 0 };
+        })
+        .filter((r) => r.name)
+        .slice(0, TRACKER_LIMIT);
+}
+
+export function trackerStats(t: Tracker) {
+    return {
+        total: t.items.length,
+        watching: t.items.filter((i) => i.status === "watching").length,
+        completed: t.items.filter((i) => i.status === "completed").length,
+    };
+}
+
 // ---------- Summaries for lists ----------
 
 export type DriveFileSummary = {
@@ -243,6 +321,7 @@ export type DriveFileSummary = {
     color?: BoardColor;
     stats?: ReturnType<typeof boardStats>;
     todoStats?: ReturnType<typeof todoStats>;
+    trackerStats?: ReturnType<typeof trackerStats>;
 };
 
 // ---------- Reminders ----------
