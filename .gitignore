@@ -42,3 +42,6 @@ next-env.d.ts
 
 # prisma
 /app/generated/prisma
+
+# local email preview
+.email-preview.html

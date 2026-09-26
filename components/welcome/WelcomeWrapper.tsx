@@ -6,13 +6,16 @@ import {
     ArrowRight,
     BellRing,
     BriefcaseBusiness,
+    AlarmClock,
+    Coffee,
     Compass,
+    Flag,
     Flame,
     Images,
     KanbanSquare,
-    ListChecks,
     ShieldCheck,
     StickyNote,
+    Tv,
 } from "lucide-react";
 
 /*
@@ -37,13 +40,13 @@ const FEATURES = [
         code: "01",
         icon: BriefcaseBusiness,
         title: "Your portfolio, in one place",
-        text: "Projects, experience, education, skills and awards on a single profile you can share with one link.",
+        text: "Projects, experience, education, skills, awards and your resume on one profile. Choose which tabs show and in what order.",
     },
     {
         code: "02",
         icon: Images,
         title: "Posts & galleries",
-        text: "Share photo posts, crop them to the perfect shape, and organise your best shots into galleries.",
+        text: "Share photo posts, crop them to the perfect shape, and swipe through full-screen galleries on your phone.",
     },
     {
         code: "03",
@@ -61,41 +64,60 @@ const FEATURES = [
         code: "05",
         icon: KanbanSquare,
         title: "Planners on real dates",
-        text: "Trello-style boards with a board, week and month view. Drag cards between days, add times, and catch anything overdue.",
-        isNew: true,
+        text: "Boards with board, week and month views. Drag cards between days, add times, and never miss what's overdue.",
     },
     {
         code: "06",
-        icon: ListChecks,
-        title: "To-dos that keep up",
-        text: "Today, Upcoming and Important lists, due dates and stars, plus one place for everything coming up.",
+        icon: AlarmClock,
+        title: "Reminders & weekly recap",
+        text: "Set a reminder on any card or to-do and get a push when it's due, plus a Sunday summary of your week ahead.",
         isNew: true,
     },
     {
         code: "07",
-        icon: StickyNote,
-        title: "Drive & notes",
-        text: "Quick notes that save as you type, searchable and private. Docs and sheets are on the way.",
+        icon: Tv,
+        title: "Watch trackers",
+        text: "Keep every show on the right episode. One tap opens the next episode and counts it, and completed ones tidy away.",
         isNew: true,
     },
     {
         code: "08",
-        icon: ShieldCheck,
-        title: "Privacy you control",
-        text: "Choose who sees each post and project, hide things from certain people, and block anyone, anytime.",
+        icon: StickyNote,
+        title: "Drive, notes & to-dos",
+        text: "Notes that save as you type, to-do lists with Today and Upcoming, all private to you.",
     },
     {
         code: "09",
+        icon: Coffee,
+        title: "Buy me a coffee",
+        text: "Let people support your work with a coffee. You see exactly where every dollar goes before you turn it on.",
+        isNew: true,
+    },
+    {
+        code: "10",
+        icon: ShieldCheck,
+        title: "Privacy you control",
+        text: "Choose who sees each post, project and gallery, hide things from certain people, and block anyone, anytime.",
+    },
+    {
+        code: "11",
+        icon: Flag,
+        title: "A safe community",
+        text: "Report anything that crosses the line. Real people review reports, and you can appeal if something of yours is flagged.",
+        isNew: true,
+    },
+    {
+        code: "12",
         icon: BellRing,
-        title: "Push notifications, like an app",
-        text: "Install Inkference on your phone's home screen and get notified about likes, comments and friends.",
+        title: "Works like an app",
+        text: "Add Inkference to your home screen and get push notifications for likes, comments, friends and reminders.",
     },
 ];
 
 const STEPS = [
     { title: "Create your account", text: "Sign up with email, Google or GitHub, then pick a username." },
-    { title: "Build your profile", text: "Add projects, experience, skills and photos in a few minutes." },
-    { title: "Share, plan & connect", text: "Post your work, plan your week, and find builders who make things like you." },
+    { title: "Build your profile", text: "Add projects, experience, skills, photos and your resume in a few minutes." },
+    { title: "Share, plan & connect", text: "Post your work, plan your week with reminders, and find builders who make things like you." },
 ];
 
 // Counts up from 0 when the number scrolls into view.
@@ -237,7 +259,7 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
                     </svg>
 
                     <div className="relative max-w-2xl space-y-6">
-                        <Label>System online // v3</Label>
+                        <Label>System online // v4</Label>
 
                         <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
                             Build your portfolio.
@@ -252,8 +274,9 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
 
                         <p className="max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
                             Inkference is where builders show their work and get it done. Put your
-                            projects and skills on one profile, share posts, plan your week on real
-                            dates, and connect with people who make things too.
+                            projects, skills and resume on one profile, share posts, plan your week with
+                            reminders, track what you&apos;re watching, and connect with people who make
+                            things too.
                         </p>
 
                         {signedInAs && (
@@ -321,7 +344,7 @@ const WelcomeWrapper = ({ stats, signedInAs }: Props) => {
                     <Label>Modules</Label>
                     <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">What you can do</h2>
                     <p className="mt-2 max-w-xl text-neutral-600">
-                        Show your work, plan it, and grow. Nine modules, one app.
+                        Show your work, plan it, track it, and grow. Twelve modules, one app.
                     </p>
 
                     <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">

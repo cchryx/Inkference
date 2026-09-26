@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     title: { absolute: "Inkference: build your portfolio, plan your work" },
     alternates: { canonical: "/" },
     description:
-        "Inkference is a portfolio and social platform for builders. Show off your projects and skills, post your work, plan your week on real dates, and connect with people who make things.",
+        "Inkference is a portfolio and social platform for builders. Show off your projects, skills and resume, post your work, plan your week with reminders, track what you're watching, and connect with people who make things.",
 };
 
 // Counted at most every 10 minutes instead of on every visit.
