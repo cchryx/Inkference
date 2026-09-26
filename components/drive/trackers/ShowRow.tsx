@@ -43,7 +43,11 @@ export default function ShowRow({ item, band, open, onToggleOpen, onChange, onDe
         <li className={`overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 ${done ? "opacity-75" : ""}`}>
             <div className="flex items-center gap-2 px-3 py-2.5 sm:gap-3 md:px-4">
                 <span className={`h-10 w-1 shrink-0 rounded-full ${band}`} />
-                <button type="button" onClick={onToggleOpen} className="min-w-0 flex-1 text-left cursor-pointer">
+                {/* Phones: only the arrow opens details (no accidental taps). Computers: the name works too. */}
+                <div
+                    onClick={() => window.matchMedia("(min-width: 640px)").matches && onToggleOpen()}
+                    className="min-w-0 flex-1 text-left sm:cursor-pointer"
+                >
                     <span className="flex items-center gap-1.5">
                         <span className={`size-2 shrink-0 rounded-full ${STATUS_DOT[item.status]}`} />
                         <span className={`truncate text-sm font-semibold md:text-base ${done ? "line-through decoration-gray-400" : ""}`}>
@@ -54,7 +58,7 @@ export default function ShowRow({ item, band, open, onToggleOpen, onChange, onDe
                         {item.episode === 0 ? "Not started" : `Episode ${item.episode}`}
                         {item.total ? ` of ${item.total}` : ""} · {formatDistanceToNow(new Date(item.updatedAt), { addSuffix: true })}
                     </span>
-                </button>
+                </div>
 
                 {/* Episode counter */}
                 <div className="flex shrink-0 items-center rounded-lg bg-gray-100">
@@ -130,7 +134,7 @@ export default function ShowRow({ item, band, open, onToggleOpen, onChange, onDe
                     onClick={onToggleOpen}
                     aria-label="Details"
                     aria-expanded={open}
-                    className="shrink-0 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-black cursor-pointer"
+                    className="shrink-0 rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-black cursor-pointer sm:p-1"
                 >
                     <ChevronDown className={`size-4 transition-transform ${open ? "rotate-180" : ""}`} />
                 </button>
