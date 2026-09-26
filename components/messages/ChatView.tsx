@@ -41,7 +41,7 @@ type Item = {
     pending?: Pending;
 };
 
-const MAX_TEXT = 4000;
+const DEFAULT_MAX_TEXT = 2000;
 
 // ---- cache helpers (the chat's messages live in react-query, newest first) ----
 
@@ -129,6 +129,9 @@ export default function ChatView({ id, meId, now, onBack, onGone, onAccepted }: 
     const readTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const lastTypingSent = useRef(0);
 
+    const maxText = detail?.maxText ?? DEFAULT_MAX_TEXT;
+    // Request not accepted yet: how many more you can send (counting ones still on the way).
+    const requestLeft = detail?.requestLeft == null ? null : Math.max(0, detail.requestLeft - pending.filter((p) => !p.failed).length);
     const others = useMemo(() => (detail?.members ?? []).filter((m) => m.id !== meId), [detail, meId]);
     const other = !detail?.isGroup ? others[0] : undefined;
 
@@ -258,12 +261,18 @@ export default function ChatView({ id, meId, now, onBack, onGone, onAccepted }: 
         insertMessage(qc, id, res.message);
         bumpList(qc, id, res.message);
         setPending((all) => all.filter((x) => x.clientId !== p.clientId));
+        // Still a request: refresh "messages left".
+        if (qc.getQueryData<ConversationDetail | null>(["conversation", id])?.requestLeft != null) {
+            qc.invalidateQueries({ queryKey: ["conversation", id] });
+        }
     };
 
     const send = () => {
         const body = text.trim();
         if (!body) return;
-        const p: Pending = { clientId: newClientId(), text: body.slice(0, MAX_TEXT), createdAt: new Date().toISOString() };
+        if (body.length > maxText) return toast.error(`Messages can be up to ${maxText.toLocaleString()} characters.`);
+        if (requestLeft === 0) return;
+        const p: Pending = { clientId: newClientId(), text: body, createdAt: new Date().toISOString() };
         setPending((all) => [...all, p]);
         setText("");
         setSelected(null);
@@ -615,11 +624,18 @@ export default function ChatView({ id, meId, now, onBack, onGone, onAccepted }: 
                 </div>
             ) : !detail.canSend ? (
                 <p className="border-t border-gray-200 p-4 text-center text-sm text-gray-500">You can&apos;t message this person.</p>
+            ) : requestLeft === 0 ? (
+                <div className="space-y-1 border-t border-gray-200 p-4 text-center">
+                    <p className="text-sm font-medium">Waiting for them to accept</p>
+                    <p className="text-xs text-gray-500">
+                        You can send more messages once {detail.title.split(" ")[0]} accepts your request.
+                    </p>
+                </div>
             ) : (
                 <div className="border-t border-gray-200 px-3 py-2 md:px-4">
-                    {other && other.status === "request" && (
+                    {requestLeft !== null && (
                         <p className="pb-1.5 text-center text-[11px] text-gray-400">
-                            They&apos;ll get this as a message request.
+                            Message request: you can send {requestLeft} more message{requestLeft === 1 ? "" : "s"} until they accept.
                         </p>
                     )}
                     <form
@@ -633,7 +649,7 @@ export default function ChatView({ id, meId, now, onBack, onGone, onAccepted }: 
                             ref={inputRef}
                             rows={1}
                             value={text}
-                            maxLength={MAX_TEXT}
+                            maxLength={maxText}
                             onChange={(e) => onType(e.target.value)}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -644,6 +660,15 @@ export default function ChatView({ id, meId, now, onBack, onGone, onAccepted }: 
                             placeholder="Message…"
                             className="min-h-10 flex-1 resize-none rounded-2xl bg-gray-100 px-4 py-2.5 text-sm leading-5 outline-none focus:ring-2 focus:ring-black"
                         />
+                        {text.length > maxText - 200 && (
+                            <span
+                                className={`self-center text-[11px] tabular-nums ${
+                                    text.length >= maxText ? "text-red-500" : "text-gray-400"
+                                }`}
+                            >
+                                {maxText - text.length}
+                            </span>
+                        )}
                         <button
                             type="submit"
                             disabled={!text.trim()}

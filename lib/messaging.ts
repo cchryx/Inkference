@@ -9,7 +9,29 @@ import { notify } from "@/lib/notify";
 export const MESSAGE_SETTINGS = ["EVERYONE", "FOLLOWING", "FRIENDS", "NOBODY"] as const;
 export type MessageSetting = (typeof MESSAGE_SETTINGS)[number];
 export const MAX_GROUP = 50;
-export const MAX_TEXT = 4000;
+/** Longest single message (characters). */
+export const MAX_TEXT = 2000;
+/** Messages you can send someone before they accept your request. */
+export const REQUEST_LIMIT = 3;
+
+// Anti-spam: at most RATE_MAX messages per RATE_WINDOW per person (in memory, per server).
+const RATE_MAX = 10;
+const RATE_WINDOW = 20_000;
+const g = globalThis as unknown as { __inkRate?: Map<string, number[]> };
+const sent = (g.__inkRate ??= new Map<string, number[]>());
+
+/** True if this person can send another message right now (and counts it). */
+export function takeSendSlot(userId: string) {
+    const now = Date.now();
+    const recent = (sent.get(userId) ?? []).filter((t) => now - t < RATE_WINDOW);
+    if (recent.length >= RATE_MAX) {
+        sent.set(userId, recent);
+        return false;
+    }
+    recent.push(now);
+    sent.set(userId, recent);
+    return true;
+}
 
 /**
  * Can `from` message `to`?

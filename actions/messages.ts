@@ -7,6 +7,8 @@ import { publish, type MessageDTO } from "@/lib/realtime";
 import {
     MAX_GROUP,
     MAX_TEXT,
+    REQUEST_LIMIT,
+    takeSendSlot,
     MESSAGE_SETTINGS,
     dmKeyFor,
     memberIds,
@@ -71,9 +73,10 @@ export async function listConversations(folder: "inbox" | "requests" = "inbox"):
                     name: true,
                     lastMessageAt: true,
                     members: {
-                        where: { userId: { not: user.id }, status: { not: "left" } },
-                        select: { userId: true },
-                        take: 6,
+                        where: { userId: { not: user.id } },
+                        select: { userId: true, status: true },
+                        orderBy: { joinedAt: "asc" },
+                        take: 12,
                     },
                     messages: { orderBy: { createdAt: "desc" }, take: 1 },
                 },
@@ -84,7 +87,19 @@ export async function listConversations(folder: "inbox" | "requests" = "inbox"):
     });
 
     // Hidden ("deleted for me") until someone sends something new.
-    const visible = mine.filter((m) => !m.hiddenAt || m.conversation.lastMessageAt > m.hiddenAt);
+    const visible = mine
+        .filter((m) => !m.hiddenAt || m.conversation.lastMessageAt > m.hiddenAt)
+        // Groups: only people still in it. 1-on-1: always the other person.
+        .map((m) => ({
+            ...m,
+            conversation: {
+                ...m.conversation,
+                members: (m.conversation.isGroup
+                    ? m.conversation.members.filter((x) => x.status !== "left")
+                    : m.conversation.members
+                ).slice(0, 6),
+            },
+        }));
     const people = await prisma.user.findMany({
         where: { id: { in: [...new Set(visible.flatMap((m) => m.conversation.members.map((x) => x.userId)))] } },
         select: userSelect,
@@ -173,6 +188,9 @@ export type ConversationDetail = {
     members: (MiniUser & { role: string; status: string; lastReadAt: string | null })[];
     /** 1-on-1: can you send? (false if either of you blocked the other) */
     canSend: boolean;
+    /** 1-on-1 request you sent that isn't accepted yet: messages you have left (else null). */
+    requestLeft: number | null;
+    maxText: number;
 };
 
 export async function getConversation(conversationId: string): Promise<ConversationDetail | null> {
@@ -181,11 +199,16 @@ export async function getConversation(conversationId: string): Promise<Conversat
     const mine = await myMembership(conversationId, user.id);
     if (!mine || mine.status === "left") return null;
 
-    const members = await prisma.conversationMember.findMany({
-        where: { conversationId, status: { not: "left" } },
-        select: { userId: true, role: true, status: true, lastReadAt: true },
+    const all = await prisma.conversationMember.findMany({
+        where: { conversationId },
+        select: { userId: true, role: true, status: true, lastReadAt: true, joinedAt: true },
         orderBy: { joinedAt: "asc" },
     });
+    // Groups: people still in it. 1-on-1: the other person always shows, and if they
+    // deleted your request it still looks "not accepted" to you (they aren't told).
+    const members = mine.conversation.isGroup
+        ? all.filter((m) => m.status !== "left")
+        : all.map((m) => (m.userId !== user.id && m.status === "left" ? { ...m, status: "request", deletedRequest: true } : m));
     const users = await prisma.user.findMany({ where: { id: { in: members.map((m) => m.userId) } }, select: userSelect });
     const byId = new Map(users.map((u) => [u.id, u]));
     const list = members
@@ -211,6 +234,19 @@ export async function getConversation(conversationId: string): Promise<Conversat
         if (blocked) canSend = false;
     }
 
+    let requestLeft: number | null = null;
+    const otherRow = !mine.conversation.isGroup ? members.find((m) => m.userId !== user.id) : undefined;
+    if (otherRow && otherRow.status === "request" && mine.status === "active") {
+        if ("deletedRequest" in otherRow) {
+            requestLeft = REQUEST_LIMIT; // your next message starts a fresh request
+        } else {
+            const count = await prisma.message.count({
+                where: { conversationId, senderId: user.id, kind: "text", createdAt: { gte: otherRow.joinedAt } },
+            });
+            requestLeft = Math.max(0, REQUEST_LIMIT - count);
+        }
+    }
+
     return {
         id: conversationId,
         isGroup: mine.conversation.isGroup,
@@ -223,6 +259,8 @@ export async function getConversation(conversationId: string): Promise<Conversat
         muted: mine.muted,
         members: list,
         canSend,
+        requestLeft,
+        maxText: MAX_TEXT,
     };
 }
 
@@ -321,8 +359,9 @@ export async function createGroup(input: { name: string; userIds: string[] }) {
 export async function sendMessage(conversationId: string, text: string, clientId?: string) {
     const user = await me();
     if (!user) return { error: "Sign in first.", message: null };
-    const body = String(text ?? "").trim().slice(0, MAX_TEXT);
+    const body = String(text ?? "").trim();
     if (!body) return { error: "Empty message.", message: null };
+    if (body.length > MAX_TEXT) return { error: `Messages can be up to ${MAX_TEXT.toLocaleString()} characters.`, message: null };
 
     const mine = await myMembership(conversationId, user.id);
     if (!mine || mine.status === "left") return { error: "Chat not found.", message: null };
@@ -330,7 +369,7 @@ export async function sendMessage(conversationId: string, text: string, clientId
     if (!mine.conversation.isGroup) {
         const other = await prisma.conversationMember.findFirst({
             where: { conversationId, userId: { not: user.id } },
-            select: { id: true, userId: true, status: true },
+            select: { id: true, userId: true, status: true, joinedAt: true },
         });
         if (other) {
             const access = await messageAccess(user.id, other.userId);
@@ -349,16 +388,29 @@ export async function sendMessage(conversationId: string, text: string, clientId
                 });
                 if (blocked) return { error: "You can't message this person.", message: null };
             }
-            // They'd deleted a request from you earlier: it comes back as a request.
+            // They'd deleted a request from you earlier: it comes back as a (fresh) request.
             if (other.status === "left") {
                 if (access === "closed") return { error: "This person isn't taking messages.", message: null };
                 await prisma.conversationMember.update({
                     where: { id: other.id },
-                    data: { status: access === "direct" ? "active" : "request" },
+                    data: { status: access === "direct" ? "active" : "request", joinedAt: new Date() },
                 });
+            } else if (other.status === "request" && mine.status === "active") {
+                // Not accepted yet: only a few messages until they do.
+                const count = await prisma.message.count({
+                    where: { conversationId, senderId: user.id, kind: "text", createdAt: { gte: other.joinedAt } },
+                });
+                if (count >= REQUEST_LIMIT) {
+                    return {
+                        error: `You can send ${REQUEST_LIMIT} messages until they accept your request.`,
+                        message: null,
+                    };
+                }
             }
         }
     }
+
+    if (!takeSendSlot(user.id)) return { error: "Slow down a little. Try again in a few seconds.", message: null };
 
     // Replying to a request accepts it.
     const now = new Date();
