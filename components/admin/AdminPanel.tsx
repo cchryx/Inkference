@@ -24,6 +24,9 @@ import {
     setStorageLimit,
     setUserRole,
     setUserStorage,
+    adminMarkVerified,
+    adminSendPasswordReset,
+    adminSendVerification,
     listReports,
     dismissReports,
     type AdminReport,
@@ -412,6 +415,15 @@ function UserRow({ user: u, startOpen }: { user: AdminUser; startOpen?: boolean 
                         <span className="truncate">{u.name}</span>
                         <RoleBadge role={u.role} />
                         {banned && <span className="rounded bg-red-100 px-1.5 text-[10px] font-semibold text-red-700">banned</span>}
+                        {u.emailVerified ? (
+                            <span title="Email verified" className="inline-flex items-center gap-0.5 rounded bg-green-100 px-1.5 text-[10px] font-semibold text-green-800">
+                                <Check className="size-3" /> verified
+                            </span>
+                        ) : (
+                            <span title="Email not verified" className="rounded bg-amber-100 px-1.5 text-[10px] font-semibold text-amber-800">
+                                unverified
+                            </span>
+                        )}
                     </span>
                     <span className="block truncate text-xs text-gray-500">
                         @{u.username ?? "no username"} · {u.email}
@@ -451,6 +463,25 @@ function UserRow({ user: u, startOpen }: { user: AdminUser; startOpen?: boolean 
                             />
                         </div>
                     )}
+
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-600">
+                        <span>
+                            Email {u.emailVerified ? "verified" : "not verified"} · {u.hasPassword ? "has a password" : "Google/GitHub only"}
+                        </span>
+                        {!u.emailVerified && (
+                            <>
+                                <SmallBtn disabled={busy} onClick={() => run(() => adminSendVerification(u.id), "Verification email sent.")}>
+                                    Resend verification
+                                </SmallBtn>
+                                <SmallBtn disabled={busy} onClick={() => run(() => adminMarkVerified(u.id), "Marked as verified.")}>
+                                    Mark verified
+                                </SmallBtn>
+                            </>
+                        )}
+                        <SmallBtn disabled={busy} onClick={() => run(() => adminSendPasswordReset(u.id), "Password link sent.")}>
+                            Send password reset
+                        </SmallBtn>
+                    </div>
 
                     <div className="flex flex-wrap gap-1.5">
                         {u.username && (

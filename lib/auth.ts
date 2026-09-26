@@ -48,15 +48,18 @@ export const auth = betterAuth({
                     : "Create your password",
                 meta: {
                     description: hasPassword
-                        ? "Please click the link below to reset your password."
-                        : "Please click the link below to create a password. You'll then be able to sign in with your email and password too.",
+                        ? "Someone (hopefully you) asked to reset your Inkference password. Tap the button below to pick a new one. The link works for 1 hour. If this wasn't you, you can ignore this email."
+                        : "Tap the button below to create a password. You'll then be able to sign in with your email and password too. The link works for 1 hour.",
                     link: String(url),
+                    button: hasPassword ? "Reset password" : "Create password",
                 },
             });
         },
     },
     emailVerification: {
         sendOnSignUp: true,
+        // Trying to sign in before verifying sends a fresh link automatically.
+        sendOnSignIn: true,
         expiresIn: 60 * 60, // 1 hour
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
@@ -70,8 +73,9 @@ export const auth = betterAuth({
                 subject: "Verify your email address",
                 meta: {
                     description:
-                        "Please verify your email address to complete the registration process.",
+                        "Tap the button below to verify your email and finish setting up your Inkference account. The link works for 1 hour.",
                     link: String(link),
+                    button: "Verify email",
                 },
             });
         },

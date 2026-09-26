@@ -17,7 +17,7 @@ export default function UpdatedAgo({ updated, created, prefix = "Updated", class
     if (Number.isNaN(u.getTime())) return null;
     if (created && u.getTime() - new Date(created).getTime() < 60_000) return null; // never edited
     return (
-        <span suppressHydrationWarning className={`text-[11px] text-gray-400 ${className}`} title={u.toLocaleString()}>
+        <span suppressHydrationWarning className={`hidden text-[11px] text-gray-400 sm:inline ${className}`} title={u.toLocaleString()}>
             {prefix} {formatDistanceToNow(u, { addSuffix: true })}
         </span>
     );

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SerwistProvider } from "@serwist/turbopack/react";
 import PushSync from "@/components/general/PushSync";
+import VerifiedToast from "@/components/general/VerifiedToast";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -88,6 +89,7 @@ export default function RootLayout({
                 >
                     <QueryProvider>{children}</QueryProvider>
                     <PushSync />
+                    <VerifiedToast />
                     <Toaster position="top-center" richColors />
                 </SerwistProvider>
             </body>

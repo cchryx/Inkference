@@ -364,7 +364,7 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                                     Resume
                                 </a>
                                 {tUser.resumeUpdatedAt && (
-                                    <span className="text-[10px] text-gray-400">
+                                    <span className="hidden text-[10px] text-gray-400 sm:inline">
                                         Updated{" "}
                                         {new Date(tUser.resumeUpdatedAt).toLocaleDateString("en-US", {
                                             month: "short",

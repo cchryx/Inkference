@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { getRawSession } from "@/lib/session";
@@ -50,6 +52,9 @@ export type AdminUser = {
     name: string;
     username: string | null;
     email: string;
+    emailVerified: boolean;
+    /** Has an email + password sign-in (vs only Google/GitHub). */
+    hasPassword: boolean;
     image: string | null;
     createdAt: string;
     role: Role;
@@ -88,6 +93,8 @@ export async function listUsers(query = "", cursor?: string) {
             name: true,
             username: true,
             email: true,
+            emailVerified: true,
+            accounts: { select: { providerId: true } },
             image: true,
             createdAt: true,
             role: true,
@@ -105,8 +112,9 @@ export async function listUsers(query = "", cursor?: string) {
     });
     const sizeOf = new Map(sizes.map((s) => [s.userId, s._sum.bytes ?? 0]));
     return {
-        users: page.map<AdminUser>((u) => ({
+        users: page.map<AdminUser>(({ accounts, ...u }) => ({
             ...u,
+            hasPassword: accounts.some((a) => a.providerId === "credential"),
             createdAt: u.createdAt.toISOString(),
             role: roleOf(u),
             isAdmin: isAdminAccount(u),
@@ -427,4 +435,46 @@ export async function dismissReports(targetType: string, targetId: string) {
 export async function countOpenReports() {
     if (!(await adminId())) return 0;
     return prisma.report.count({ where: { status: "open" } });
+}
+
+// ---------------- Email and password help ----------------
+
+/** Send them a new "verify your email" link. */
+export async function adminSendVerification(userId: string) {
+    if (!(await adminId())) return NOPE;
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, emailVerified: true } });
+    if (!u) return { error: "User not found." };
+    if (u.emailVerified) return { error: "They're already verified." };
+    try {
+        await auth.api.sendVerificationEmail({ body: { email: u.email, callbackURL: "/auth/verify" }, headers: await headers() });
+    } catch (err) {
+        console.error("adminSendVerification failed:", err);
+        return { error: "Couldn't send the email." };
+    }
+    return { error: null };
+}
+
+/** Mark their email as verified by hand (e.g. the email never arrives). */
+export async function adminMarkVerified(userId: string) {
+    const me = await staff();
+    if (!me) return NOPE;
+    const target = await getAccount(userId);
+    if (!target) return { error: "User not found." };
+    if (userId !== me.id && !canManage(me.role, roleOf(target))) return { error: "You can't change this person." };
+    await prisma.user.update({ where: { id: userId }, data: { emailVerified: true } });
+    return { error: null };
+}
+
+/** Email them a link to reset (or create) their password. */
+export async function adminSendPasswordReset(userId: string) {
+    if (!(await adminId())) return NOPE;
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (!u) return { error: "User not found." };
+    try {
+        await auth.api.requestPasswordReset({ body: { email: u.email, redirectTo: "/auth/reset-password" }, headers: await headers() });
+    } catch (err) {
+        console.error("adminSendPasswordReset failed:", err);
+        return { error: "Couldn't send the email." };
+    }
+    return { error: null };
 }

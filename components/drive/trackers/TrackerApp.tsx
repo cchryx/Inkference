@@ -343,7 +343,9 @@ export default function TrackerApp({ initialTrackers, initialId }: Props) {
                                 )}
                             </div>
                         </header>
-                        <UpdatedAgo updated={lastUpdated} prefix="Last updated" className="px-4 pl-[3.25rem] md:px-8 md:pl-[3.25rem]" />
+                        <div className="pl-[3.25rem] pr-4 md:pr-8">
+                            <UpdatedAgo updated={lastUpdated} prefix="Last updated" />
+                        </div>
 
                         {/* Add a show */}
                         <div className="px-4 pt-4 md:px-8">

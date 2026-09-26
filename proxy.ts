@@ -27,9 +27,12 @@ export async function proxy(req: NextRequest) {
         (route) => path === route || path.startsWith(`${route}/`)
     );
     // Password links from emails must work even when already signed in.
+    // (Verify: after tapping the email link you're signed in, and the page
+    // then sends you on to the app with a "verified" message.)
     const isPasswordLink = [
         "/auth/create-password",
         "/auth/reset-password",
+        "/auth/verify",
     ].includes(nextUrl.pathname);
     const isOnAuthRoute =
         nextUrl.pathname.startsWith("/auth") && !isPasswordLink;
