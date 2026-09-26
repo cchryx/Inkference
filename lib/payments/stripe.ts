@@ -2,8 +2,10 @@ import Stripe from "stripe";
 import type { PaymentEvent, PaymentProvider, PayoutStatus } from "./types";
 
 /*
- * Stripe Connect ("Express" accounts). Each person who turns on tips gets
- * their own Stripe account; Stripe checks their ID and pays their bank.
+ * Stripe Connect with Accounts v2 (what Stripe wants new platforms to use).
+ * Each person who turns on tips gets a connected account with the
+ * "recipient" configuration: Stripe checks their ID and pays their bank,
+ * and they get the Express dashboard.
  * Money path for one coffee (a "destination charge"):
  *   supporter's card -> Stripe -> recipient's Stripe account -> their bank
  *   and Inkference keeps the `application_fee_amount` (5% + processing,
@@ -16,41 +18,66 @@ function stripe() {
     return client;
 }
 
-const toStatus = (a: Stripe.Account): PayoutStatus => ({
-    canReceive: !!a.charges_enabled,
-    canPayout: !!a.payouts_enabled,
-    setupDone: !!a.details_submitted,
-    country: a.country ?? null,
-    currency: a.default_currency ?? null,
-});
+const INCLUDE = ["configuration.recipient", "requirements", "identity", "defaults"] as const;
+
+function toStatus(a: Stripe.V2.Core.Account): PayoutStatus {
+    const balance = a.configuration?.recipient?.capabilities?.stripe_balance;
+    const transfers = balance?.stripe_transfers?.status === "active";
+    const payouts = balance?.payouts ? balance.payouts.status === "active" : transfers;
+    // Done when nothing is waiting on the person to fill in.
+    const waitingOnUser = (a.requirements?.entries ?? []).some((e) => e.awaiting_action_from === "user");
+    return {
+        canReceive: transfers,
+        canPayout: payouts,
+        setupDone: transfers && !waitingOnUser,
+        country: a.identity?.country ?? null,
+        currency: a.defaults?.currency ?? null,
+    };
+}
+
+async function statusOf(accountId: string) {
+    return toStatus(await stripe().v2.core.accounts.retrieve(accountId, { include: [...INCLUDE] }));
+}
 
 export const stripeProvider: PaymentProvider = {
     id: "stripe",
 
     async createPayoutAccount({ userId, email, country }) {
-        const account = await stripe().accounts.create({
-            type: "express",
-            email,
-            country: country || process.env.PAYOUT_DEFAULT_COUNTRY || "CA",
-            capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
-            business_type: "individual",
+        const account = await stripe().v2.core.accounts.create({
+            contact_email: email,
+            display_name: email,
+            dashboard: "express",
+            identity: { country: (country || process.env.PAYOUT_DEFAULT_COUNTRY || "CA").toLowerCase() },
+            defaults: {
+                currency: "cad",
+                // Inkference (the platform) pays Stripe's fees and covers disputes.
+                responsibilities: { fees_collector: "application", losses_collector: "application" },
+            },
+            configuration: {
+                recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } },
+            },
             metadata: { userId },
         });
         return { externalId: account.id };
     },
 
     async getOnboardingLink(externalId, { returnUrl, refreshUrl }) {
-        const link = await stripe().accountLinks.create({
+        const link = await stripe().v2.core.accountLinks.create({
             account: externalId,
-            type: "account_onboarding",
-            return_url: returnUrl,
-            refresh_url: refreshUrl,
+            use_case: {
+                type: "account_onboarding",
+                account_onboarding: {
+                    configurations: ["recipient"],
+                    return_url: returnUrl,
+                    refresh_url: refreshUrl,
+                },
+            },
         });
         return link.url;
     },
 
     async getPayoutStatus(externalId) {
-        return toStatus(await stripe().accounts.retrieve(externalId));
+        return statusOf(externalId);
     },
 
     async getDashboardLink(externalId) {
@@ -103,6 +130,30 @@ export const stripeProvider: PaymentProvider = {
         const secrets = [process.env.STRIPE_WEBHOOK_SECRET, process.env.STRIPE_CONNECT_WEBHOOK_SECRET].filter(
             (x): x is string => !!x
         );
+        // Accounts v2 updates arrive as small "thin" events that only say
+        // which account changed; look the account up for its new status.
+        let isThin = false;
+        try {
+            isThin = JSON.parse(body)?.object === "v2.core.event";
+        } catch {
+            throw new Error("Webhook body isn't JSON");
+        }
+        if (isThin) {
+            for (const secret of secrets) {
+                try {
+                    const note = stripe().parseEventNotification(body, signature, secret);
+                    const id = (note as unknown as { related_object?: { id?: string } }).related_object?.id;
+                    if (String(note.type).startsWith("v2.core.account") && id) {
+                        return [{ type: "account.updated", externalId: id, status: await statusOf(id) }];
+                    }
+                    return [];
+                } catch {
+                    // try the next secret
+                }
+            }
+            throw new Error("Webhook signature didn't match");
+        }
+
         let event: Stripe.Event | null = null;
         for (const secret of secrets) {
             try {
@@ -135,8 +186,9 @@ export const stripeProvider: PaymentProvider = {
                 return pi.metadata?.tipId ? [{ type: "tip.refunded", tipId: pi.metadata.tipId }] : [];
             }
             case "account.updated": {
+                // Older-style update for a connected account.
                 const a = event.data.object as Stripe.Account;
-                return [{ type: "account.updated", externalId: a.id, status: toStatus(a) }];
+                return [{ type: "account.updated", externalId: a.id, status: await statusOf(a.id) }];
             }
             default:
                 return [] as PaymentEvent[];
