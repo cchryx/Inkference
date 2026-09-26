@@ -2,8 +2,6 @@ import { getProfileData, getProfileMeta } from "@/actions/profile/getProfileData
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { SocialsCard } from "@/components/profile/SocialsCard";
 import { ProfileCard } from "@/components/profile/ProfileCard";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Content from "@/components/content/Content";
@@ -16,7 +14,8 @@ import { getViewerContext } from "@/lib/visibility";
 import BlockedNotice from "@/components/profile/BlockedNotice";
 import JsonLd from "@/components/general/JsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
-import { getHiddenSections } from "@/lib/profilePrefs";
+import { getSectionLayout } from "@/lib/profilePrefs";
+import { getSession } from "@/lib/session";
 
 // Deduped within one request.
 const loadProfile = cache(getProfileData);
@@ -71,7 +70,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
     // Session and profile load at the same time.
     const [session, profileData] = await Promise.all([
-        auth.api.getSession({ headers: await headers() }),
+        getSession(),
         loadProfile(username),
     ]);
 
@@ -99,9 +98,9 @@ export default async function Page({ params, searchParams }: PageProps) {
         );
     }
 
-    const [userData, hiddenSections]: [any, string[]] = await Promise.all([
+    const [userData, layout]: [any, { hidden: string[]; order: string[] }] = await Promise.all([
         getUserData(profileData.user.id, { viewer }),
-        getHiddenSections(profileData.user.id),
+        getSectionLayout(profileData.user.id),
     ]);
 
     const tUser: any = {
@@ -203,7 +202,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
             {/* Bottom section */}
             <div className="px-[2%]">
-                <Content userData={tUser} initialTab={query.section ?? query.tab} hiddenSections={hiddenSections} />
+                <Content userData={tUser} initialTab={query.section ?? query.tab} hiddenSections={layout.hidden} sectionOrder={layout.order} />
             </div>
         </div>
     );

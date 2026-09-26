@@ -5,10 +5,20 @@ export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 export const isProfileSection = (v: unknown): v is ProfileSection =>
     typeof v === "string" && (PROFILE_SECTIONS as readonly string[]).includes(v);
 
-/** The tabs someone chose to show (never none). */
-export function shownSections(hidden: readonly string[] | null | undefined): ProfileSection[] {
-    const shown = PROFILE_SECTIONS.filter((s) => !hidden?.includes(s));
-    return shown.length ? shown : [...PROFILE_SECTIONS];
+/** Every tab, in the order someone picked (new tabs go at the end). */
+export function orderedSections(order: readonly string[] | null | undefined): ProfileSection[] {
+    const picked = (order ?? []).filter(isProfileSection);
+    return [...new Set([...picked, ...PROFILE_SECTIONS])];
+}
+
+/** The tabs someone chose to show, in their order (never none). */
+export function shownSections(
+    hidden: readonly string[] | null | undefined,
+    order?: readonly string[] | null
+): ProfileSection[] {
+    const all = orderedSections(order);
+    const shown = all.filter((s) => !hidden?.includes(s));
+    return shown.length ? shown : all;
 }
 
 /** Which tab to open: the one asked for if it's shown, else the first shown. */

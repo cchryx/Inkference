@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical, ShieldAlert, Trash2 } from "lucide-react";
 import Img from "@/components/general/Img";
 import { previewUrl } from "@/lib/imageUrl";
 
@@ -11,10 +11,12 @@ type Props = {
     /** Open the full-screen viewer on this photo. */
     onOpen: () => void;
     onDelete: () => void;
+    /** Admins (not the owner): flag or delete this photo. */
+    onModerate?: () => void;
 };
 
 /** One photo in the gallery grid. Tap it to open the viewer. */
-const GalleryImage = ({ photo, isOwner = false, onOpen, onDelete }: Props) => {
+const GalleryImage = ({ photo, isOwner = false, onOpen, onDelete, onModerate }: Props) => {
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
@@ -34,6 +36,21 @@ const GalleryImage = ({ photo, isOwner = false, onOpen, onDelete }: Props) => {
             )}
 
             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block pointer-events-none" />
+
+            {onModerate && (
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onModerate();
+                    }}
+                    aria-label="Moderate photo (admin)"
+                    title="Moderate (admin)"
+                    className="hidden sm:flex absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                >
+                    <ShieldAlert size={18} />
+                </button>
+            )}
 
             {/* Owner menu (computers; on phones delete from the viewer) */}
             {isOwner && (

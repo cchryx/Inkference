@@ -1,10 +1,9 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { recordEngagement } from "@/lib/engagement";
 import { notifyViewMilestones } from "@/lib/notify";
+import { getSession } from "@/lib/session";
 
 /**
  * Records that the signed-in user viewed a project (view count + Trending).
@@ -12,7 +11,7 @@ import { notifyViewMilestones } from "@/lib/notify";
  */
 export async function viewProject(projectId: string, _userId?: string) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
+        const session = await getSession();
         const userId = session?.user?.id;
         if (!userId) return { error: null };
 

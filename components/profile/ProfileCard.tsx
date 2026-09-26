@@ -1,6 +1,8 @@
 "use client";
 
-import { MENU, MENU_ITEM_DANGER } from "@/lib/menuStyles";
+import { MENU, MENU_ITEM, MENU_ITEM_DANGER } from "@/lib/menuStyles";
+import { useIsAdmin } from "@/components/admin/useIsAdmin";
+import { FileText, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/general/Skeleton";
 import {
@@ -64,6 +66,7 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
     const router = useRouter();
     const [confirmUnfriend, setConfirmUnfriend] = useState(false);
     const [confirmBlock, setConfirmBlock] = useState(false);
+    const isAdmin = useIsAdmin();
     const [menuOpen, setMenuOpen] = useState(false);
 
     const handleBlock = async () => {
@@ -274,6 +277,14 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                                     >
                                         <Ban className="h-4 w-4" /> Block
                                     </button>
+                                    {isAdmin && (
+                                        <a
+                                            href={`/admin?user=${encodeURIComponent(tUser.username ?? "")}`}
+                                            className={MENU_ITEM}
+                                        >
+                                            <ShieldCheck className="h-4 w-4" /> Admin tools
+                                        </a>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -340,6 +351,18 @@ export const ProfileCard = ({ tUser, session }: ProfileCardProps) => {
                             <Share2 className="w-4 h-4" />
                             Share Profile
                         </button>
+
+                        {tUser.resumeUrl && (
+                            <a
+                                href={tUser.resumeUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm"
+                            >
+                                <FileText className="w-4 h-4" />
+                                Resume
+                            </a>
+                        )}
 
                         {/* Only shows when this person can receive coffees */}
                         <CoffeeButton

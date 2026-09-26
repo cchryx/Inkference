@@ -1,14 +1,13 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { getViewerContext, visiblePosts, visibleProjects } from "@/lib/visibility";
+import { getSession } from "@/lib/session";
 
 const PAGE_SIZE = 20;
 
 async function currentUserId() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return session?.user?.id ?? null;
 }
 
@@ -81,12 +80,14 @@ export async function getNotifications(cursor?: string) {
             href = "/inbox?tab=requests";
         } else if (n.type === "tip") {
             href = "/settings?section=payments";
+        } else if (n.type === "moderation") {
+            href = "/moderation";
         } else if (actors[0]?.username) {
             href = `/profile/${actors[0].username}`;
         }
 
         // Skip people-only notifications whose people no longer exist.
-        if (n.type !== "views" && actors.length === 0) return [];
+        if (n.type !== "views" && n.type !== "moderation" && actors.length === 0) return [];
 
         return [
             {

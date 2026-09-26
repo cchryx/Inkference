@@ -85,6 +85,11 @@ model User {
   image          String?
   imageUpdatedAt DateTime?
 
+  // Admin tools: "user" or "admin". A ban lasts until bannedUntil.
+  role        String    @default("user") @db.VarChar(10)
+  bannedUntil DateTime?
+  banReason   String?   @db.VarChar(500)
+
   sessions Session[]
   accounts Account[]
 
@@ -116,6 +121,11 @@ model Profile {
 
   socialLinks          String[]  @db.VarChar(255)
   socialLinksUpdatedAt DateTime?
+
+  // Resume (a PDF in Cloudinary: <userId>/resume/...), shown on the profile.
+  resumeUrl       String?
+  resumeName      String?   @db.VarChar(120)
+  resumeUpdatedAt DateTime?
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -202,6 +212,7 @@ model Project {
   visibility        String   @default("DEFAULT") @db.VarChar(10)
   allowedUserIds    String[] @default([]) // for CUSTOM
   hiddenFromUserIds String[] @default([]) // these people can never see it
+  hiddenAt          DateTime? // flagged by an admin: hidden from everyone else while under review
 
   galleryImages ProjectGalleryImage[]
 
@@ -334,6 +345,7 @@ model Post {
   visibility        String   @default("DEFAULT") @db.VarChar(10)
   allowedUserIds    String[] @default([]) // for CUSTOM
   hiddenFromUserIds String[] @default([]) // these people can never see it
+  hiddenAt          DateTime? // flagged by an admin: hidden from everyone else while under review
 
   comments Comment[]
 
@@ -374,6 +386,7 @@ model Gallery {
   visibility        String   @default("DEFAULT") @db.VarChar(10)
   allowedUserIds    String[] @default([]) // for CUSTOM
   hiddenFromUserIds String[] @default([]) // these people can never see it
+  hiddenAt          DateTime? // flagged by an admin: hidden from everyone else while under review
 
   @@map("galleries")
 }
@@ -387,6 +400,8 @@ model Photo {
   gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 
   image String
+
+  hiddenAt DateTime? // flagged by an admin: hidden while under review
 
   @@map("photos")
 }
@@ -631,4 +646,41 @@ model StoredFile {
 
   @@index([userId])
   @@map("stored_files")
+}
+
+////////// MODERATION //////////
+// Something an admin flagged or removed. Flagged items are hidden and get
+// deleted when deleteAt passes, unless the owner appeals (then an admin decides).
+model ModerationCase {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId String // User.id of whose content it is
+  adminId String? // User.id of the admin
+
+  targetType String  @db.VarChar(20) // post | project | gallery | photo | post_photo | profile_image | banner | bio | comment
+  targetId   String
+  label      String  @db.VarChar(200) // what it was, in words
+  image      String? // picture of it, for context
+
+  reason     String    @db.VarChar(500)
+  status     String    @default("flagged") @db.VarChar(12) // flagged | appealed | removed | restored
+  appeal     String?   @db.VarChar(1000)
+  appealedAt DateTime?
+  deleteAt   DateTime?
+  resolvedAt DateTime?
+
+  @@index([ownerId, createdAt])
+  @@index([status, deleteAt])
+  @@map("moderation_cases")
+}
+
+// App-wide settings admins can change (e.g. the storage limit).
+model AppSetting {
+  key       String   @id @db.VarChar(60)
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
 }

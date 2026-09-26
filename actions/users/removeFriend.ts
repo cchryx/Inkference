@@ -2,8 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/session";
 
 /** `_currentUserId` is ignored: the signed-in user is always used. */
 export async function removeFriend(
@@ -11,7 +10,7 @@ export async function removeFriend(
     _currentUserId?: string
 ) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
+        const session = await getSession();
         const currentUserId = session?.user?.id;
         if (!currentUserId) return { error: "Unauthorized." };
 

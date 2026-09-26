@@ -23,7 +23,8 @@ export type NotificationType =
     | "friend_post"
     | "friend_project"
     | "views"
-    | "tip";
+    | "tip"
+    | "moderation";
 
 type Target = { targetType?: "post" | "project"; targetId?: string };
 
@@ -55,6 +56,7 @@ function linkFor(type: NotificationType, t: Target, actorUsername?: string | nul
     if (t.targetType === "project" && t.targetId) return `/project/${t.targetId}`;
     if (type === "friend_request") return "/inbox?tab=requests";
     if (type === "tip") return "/settings?section=payments";
+    if (type === "moderation") return "/moderation";
     if (actorUsername) return `/profile/${actorUsername}`;
     return "/inbox";
 }
@@ -106,6 +108,8 @@ export function groupKeyFor(type: NotificationType, actorId: string | null, t: T
             return `${type}:${actorId}`;
         case "tip":
             return `tip:${t.targetId}`; // one per coffee
+        case "moderation":
+            return `moderation:${t.targetId}`; // one per case
     }
 }
 

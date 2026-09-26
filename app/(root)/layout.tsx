@@ -1,8 +1,9 @@
 import { ChooseUsernameForm } from "@/components/auth/ChooseUsernameForm";
 import NavbarLeft from "@/components/root/NavbarLeft";
 import NavbarMobile from "@/components/root/NavbarMobile";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getRawSession } from "@/lib/session";
+import { activeBan, getAccount, isAdminAccount } from "@/lib/admin";
+import BannedScreen from "@/components/auth/BannedScreen";
 import { ReactNode, Suspense } from "react";
 import NavigationLoader from "@/components/general/NavigationLoader";
 import UploadQueue from "@/components/general/UploadQueue";
@@ -13,15 +14,21 @@ type LayoutProps = {
 };
 
 export default async function Layout({ children }: LayoutProps) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+    const session = await getRawSession();
+
+    // Banned: show why and for how long, with a sign-out button. Nothing else.
+    const account = session ? await getAccount(session.user.id) : null;
+    const ban = activeBan(account);
+    if (session && ban) {
+        return <BannedScreen reason={ban.reason} until={ban.until} username={session.user.username} />;
+    }
+    const isAdmin = isAdminAccount(account);
 
     return (
         <div className="flex flex-col md:flex-row h-full w-full fixed">
             {session && (
                 <div className="hidden md:flex max-w-[250px]">
-                    <NavbarLeft session={session} />
+                    <NavbarLeft session={session} isAdmin={isAdmin} />
                 </div>
             )}
 
@@ -52,7 +59,7 @@ export default async function Layout({ children }: LayoutProps) {
                 </div>
                 {session && (
                     <section className="md:hidden">
-                        <NavbarMobile session={session} />
+                        <NavbarMobile session={session} isAdmin={isAdmin} />
                     </section>
                 )}
             </div>

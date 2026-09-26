@@ -1,13 +1,10 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Building2 } from "lucide-react";
 import ComingSoon from "@/components/general/ComingSoon";
+import { getSession } from "@/lib/session";
 
 export default async function Page() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) return redirect("/auth/signin");
 

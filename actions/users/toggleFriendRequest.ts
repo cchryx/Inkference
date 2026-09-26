@@ -1,11 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { notify, removeNotification } from "@/lib/notify";
 import { isBlockedBetween } from "@/lib/visibility";
 import { APIError } from "better-auth/api";
+import { getSession } from "@/lib/session";
 
 export async function toggleFriendRequest(
     senderUserId: string,
@@ -13,7 +12,7 @@ export async function toggleFriendRequest(
 ) {
     try {
         // The sender can send/cancel; the receiver can only decline (cancel).
-        const session = await auth.api.getSession({ headers: await headers() });
+        const session = await getSession();
         const me = session?.user?.id;
         if (me !== senderUserId && me !== targetUserId) return { error: "Unauthorized." };
 

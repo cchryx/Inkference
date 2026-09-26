@@ -7,6 +7,8 @@ import GalleryImage from "./GalleryImage";
 import PhotoViewer from "./PhotoViewer";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { deletePhoto } from "@/actions/content/photos/deletePhoto";
+import { useIsAdmin } from "@/components/admin/useIsAdmin";
+import ModerateModal from "@/components/admin/ModerateModal";
 
 type Photo = { id: string; image: string };
 
@@ -29,6 +31,9 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: Galler
     const [viewing, setViewing] = useState<number | null>(null);
     const [toDelete, setToDelete] = useState<Photo | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const isAdmin = useIsAdmin();
+    const [moderating, setModerating] = useState<Photo | null>(null);
+    const canModerate = isAdmin && !isOwner;
     const sentinelRef = useRef<HTMLDivElement>(null);
 
     // Update columns based on screen size
@@ -94,6 +99,7 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: Galler
                                 isOwner={isOwner}
                                 onOpen={() => setViewing(index)}
                                 onDelete={() => setToDelete(photo)}
+                                onModerate={canModerate ? () => setModerating(photo) : undefined}
                             />
                         ))}
                     </div>
@@ -110,6 +116,14 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: Galler
                     onIndex={setViewing}
                     onClose={() => setViewing(null)}
                     sizes={sizes}
+                    onModerate={
+                        canModerate
+                            ? (p) => {
+                                  setViewing(null);
+                                  setModerating(p);
+                              }
+                            : undefined
+                    }
                     onDelete={
                         isOwner
                             ? (p) => {
@@ -119,6 +133,10 @@ export const GalleryWrapper = ({ photos, galleryImages, isOwner, sizes }: Galler
                             : undefined
                     }
                 />
+            )}
+
+            {moderating && (
+                <ModerateModal targetType="photo" targetId={moderating.id} onClose={() => setModerating(null)} />
             )}
 
             <ConfirmModal

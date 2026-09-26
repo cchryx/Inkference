@@ -11,6 +11,13 @@ export default function Page() {
     // /inbox?tab=requests opens the Requests tab (used by friend request notifications).
     const tab = useSearchParams().get("tab");
     const [activeSection, setActiveSection] = useState(tab === "requests" ? "requests" : "general");
+    // A link to ?tab=requests while already here (e.g. tapping a request
+    // notification) switches tabs too.
+    const [lastTab, setLastTab] = useState(tab);
+    if (tab !== lastTab) {
+        setLastTab(tab);
+        if (tab === "requests" || tab === "general") setActiveSection(tab);
+    }
     const sectionLabel =
         INBOX_LINKS.find((l) => l.id === activeSection)?.label ?? activeSection;
     const [showMobileLabel, setShowMobileLabel] = useState(false);

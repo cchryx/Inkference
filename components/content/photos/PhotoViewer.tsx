@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShieldAlert, Trash2, X } from "lucide-react";
 import ProgressiveImg from "@/components/general/ProgressiveImg";
 import { previewUrl } from "@/lib/imageUrl";
 import { formatBytes } from "@/lib/storageConfig";
@@ -18,6 +18,8 @@ type Props = {
     onDelete?: (photo: Photo) => void;
     /** File size of each photo by link (shown small, owner only). */
     sizes?: Record<string, number>;
+    /** Admins: flag or delete the photo being viewed. */
+    onModerate?: (photo: Photo) => void;
 };
 
 const SLIDE_MS = 220;
@@ -26,7 +28,7 @@ const SLIDE_MS = 220;
  * Full-screen photo viewer. Phones: swipe left/right to browse, swipe down
  * to close. Computers: arrow buttons or arrow keys, Esc to close.
  */
-export default function PhotoViewer({ photos, index, onIndex, onClose, onDelete, sizes }: Props) {
+export default function PhotoViewer({ photos, index, onIndex, onClose, onDelete, sizes, onModerate }: Props) {
     const [dx, setDx] = useState(0);
     const [dy, setDy] = useState(0);
     const [animating, setAnimating] = useState(false);
@@ -151,6 +153,16 @@ export default function PhotoViewer({ photos, index, onIndex, onClose, onDelete,
                     )}
                 </span>
                 <div className="flex items-center gap-1">
+                    {onModerate && (
+                        <button
+                            type="button"
+                            onClick={() => onModerate(photo)}
+                            aria-label="Moderate photo (admin)"
+                            className="rounded-full p-2 text-red-300 hover:bg-white/10 cursor-pointer"
+                        >
+                            <ShieldAlert className="size-5" />
+                        </button>
+                    )}
                     {onDelete && (
                         <button
                             type="button"

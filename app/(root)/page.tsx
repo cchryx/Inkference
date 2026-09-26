@@ -1,12 +1,9 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import HomeWrapper from "@/components/home/HomeWrapper";
+import { getSession } from "@/lib/session";
 
 export default async function Page() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) return redirect("/auth/signin");
 

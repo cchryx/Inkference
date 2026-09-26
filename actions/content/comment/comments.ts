@@ -1,11 +1,12 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { recordEngagement } from "@/lib/engagement";
 import { notify } from "@/lib/notify";
+import { isAdminUser } from "@/lib/admin";
+import { tellOwner } from "@/lib/moderation";
 import { canViewPost, getViewerContext } from "@/lib/visibility";
+import { getSession } from "@/lib/session";
 
 const MAX_LENGTH = 1000;
 const PAGE_SIZE = 20;
@@ -32,28 +33,29 @@ type Row = {
 };
 
 // You can delete your own comments, and any comment on your own post.
-function toComment(row: Row, viewerId: string | null) {
+// Admins can delete any comment.
+function toComment(row: Row, viewerId: string | null, admin = false) {
     return {
         id: row.id,
         text: row.text,
         createdAt: row.createdAt.toISOString(),
         author: row.userData.user,
         canDelete:
-            !!viewerId && (row.userData.userId === viewerId || row.post.userData.userId === viewerId),
+            !!viewerId && (admin || row.userData.userId === viewerId || row.post.userData.userId === viewerId),
     };
 }
 
 export type CommentItem = ReturnType<typeof toComment>;
 
 async function getViewerId() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return session?.user?.id ?? null;
 }
 
 /** Newest comments first, 20 at a time. */
 export async function getComments(postId: string, cursor?: string) {
     const viewerId = await getViewerId();
-    const viewer = await getViewerContext(viewerId);
+    const [viewer, admin] = await Promise.all([getViewerContext(viewerId), isAdminUser(viewerId)]);
     if (!(await canViewPost(postId, viewer))) return { comments: [], nextCursor: undefined };
 
     const rows = await prisma.comment.findMany({
@@ -70,7 +72,7 @@ export async function getComments(postId: string, cursor?: string) {
     const page = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
 
     return {
-        comments: page.map((r) => toComment(r, viewerId)),
+        comments: page.map((r) => toComment(r, viewerId, admin)),
         nextCursor: hasMore ? page[page.length - 1].id : undefined,
     };
 }
@@ -134,10 +136,28 @@ export async function deleteComment(commentId: string) {
     const row = await prisma.comment.findUnique({ where: { id: commentId }, select: commentSelect });
     if (!row) return { error: null }; // already gone
 
-    if (!toComment(row, viewerId).canDelete) {
+    const own = toComment(row, viewerId).canDelete;
+    if (!own && !(await isAdminUser(viewerId))) {
         return { error: "You can't delete this comment." };
     }
 
     await prisma.comment.delete({ where: { id: commentId } });
+
+    // Removed by an admin: keep a record and tell the author.
+    if (!own) {
+        const c = await prisma.moderationCase.create({
+            data: {
+                ownerId: row.userData.userId,
+                adminId: viewerId,
+                targetType: "comment",
+                targetId: commentId,
+                label: `Comment: ${row.text.slice(0, 150)}`,
+                reason: "Removed by an admin.",
+                status: "removed",
+                resolvedAt: new Date(),
+            },
+        });
+        await tellOwner(row.userData.userId, c.id, "An admin removed one of your comments.");
+    }
     return { error: null };
 }

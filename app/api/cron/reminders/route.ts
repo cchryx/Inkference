@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { sendPushToUsers } from "@/lib/push";
 import { isCronRequest, unauthorized } from "@/lib/cron";
 import { dueWords, safeTimeZone, todayIn } from "@/lib/reminders";
+import { processExpiredCases } from "@/lib/moderation";
 
 // Sends the planner / to-do reminders that are due. Call it every 5 minutes.
 export const dynamic = "force-dynamic";
@@ -35,13 +36,19 @@ async function run(req: Request) {
 
     const now = new Date();
     if (new URL(req.url).searchParams.has("check")) return status(now);
+
+    // Also: delete flagged content whose 3-day review ran out.
+    const expired = await processExpiredCases().catch((err) => {
+        console.error("processExpiredCases failed:", err);
+        return 0;
+    });
     const due = await prisma.driveReminder.findMany({
         where: { sentAt: null, remindAt: { lte: now, gte: new Date(now.getTime() - LATE_LIMIT_MS) } },
         orderBy: { remindAt: "asc" },
         take: 300,
         include: { file: { select: { title: true, type: true } } },
     });
-    if (!due.length) return Response.json({ sent: 0 });
+    if (!due.length) return Response.json({ sent: 0, expired });
 
     // Claim them first, so two runs at once never send twice.
     const { count } = await prisma.driveReminder.updateMany({
@@ -73,7 +80,7 @@ async function run(req: Request) {
         );
         sent += report.sent;
     }
-    return Response.json({ reminders: due.length, sent });
+    return Response.json({ reminders: due.length, sent, expired });
 }
 
 export const GET = run;

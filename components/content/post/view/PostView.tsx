@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import VisibilityModal from "@/components/general/VisibilityModal";
 import VisibilityBadge from "@/components/general/VisibilityBadge";
+import AdminModerateButton from "@/components/admin/AdminModerateButton";
 import { toast } from "sonner";
 
 import { UserIcon } from "@/components/general/UserIcon";
@@ -148,6 +149,8 @@ const PostView = ({ post, currentUserId }: Props) => {
                     <p className="text-xs text-gray-500 truncate">@{author.username}</p>
                 </div>
             </Link>
+
+            {!isOwner && <AdminModerateButton targetType="post" targetId={post.id} photos={post.content} />}
 
             {isOwner && (
                 <div className="relative">

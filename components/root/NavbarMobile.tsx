@@ -11,9 +11,11 @@ import { UnreadBadge } from "../general/UnreadBadge";
 
 type NavbarMobileProps = {
     session: any;
+    /** Shows the Admin link. */
+    isAdmin?: boolean;
 };
 
-const NavbarMobile = ({ session }: NavbarMobileProps) => {
+const NavbarMobile = ({ session, isAdmin = false }: NavbarMobileProps) => {
     const pathname = usePathname();
     const user = session?.user;
 
@@ -96,7 +98,7 @@ const NavbarMobile = ({ session }: NavbarMobileProps) => {
                     className="fixed bottom-[80px] left-2 z-50 w-48 bg-gray-300 rounded-lg shadow-lg overflow-hidden"
                 >
                     <ul className="flex flex-col py-1">
-                        {NAVBARLEFT_SUB_LINKS.map(
+                        {NAVBARLEFT_SUB_LINKS.filter((l) => !l.adminOnly || isAdmin).map(
                             ({ icon: Icon, label, route, action }) => {
                                 const href =
                                     typeof route === "function"

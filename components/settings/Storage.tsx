@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import Loader from "@/components/general/Loader";
 import { Skeleton } from "@/components/general/Skeleton";
 import { cleanUpMyStorage, getMyStorage, recountMyStorage } from "@/actions/storage";
-import { STORAGE_LIMIT_MB, SUPPORT_USERNAME, formatBytes } from "@/lib/storageConfig";
+import { SUPPORT_USERNAME, formatBytes } from "@/lib/storageConfig";
 
 const KIND_LABELS: Record<string, string> = {
     photos: "Gallery photos",
@@ -18,6 +18,7 @@ const KIND_LABELS: Record<string, string> = {
     projects: "Projects",
     merits: "Merits",
     profile: "Profile and banner",
+    resume: "Resume",
 };
 
 const Card = ({ children }: { children: React.ReactNode }) => (
@@ -74,7 +75,7 @@ export default function Storage() {
                 <div className="space-y-1.5">
                     <div className="flex items-baseline justify-between text-sm">
                         <span className="font-medium">
-                            {formatBytes(data.used)} <span className="text-gray-500 font-normal">of {STORAGE_LIMIT_MB} MB</span>
+                            {formatBytes(data.used)} <span className="text-gray-500 font-normal">of {formatBytes(data.limit)}</span>
                         </span>
                         <span className="text-xs text-gray-500">{Math.round(pct)}% used</span>
                     </div>
@@ -118,7 +119,7 @@ export default function Storage() {
             <Card>
                 <h1 className="text-base font-semibold">Why is there a limit?</h1>
                 <p className="text-sm text-gray-600">
-                    Inkference runs on a free plan, so everyone gets {STORAGE_LIMIT_MB} MB for gallery photos, posts,
+                    Inkference runs on a free plan, so everyone gets {formatBytes(data.limit)} for gallery photos, posts,
                     projects and profile pictures. When you run out, new uploads are paused until you delete some old
                     ones. Removing a post, photo or project frees its space right away.
                 </p>

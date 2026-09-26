@@ -1,10 +1,9 @@
 "use server";
 
 import { v2 as cloudinary } from "cloudinary";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { recordUpload, wouldExceed } from "@/lib/storage";
 import { STORAGE_FULL_MESSAGE } from "@/lib/storageConfig";
+import { getSession } from "@/lib/session";
 
 export type UploadResult = {
     fileName: string;
@@ -34,7 +33,7 @@ export async function uploadPhotos(
     _currentUserId?: string,
     folder?: string
 ): Promise<UploadResult[]> {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     const userId = session?.user?.id;
     if (!userId) {
         return files.map((f) => ({ fileName: f?.name ?? "", error: "Unauthorized." }));

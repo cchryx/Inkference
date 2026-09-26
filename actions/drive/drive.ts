@@ -1,8 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { syncReminders } from "@/lib/reminders";
@@ -27,11 +25,12 @@ import {
     type DueItem,
     type TodoList,
 } from "@/lib/drive";
+import { getSession } from "@/lib/session";
 
 // Everything in Drive is private: every action works only on your own files.
 
 async function me() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return session?.user?.id ?? null;
 }
 

@@ -1,8 +1,7 @@
 "use server";
 
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { deleteUnusedUploads } from "@/lib/cleanupUploads";
+import { getSession } from "@/lib/session";
 
 /**
  * Deletes photos someone uploaded and then didn't keep (closed a popup,
@@ -10,7 +9,7 @@ import { deleteUnusedUploads } from "@/lib/cleanupUploads";
  * and never anything that's actually used somewhere.
  */
 export async function discardUploads(urls: string[]) {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     const userId = session?.user?.id;
     if (!userId || !Array.isArray(urls)) return { deleted: 0 };
 

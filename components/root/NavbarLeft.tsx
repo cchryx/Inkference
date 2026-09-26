@@ -12,9 +12,11 @@ import { UnreadBadge } from "../general/UnreadBadge";
 
 type NavbarLeftProps = {
     session: any;
+    /** Shows the Admin link. */
+    isAdmin?: boolean;
 };
 
-const NavbarLeft = ({ session }: NavbarLeftProps) => {
+const NavbarLeft = ({ session, isAdmin = false }: NavbarLeftProps) => {
     const user = session?.user;
     const pathname = usePathname();
 
@@ -145,7 +147,7 @@ const NavbarLeft = ({ session }: NavbarLeftProps) => {
                         className="absolute left-full bottom-0 mb-2 ml-2 w-48 bg-gray-300 rounded-sm z-50 overflow-hidden"
                     >
                         <ul className="flex flex-col">
-                            {NAVBARLEFT_SUB_LINKS.map(
+                            {NAVBARLEFT_SUB_LINKS.filter((l) => !l.adminOnly || isAdmin).map(
                                 ({ icon: Icon, route, label, action }) => {
                                     const resolvedHref =
                                         typeof route === "function"

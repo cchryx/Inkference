@@ -1,23 +1,21 @@
-import { auth } from "@/lib/auth";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import Content from "@/components/content/Content";
 import { getUserData } from "@/actions/users/getUserData";
-import { getHiddenSections } from "@/lib/profilePrefs";
+import { getSectionLayout } from "@/lib/profilePrefs";
 import { BUILD_TAB_COOKIE } from "@/lib/profileSections";
+import { getSession } from "@/lib/session";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ tab?: string; section?: string }> }) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) return redirect("/auth/signin");
 
     // Your own portfolio also shows your saved / liked / viewed projects.
-    const [userData, hiddenSections, params, jar] = await Promise.all([
+    const [userData, layout, params, jar] = await Promise.all([
         getUserData(session.user.id, { includeActivity: true }),
-        getHiddenSections(session.user.id),
+        getSectionLayout(session.user.id),
         searchParams,
         cookies(),
     ]);
@@ -26,7 +24,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
 
     return (
         <div className="w-full px-[2%] py-5">
-            <Content rootUser userData={userData} initialTab={initialTab} hiddenSections={hiddenSections} />
+            <Content rootUser userData={userData} initialTab={initialTab} hiddenSections={layout.hidden} sectionOrder={layout.order} />
         </div>
     );
 }

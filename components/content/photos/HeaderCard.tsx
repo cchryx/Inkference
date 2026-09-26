@@ -5,6 +5,7 @@ import Img from "@/components/general/Img";
 import { Eye, Pencil, Share2, Trash2, UploadIcon } from "lucide-react";
 import VisibilityModal from "@/components/general/VisibilityModal";
 import VisibilityBadge from "@/components/general/VisibilityBadge";
+import AdminModerateButton from "@/components/admin/AdminModerateButton";
 import { formatBytes } from "@/lib/storageConfig";
 import ConfirmModal from "@/components/general/ConfirmModal";
 import { deleteGallery } from "@/actions/content/photos/deleteGallery";
@@ -167,6 +168,15 @@ const HeaderCard = ({
                         <Share2 className="w-4 h-4" />
                         Share
                     </button>
+
+                    {!isOwner && (
+                        <AdminModerateButton
+                            targetType="gallery"
+                            targetId={galleryId}
+                            withLabel
+                            className="h-fit w-fit bg-gray-300 px-3 py-1 rounded-sm"
+                        />
+                    )}
 
                     {/* Owner-only Buttons */}
                     {isOwner && (

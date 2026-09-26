@@ -9,6 +9,7 @@ import ChangeSocialsForm from "./forms/ChangeSocialsForm";
 import ChangeProfileImageForm from "./forms/ChangeProfileImageForm";
 import ChangeBannerImageForm from "./forms/ChangeBannerImageForm";
 import ProfileSectionsForm from "./forms/ProfileSectionsForm";
+import ResumeForm from "./forms/ResumeForm";
 
 const Profile = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,8 @@ const Profile = () => {
         address: string;
         socialLinks: string[];
         bannerImage?: string | undefined;
+        resumeUrl?: string | null;
+        resumeName?: string | null;
     } | null>(null);
 
     useEffect(() => {
@@ -63,6 +66,7 @@ const Profile = () => {
                 address={profile?.address ?? ""}
                 isLoading={isLoading}
             />
+            <ResumeForm url={profile?.resumeUrl ?? null} name={profile?.resumeName ?? null} isLoading={isLoading} />
             <ProfileSectionsForm />
         </div>
     );

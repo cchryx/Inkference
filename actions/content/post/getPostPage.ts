@@ -1,15 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { getCurrentViewer, visiblePosts } from "@/lib/visibility";
+import { getSession } from "@/lib/session";
 
 // Used when the viewer isn't signed in, so "did I like it" never matches.
 const NO_USER = "00000000-0000-0000-0000-000000000000";
 
 async function getMyUserDataId() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     if (!session?.user?.id) return null;
 
     const userData = await prisma.userData.findUnique({

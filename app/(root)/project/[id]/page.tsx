@@ -1,5 +1,3 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 
 import { HeaderCard } from "@/components/content/project/HeaderCard";
 import { AuthorCard } from "@/components/content/project/AuthorCard";
@@ -16,6 +14,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { cache } from "react";
 import { canViewProject, getCurrentViewer } from "@/lib/visibility";
 import { Metadata } from "next";
+import { getSession } from "@/lib/session";
 
 // Loads the project, but only if the viewer is allowed to see it.
 // Hidden projects look exactly like missing ones.
@@ -104,7 +103,7 @@ export default async function Page({
     const { id } = await params;
 
     const [session, project] = await Promise.all([
-        auth.api.getSession({ headers: await headers() }),
+        getSession(),
         getProjectData(id),
     ]);
     if (!project || "error" in project) {

@@ -1,10 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { notify, removeNotification } from "@/lib/notify";
 import { APIError } from "better-auth/api";
+import { getSession } from "@/lib/session";
 
 export async function acceptFriendRequest(
     currentUserId: string,
@@ -12,7 +11,7 @@ export async function acceptFriendRequest(
 ) {
     try {
         // Only the signed-in user can act as themselves.
-        const session = await auth.api.getSession({ headers: await headers() });
+        const session = await getSession();
         if (session?.user?.id !== currentUserId) return { error: "Unauthorized." };
 
         if (currentUserId === targetUserId) {

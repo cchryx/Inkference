@@ -2,10 +2,10 @@
 
 import { auth, ErrorCode } from "@/lib/auth";
 import { APIError } from "better-auth/api";
-import { headers } from "next/headers";
 import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { deleteUnusedUploads } from "@/lib/cleanupUploads";
+import { getSession } from "@/lib/session";
 
 // Cooldown settings per field (in minutes)
 const COOLDOWN_MINUTES: Record<string, number> = {
@@ -31,9 +31,7 @@ export async function changeProfileAction(formData: FormData, type: string) {
     }
 
     try {
-        const session = await auth.api.getSession({
-            headers: await headers(),
-        });
+        const session = await getSession();
 
         const userId = session?.user?.id;
         if (!userId) return { error: "Unauthorized." };

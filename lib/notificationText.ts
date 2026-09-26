@@ -34,6 +34,8 @@ export function notificationText(input: {
             return `Your ${thing} reached ${Number(preview).toLocaleString()} views.`;
         case "tip":
             return `${who} bought you a coffee ☕${preview ? ` "${preview.slice(0, 100)}"` : ""}`;
+        case "moderation":
+            return preview || "An admin reviewed something you posted.";
         default:
             return "You have a new notification.";
     }

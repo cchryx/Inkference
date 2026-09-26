@@ -1,8 +1,7 @@
 import { cache } from "react";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
+import { getSession } from "@/lib/session";
 
 /*
  * Who can see a post, project or gallery?
@@ -64,7 +63,7 @@ export async function getViewerContext(viewerId: string | null | undefined): Pro
 
 /** The signed-in viewer (loaded once per request). */
 export const getCurrentViewer = cache(async () => {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return getViewerContext(session?.user?.id);
 });
 
@@ -81,8 +80,15 @@ function audienceIs(level: Audience) {
     return { OR: conditions };
 }
 
+// Anything an admin flagged is hidden from everyone while it's reviewed.
+const NOT_FLAGGED = { hiddenAt: null };
+
 // Shared by posts, projects and galleries (same field names on each).
 function contentWhere(ctx: ViewerContext) {
+    return { AND: [audienceWhere(ctx), NOT_FLAGGED] };
+}
+
+function audienceWhere(ctx: ViewerContext) {
     const { viewerId, following, friends, blocked } = ctx;
 
     const allowed: object[] = [audienceIs("PUBLIC")];
@@ -127,7 +133,7 @@ export const visiblePosts = (ctx: ViewerContext) => contentWhere(ctx) as Prisma.
 // Contributors can always see the projects they worked on.
 export const visibleProjects = (ctx: ViewerContext) =>
     (ctx.viewerId
-        ? { OR: [contentWhere(ctx), { contributors: { some: { userId: ctx.viewerId } } }] }
+        ? { AND: [{ OR: [contentWhere(ctx), { contributors: { some: { userId: ctx.viewerId } } }] }, NOT_FLAGGED] }
         : contentWhere(ctx)) as Prisma.ProjectWhereInput;
 export const visibleGalleries = (ctx: ViewerContext) => contentWhere(ctx) as Prisma.GalleryWhereInput;
 

@@ -7,6 +7,7 @@ import {
     CalendarCheck,
     Coffee,
     HardDrive,
+    ShieldCheck,
     Brain,
     BriefcaseBusiness,
     Building2,
@@ -170,6 +171,12 @@ export const NAVBARLEFT_SUB_LINKS = [
         icon: Settings,
         route: "/settings",
         label: "Settings",
+    },
+    {
+        icon: ShieldCheck,
+        route: "/admin",
+        label: "Admin",
+        adminOnly: true,
     },
     {
         icon: LogOut,

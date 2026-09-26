@@ -25,6 +25,7 @@ import { useNavigate } from "@/lib/navigation";
 import EditHeaderModal from "./edit/EditHeaderModal";
 import VisibilityModal from "@/components/general/VisibilityModal";
 import VisibilityBadge from "@/components/general/VisibilityBadge";
+import AdminModerateButton from "@/components/admin/AdminModerateButton";
 import { likeProject } from "@/actions/content/project/likeProject";
 import { viewProject } from "@/actions/content/project/viewProject";
 import { saveProject } from "@/actions/content/project/saveProject";
@@ -364,6 +365,14 @@ export const HeaderCard = ({ isOwner, session, project }: Props) => {
 
                         <div className="flex flex-1 flex-col flex-wrap gap-2 items-start md:items-end w-full">
                             <div className="flex w-full flex-wrap gap-2 justify-start md:justify-end">
+                                {!isOwner && (
+                                    <AdminModerateButton
+                                        targetType="project"
+                                        targetId={project.id}
+                                        withLabel
+                                        className="bg-gray-300 px-3 py-1 rounded-sm"
+                                    />
+                                )}
                                 <button
                                     onClick={handleShare}
                                     className="flex items-center w-fit gap-2 px-3 py-1 rounded-sm bg-gray-300 hover:bg-gray-400 transition text-sm cursor-pointer"

@@ -29,10 +29,12 @@ type Props = {
     initialTab?: string;
     /** Tabs the owner hid in Settings. */
     hiddenSections?: string[];
+    /** The owner's tab order (the first one opens first). */
+    sectionOrder?: string[];
 };
 
-const Content = ({ userData, rootUser = false, initialTab, hiddenSections }: Props) => {
-    const shown = useMemo(() => shownSections(hiddenSections), [hiddenSections]);
+const Content = ({ userData, rootUser = false, initialTab, hiddenSections, sectionOrder }: Props) => {
+    const shown = useMemo(() => shownSections(hiddenSections, sectionOrder), [hiddenSections, sectionOrder]);
     const [active, setActiveState] = useState<string>(() => pickSection(initialTab, shown));
 
     // Remember the tab: in the link (so Back returns to it) and, on your own

@@ -1,11 +1,10 @@
 "use server";
 
-import { headers } from "next/headers";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { PROFILE_SECTIONS } from "@/lib/profileSections";
+import { getSession } from "@/lib/session";
 
 // Every preference we store, with what values are allowed.
 const PrefsSchema = z
@@ -19,13 +18,15 @@ const PrefsSchema = z
         weeklySentAt: z.number(),
         /** Tabs hidden from your profile and Build page. */
         hiddenSections: z.array(z.enum(PROFILE_SECTIONS)).max(PROFILE_SECTIONS.length),
+        /** Order of the tabs (the first one opens first). */
+        sectionOrder: z.array(z.enum(PROFILE_SECTIONS)).max(PROFILE_SECTIONS.length),
     })
     .partial();
 
 export type Preferences = z.infer<typeof PrefsSchema>;
 
 async function me() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return session?.user?.id ?? null;
 }
 

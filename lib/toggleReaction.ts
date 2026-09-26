@@ -1,9 +1,8 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { recordEngagement, removeEngagement } from "@/lib/engagement";
 import { notify } from "@/lib/notify";
 import { canViewPost, canViewProject, getViewerContext } from "@/lib/visibility";
+import { getSession } from "@/lib/session";
 
 type Target = "post" | "project";
 type Reaction = "like" | "save";
@@ -18,7 +17,7 @@ const RELATION = {
  * (The user always comes from the session, never from the browser.)
  */
 export async function toggleReaction(target: Target, reaction: Reaction, id: string) {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     const userId = session?.user?.id;
     if (!userId) return { error: "You must be signed in." as string | null, active: false };
 

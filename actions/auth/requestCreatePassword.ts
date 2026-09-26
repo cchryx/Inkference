@@ -2,15 +2,15 @@
 
 import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { getLinkedAccounts } from "./getLinkedAccounts";
+import { getSession } from "@/lib/session";
 
 /**
  * For users who signed up with Google/GitHub: emails them a link to
  * create a password (same flow as "forgot password").
  */
 export async function requestCreatePassword() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     if (!session) return { error: "You must be signed in." };
 
     const { hasPassword, error } = await getLinkedAccounts();

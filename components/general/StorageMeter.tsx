@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { HardDrive } from "lucide-react";
 import { getMyStorage } from "@/actions/storage";
-import { STORAGE_LIMIT_MB, formatBytes } from "@/lib/storageConfig";
+import { formatBytes } from "@/lib/storageConfig";
 
 /** Small "photo storage left" bar. Links to Settings > Storage. */
 export default function StorageMeter({ className = "", compact }: { className?: string; compact?: boolean }) {
@@ -25,7 +25,7 @@ export default function StorageMeter({ className = "", compact }: { className?: 
                     <HardDrive className={compact ? "size-3.5" : "size-4"} /> Photo storage
                 </span>
                 <span className="text-xs text-gray-500 tabular-nums">
-                    {ready ? `${formatBytes(left)} left of ${STORAGE_LIMIT_MB} MB` : "Checking..."}
+                    {ready ? `${formatBytes(left)} left of ${formatBytes(data.limit)}` : "Checking..."}
                 </span>
             </div>
             <div className={`w-full overflow-hidden rounded-full bg-gray-300 ${compact ? "mt-1.5 h-1.5" : "mt-2 h-2"}`}>

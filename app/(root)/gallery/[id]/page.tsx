@@ -1,6 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 
 import { ReturnButton } from "@/components/auth/ReturnButton";
 import { Button } from "@/components/ui/button";
@@ -15,6 +13,7 @@ import { GalleryWrapper } from "@/components/content/photos/GalleryWrapper";
 import { previewUrl } from "@/lib/imageUrl";
 import JsonLd from "@/components/general/JsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
+import { getSession } from "@/lib/session";
 
 // Loads the gallery, but only if the viewer is allowed to see it.
 const getGalleryData = cache(async (id: string) => {
@@ -85,7 +84,7 @@ export default async function Page({
     const { id } = await params;
 
     const [session, gallery] = await Promise.all([
-        auth.api.getSession({ headers: await headers() }),
+        getSession(),
         getGalleryData(id),
     ]);
     if (!gallery || "error" in gallery) {

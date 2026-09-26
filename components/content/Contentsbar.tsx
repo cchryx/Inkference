@@ -56,7 +56,10 @@ const ContentsBar = ({
         >
             <div className="w-full p-2 flex justify-center">
                 <div className="flex gap-6 md:gap-10">
-                    {PROFILE_LINKS.filter((l) => !shown || shown.includes(l.id)).map((link) => {
+                    {(shown
+                        ? shown.map((id) => PROFILE_LINKS.find((l) => l.id === id)).filter((l) => !!l)
+                        : PROFILE_LINKS
+                    ).map((link) => {
                         const isActive = active === link.id;
                         const isLabelVisible = visibleLabel === link.id;
 

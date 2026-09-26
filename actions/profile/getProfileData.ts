@@ -1,10 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { unstable_cache } from "next/cache";
+import { getSession } from "@/lib/session";
 
 const personSelect = {
     select: {
@@ -44,6 +43,8 @@ export async function getProfileData(username?: string | null) {
                     address: "",
                     socialLinks: [] as string[],
                     bannerImage: undefined,
+                    resumeUrl: null as string | null,
+                    resumeName: null as string | null,
                 },
                 relationships: null,
             };
@@ -56,7 +57,7 @@ export async function getProfileData(username?: string | null) {
             image: user.image ?? undefined,
         };
     } else {
-        const session = await auth.api.getSession({ headers: await headers() });
+        const session = await getSession();
         if (!session) redirect("/auth/signin");
 
         userInfo = {
@@ -83,6 +84,8 @@ export async function getProfileData(username?: string | null) {
                 address: true,
                 socialLinks: true,
                 bannerImage: true,
+                resumeUrl: true,
+                resumeName: true,
             },
         }),
     ]);
@@ -95,6 +98,8 @@ export async function getProfileData(username?: string | null) {
             address: profile?.address ?? "",
             socialLinks: profile?.socialLinks ?? [],
             bannerImage: profile?.bannerImage ?? undefined,
+            resumeUrl: profile?.resumeUrl ?? null,
+            resumeName: profile?.resumeName ?? null,
         },
         relationships,
     };

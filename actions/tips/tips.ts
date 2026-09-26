@@ -1,15 +1,14 @@
 "use server";
 
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/siteUrl";
 import { isBlockedBetween } from "@/lib/visibility";
 import { getPaymentProvider } from "@/lib/payments";
 import { TIP_CURRENCY, TIP_MAX, TIP_MIN, tipBreakdown } from "@/lib/payments/fees";
+import { getSession } from "@/lib/session";
 
 async function me() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return session?.user ?? null;
 }
 

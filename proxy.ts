@@ -11,6 +11,8 @@ const protectedRoutes = [
     "/portfolio",
     "/drive",
     "/productivity",
+    "/moderation",
+    "/admin",
 ];
 
 export async function proxy(req: NextRequest) {

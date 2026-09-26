@@ -2,14 +2,14 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { NOTIFICATION_TYPES } from "@/lib/notificationText";
 import { sendPushToUsers } from "@/lib/push";
+import { getSession } from "@/lib/session";
 
 const VALID = new Set<string>(NOTIFICATION_TYPES.map((t) => t.type));
 
 async function me() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return session?.user?.id ?? null;
 }
 

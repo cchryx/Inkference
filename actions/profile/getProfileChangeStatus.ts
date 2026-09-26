@@ -1,9 +1,8 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
+import { getSession } from "@/lib/session";
 
 type UserChangeType = "name" | "username" | "image";
 type ProfileChangeType =
@@ -29,9 +28,7 @@ const LIMITS: Record<ChangeType, number> = {
 };
 
 export async function getProfileChangeStatus(type: ChangeType) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+    const session = await getSession();
 
     const userId = session?.user?.id;
     if (!userId) return { canChange: false, timeLeft: null };

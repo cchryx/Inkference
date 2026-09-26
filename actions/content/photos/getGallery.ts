@@ -21,6 +21,7 @@ export async function getGalleryById(galleryId: string) {
                 },
             },
             photos: {
+                where: { hiddenAt: null }, // flagged photos are hidden while reviewed
                 orderBy: {
                     createdAt: "desc",
                 },

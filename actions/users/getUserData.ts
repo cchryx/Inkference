@@ -1,8 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import type { Prisma } from "@/app/generated/prisma/client";
 import {
     getViewerContext,
@@ -11,6 +9,7 @@ import {
     visibleProjects,
     type ViewerContext,
 } from "@/lib/visibility";
+import { getSession } from "@/lib/session";
 
 /*
  * Loads everything shown on a profile/portfolio.
@@ -85,6 +84,7 @@ const gallerySelect = {
     createdAt: true,
     updatedAt: true,
     photos: {
+        where: { hiddenAt: null },
         select: { id: true, image: true, createdAt: true, updatedAt: true },
         orderBy: { createdAt: "desc" },
     },
@@ -173,7 +173,7 @@ export async function getUserData(
     userId?: string,
     options: { includeActivity?: boolean; viewer?: ViewerContext } = {}
 ) {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     const targetUserId = userId ?? session?.user?.id;
     if (!targetUserId) return { error: "Unauthorized." };
 

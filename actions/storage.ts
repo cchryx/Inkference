@@ -1,17 +1,15 @@
 "use server";
 
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUsageBytes, syncFromCloudinary } from "@/lib/storage";
+import { getStorageLimitBytes, getUsageBytes, syncFromCloudinary } from "@/lib/storage";
 import { deleteUnusedUploads } from "@/lib/cleanupUploads";
-import { STORAGE_LIMIT_BYTES } from "@/lib/storageConfig";
 import { getPreferences, setPreferences } from "@/actions/preferences";
+import { getSession } from "@/lib/session";
 
 const RECOUNT_EVERY_MS = 10 * 60 * 1000; // 10 minutes
 
 async function me() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     return session?.user?.id ?? null;
 }
 
@@ -35,7 +33,7 @@ async function usage(userId: string, syncedAt: number | null): Promise<StorageUs
         .sort((a, b) => b.bytes - a.bytes);
     return {
         used: byKind.reduce((s, g) => s + g.bytes, 0),
-        limit: STORAGE_LIMIT_BYTES,
+        limit: await getStorageLimitBytes(),
         files: byKind.reduce((s, g) => s + g.files, 0),
         byKind,
         syncedAt,
@@ -108,5 +106,6 @@ export async function checkStorageRoom(incoming = 0): Promise<{ ok: boolean }> {
     if (!userId) return { ok: false };
     const used = await getUsageBytes(userId);
     const bytes = Math.max(0, Number(incoming) || 0);
-    return { ok: used < STORAGE_LIMIT_BYTES && used + bytes <= STORAGE_LIMIT_BYTES };
+    const limit = await getStorageLimitBytes();
+    return { ok: used < limit && used + bytes <= limit };
 }

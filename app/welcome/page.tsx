@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { unstable_cache } from "next/cache";
 import WelcomeWrapper from "@/components/welcome/WelcomeWrapper";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import JsonLd from "@/components/general/JsonLd";
 import { SITE_URL } from "@/lib/siteUrl";
+import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = {
     title: { absolute: "Inkference: build your portfolio, plan your work" },
@@ -31,7 +30,7 @@ const getStats = unstable_cache(
 export default async function WelcomePage() {
     const [stats, session] = await Promise.all([
         getStats(),
-        auth.api.getSession({ headers: await headers() }),
+        getSession(),
     ]);
 
     return (

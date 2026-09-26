@@ -7,6 +7,7 @@ import { differenceInMilliseconds, formatDistanceStrict } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { normalizeName } from "@/lib/utils";
 import { deleteUnusedUploads } from "@/lib/cleanupUploads";
+import { getSession } from "@/lib/session";
 
 // Cooldown settings per field (in minutes)
 const COOLDOWN_MINUTES: Record<string, number> = {
@@ -30,9 +31,7 @@ export async function changeUserAction(formData: FormData, type: string) {
     }
 
     try {
-        const session = await auth.api.getSession({
-            headers: await headers(),
-        });
+        const session = await getSession();
 
         const userId = session?.user?.id;
         if (!userId) return { error: "Unauthorized." };

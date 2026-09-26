@@ -1,9 +1,8 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { APIError } from "better-auth/api";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/session";
 
 /*
  * Recommended accounts
@@ -59,9 +58,7 @@ function others(name: string | null | undefined, count: number) {
 
 export async function recommendUsers(limit = 12) {
     try {
-        const session = await auth.api.getSession({
-            headers: await headers(),
-        });
+        const session = await getSession();
         const currentUserId = session?.user?.id;
         if (!currentUserId) return { error: "Unauthorized." };
 

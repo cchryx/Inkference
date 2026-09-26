@@ -27,8 +27,9 @@ const SettingsWrapper = ({
     linkError,
     linked,
 }: Props) => {
+    const links = SETTINGS_LINKS;
     const [activeSection, setActiveSection] = useState(
-        SETTINGS_LINKS.some((l) => l.id === initialSection)
+        links.some((l) => l.id === initialSection)
             ? initialSection!
             : "profile"
     );
@@ -141,7 +142,7 @@ const SettingsWrapper = ({
                         </div>
 
                         <div className="space-y-2 relative">
-                            {SETTINGS_LINKS.map(({ id, label, icon: Icon }) => (
+                            {links.map(({ id, label, icon: Icon }) => (
                                 <div
                                     key={id}
                                     onClick={() => handleSelect(id)}
@@ -230,7 +231,7 @@ const SettingsWrapper = ({
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3 mt-4">
-                        {SETTINGS_LINKS.map(({ id, label, icon: Icon }) => (
+                        {links.map(({ id, label, icon: Icon }) => (
                             <div
                                 key={id}
                                 onClick={() => handleSelect(id)}

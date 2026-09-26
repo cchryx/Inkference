@@ -10,6 +10,7 @@ import {
     Heart,
     ImageIcon,
     MessageCircle,
+    ShieldAlert,
     UserCheck,
     UserPlus,
     Users,
@@ -34,6 +35,7 @@ const ICONS: Record<string, { icon: LucideIcon; className: string }> = {
     friend_project: { icon: Folder, className: "bg-amber-500" },
     views: { icon: Eye, className: "bg-neutral-500" },
     tip: { icon: Coffee, className: "bg-amber-600" },
+    moderation: { icon: ShieldAlert, className: "bg-red-600" },
 };
 
 // "Sam", "Sam and Alex", "Sam, Alex and 12 others"
@@ -100,6 +102,10 @@ const Row = ({ n, isNew }: { n: NotificationItem; isNew: boolean }) => {
                         <div className="grid size-8 place-items-center rounded-full bg-gray-300 md:size-11">
                             <Eye className="h-4 w-4 text-gray-700 md:h-5 md:w-5" />
                         </div>
+                    ) : n.type === "moderation" ? (
+                        <div className="grid size-8 place-items-center rounded-full bg-red-100 md:size-11">
+                            <ShieldAlert className="h-4 w-4 text-red-600 md:h-5 md:w-5" />
+                        </div>
                     ) : n.actors.length > 1 ? (
                         <>
                             <div className="absolute left-0 top-0">
@@ -125,6 +131,11 @@ const Row = ({ n, isNew }: { n: NotificationItem; isNew: boolean }) => {
                         <>
                             Your {n.target?.kind ?? "post"} reached{" "}
                             <span className="font-semibold">{Number(n.preview).toLocaleString()} views</span>.
+                        </>
+                    ) : n.type === "moderation" ? (
+                        <>
+                            <span className="font-semibold">Inkference admin: </span>
+                            <span className="break-words">{n.preview}</span>
                         </>
                     ) : (
                         <>

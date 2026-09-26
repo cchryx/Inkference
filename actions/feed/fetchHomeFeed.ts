@@ -1,12 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { recordEngagement } from "@/lib/engagement";
 import { notifyViewMilestones } from "@/lib/notify";
 import { getViewerContext, visiblePosts, visibleProjects, type ViewerContext } from "@/lib/visibility";
+import { getSession } from "@/lib/session";
 
 /*
  * Home feed
@@ -167,7 +166,7 @@ export async function fetchHomeFeed({
     limit?: number;
     feedType?: FeedType;
 }) {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     const currentUserId = session?.user?.id;
     if (!currentUserId) throw new Error("Unauthorized.");
 
@@ -301,7 +300,7 @@ export type FeedItem = FeedPage["items"][number];
  * Called by the browser (batched) when posts have been on screen.
  */
 export async function markPostsSeen(postIds: string[]) {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getSession();
     const currentUserId = session?.user?.id;
     if (!currentUserId) return;
 
