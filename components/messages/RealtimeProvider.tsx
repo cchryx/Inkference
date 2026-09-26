@@ -6,7 +6,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { UserIcon } from "@/components/general/UserIcon";
 import { getMessageCounts } from "@/actions/messages";
-import type { RealtimeEvent } from "@/lib/realtime";
+import type { MessageAlert, RealtimeEvent } from "@/lib/realtime";
+import { X } from "lucide-react";
 
 // One live connection per tab. The server pushes chat events down it the
 // moment they happen, so messages show up instantly (no refreshing, no polling).
@@ -32,14 +33,65 @@ function popup(e: RealtimeEvent, userId: string, open: (url: string) => void) {
 
     const a = e.alert;
     const url = `/social/messages?${a.request ? "tab=requests&" : ""}c=${e.conversationId}`;
-    const text = m.text.length > 90 ? `${m.text.slice(0, 89)}…` : m.text;
-    toast(a.request ? `Message request from ${a.from}` : a.group ? `${a.from} in ${a.group}` : a.from, {
-        id: `chat:${e.conversationId}`, // a new one replaces the old one for the same chat
-        description: text,
-        icon: <UserIcon image={a.image} size="size-6" />,
-        action: { label: "Open", onClick: () => open(url) },
-        duration: 5000,
-    });
+    toast.custom(
+        (id) => (
+            <MessageToast
+                alert={a}
+                text={m.text}
+                onOpen={() => {
+                    toast.dismiss(id);
+                    open(url);
+                }}
+                onClose={() => toast.dismiss(id)}
+            />
+        ),
+        { id: `chat:${e.conversationId}`, duration: 6000 } // a new one replaces the old one for the same chat
+    );
+}
+
+/** The pop-up card: face, who, what they said. Tap anywhere to open the chat. */
+function MessageToast({
+    alert: a,
+    text,
+    onOpen,
+    onClose,
+}: {
+    alert: MessageAlert;
+    text: string;
+    onOpen: () => void;
+    onClose: () => void;
+}) {
+    return (
+        <div className="group relative w-[356px] max-w-[calc(100vw-2rem)]">
+            <button
+                type="button"
+                onClick={onOpen}
+                className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 pr-8 text-left shadow-lg ring-1 ring-black/10 transition hover:bg-gray-50 cursor-pointer"
+            >
+                <UserIcon image={a.image} size="size-10" />
+                <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline gap-1.5">
+                        <span className="truncate text-sm font-semibold text-gray-900">{a.from}</span>
+                        <span className="shrink-0 text-[11px] text-gray-400">now</span>
+                    </span>
+                    {(a.group || a.request) && (
+                        <span className={`block truncate text-[11px] ${a.request ? "font-medium text-blue-600" : "text-gray-500"}`}>
+                            {a.request ? "Message request" : `in ${a.group}`}
+                        </span>
+                    )}
+                    <span className="line-clamp-2 break-words text-sm leading-snug text-gray-700">{text}</span>
+                </span>
+            </button>
+            <button
+                type="button"
+                onClick={onClose}
+                aria-label="Dismiss"
+                className="absolute right-2 top-2 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 cursor-pointer"
+            >
+                <X className="size-3.5" />
+            </button>
+        </div>
+    );
 }
 
 export default function RealtimeProvider({ userId, children }: { userId: string; children: ReactNode }) {
